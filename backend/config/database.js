@@ -2,7 +2,17 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 
-const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'database', 'crossfit_audit.db');
+const resolveDbPath = () => {
+  if (!process.env.DB_PATH) {
+    return path.join(__dirname, '..', 'database', 'crossfit_audit.db');
+  }
+
+  return path.isAbsolute(process.env.DB_PATH)
+    ? process.env.DB_PATH
+    : path.join(__dirname, '..', process.env.DB_PATH);
+};
+
+const dbPath = resolveDbPath();
 
 // Créer le dossier database s'il n'existe pas
 const dbDir = path.dirname(dbPath);

@@ -1,9 +1,10 @@
+import { AlertCircle, Dumbbell, Lock, Mail, Shield, TrendingUp, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../lib/auth';
-import { Lock, Mail, AlertCircle, Dumbbell, TrendingUp, Shield, Zap } from 'lucide-react';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -15,7 +16,7 @@ export default function AuthPage() {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
+    if (!email || !password || (!isLogin && !name)) {
       setError('Veuillez remplir tous les champs');
       return;
     }
@@ -39,7 +40,7 @@ export default function AuthPage() {
           setError(error.message);
         }
       } else {
-        const { error } = await signUp(email, password);
+        const { error } = await signUp(email, password, name);
         if (error) {
           setError(error.message);
         } else {
@@ -54,18 +55,19 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-tulip-beige-light via-white to-tulip-beige/20 flex">
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-tulip-blue to-tulip-green relative overflow-hidden p-12 flex-col justify-between">
+    <div className="min-h-screen bg-gradient-to-br from-[#DAD7CD] via-[#F5F3EF] to-white flex">
+      {/* Left Panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#48737F] relative overflow-hidden p-12 flex-col justify-between">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDEzNGg0MHYySDM2eiIvPjwvZz48L2c+PC9zdmc+')] opacity-20"></div>
 
         <div className="relative z-10">
           <div className="flex items-center space-x-3 mb-8">
-            <div className="bg-white/20 backdrop-blur-sm p-3 rounded-2xl">
-              <Dumbbell className="w-8 h-8 text-white" />
+            <div className="bg-[#CCBB90] p-3 rounded-2xl shadow-lg">
+              <Dumbbell className="w-8 h-8 text-[#48737F]" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">CrossFit Audit Pro</h1>
-              <p className="text-white/80 text-sm">Diagnostic et optimisation</p>
+              <h1 className="text-2xl font-bold text-[#DAD7CD]">CrossFit Audit Pro</h1>
+              <p className="text-[#CCBB90] text-sm">Diagnostic et optimisation</p>
             </div>
           </div>
         </div>
@@ -75,68 +77,69 @@ export default function AuthPage() {
             <h2 className="text-3xl font-bold text-white mb-4 leading-tight">
               Optimisez la performance<br />de votre box CrossFit
             </h2>
-            <p className="text-white/90 text-lg leading-relaxed">
+            <p className="text-[#DAD7CD] text-lg leading-relaxed">
               Système d'audit complet pour analyser, mesurer et améliorer chaque aspect de votre salle.
             </p>
           </div>
 
           <div className="space-y-4">
             <div className="flex items-start space-x-3">
-              <div className="bg-tulip-green-success/30 p-2 rounded-lg shrink-0">
+              <div className="bg-[#7FA99B]/30 p-2 rounded-lg shrink-0">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-1">Analyses détaillées</h3>
-                <p className="text-white/80 text-sm">Scores piliers et KPIs personnalisés pour votre activité</p>
+                <p className="text-[#DAD7CD] text-sm">Scores piliers et KPIs personnalisés pour votre activité</p>
               </div>
             </div>
 
             <div className="flex items-start space-x-3">
-              <div className="bg-tulip-green-success/30 p-2 rounded-lg shrink-0">
+              <div className="bg-[#7FA99B]/30 p-2 rounded-lg shrink-0">
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-1">Recommandations IA</h3>
-                <p className="text-white/80 text-sm">Plans d'action priorisés et ROI estimé</p>
+                <p className="text-[#DAD7CD] text-sm">Plans d'action priorisés et ROI estimé</p>
               </div>
             </div>
 
             <div className="flex items-start space-x-3">
-              <div className="bg-tulip-green-success/30 p-2 rounded-lg shrink-0">
+              <div className="bg-[#7FA99B]/30 p-2 rounded-lg shrink-0">
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
                 <h3 className="text-white font-semibold mb-1">Données sécurisées</h3>
-                <p className="text-white/80 text-sm">Vos informations protégées et privées</p>
+                <p className="text-[#DAD7CD] text-sm">Vos informations protégées et privées</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="relative z-10">
-          <p className="text-white/60 text-sm">
+          <p className="text-[#CCBB90] text-sm">
             Développé par des experts CrossFit pour les propriétaires de box
           </p>
         </div>
       </div>
 
+      {/* Right Panel - Form */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-8 lg:p-12">
         <div className="max-w-md w-full">
           <div className="lg:hidden text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-tulip-blue to-tulip-green rounded-2xl mb-4 shadow-lg">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-[#48737F] rounded-2xl mb-4 shadow-lg">
               <Dumbbell className="w-8 h-8 text-white" />
             </div>
-            <h1 className="text-2xl font-bold text-tulip-blue mb-2">
+            <h1 className="text-2xl font-bold text-[#48737F] mb-2">
               CrossFit Audit Pro
             </h1>
           </div>
 
-          <div className="bg-white rounded-3xl shadow-xl border border-tulip-beige/30 p-8 sm:p-10">
+          <div className="bg-white rounded-3xl shadow-xl border-2 border-[#DAD7CD] p-8 sm:p-10">
             <div className="mb-8">
-              <h2 className="text-2xl font-bold text-tulip-blue mb-2">
+              <h2 className="text-2xl font-bold text-[#48737F] mb-2">
                 {isLogin ? 'Bon retour !' : 'Créer un compte'}
               </h2>
-              <p className="text-tulip-blue/60">
+              <p className="text-[#CCBB90]">
                 {isLogin
                   ? 'Connectez-vous pour accéder à vos audits'
                   : 'Commencez à optimiser votre box dès maintenant'}
@@ -145,24 +148,45 @@ export default function AuthPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <div className="flex items-start gap-3 p-4 bg-tulip-red/10 border border-tulip-red/30 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
-                  <AlertCircle className="w-5 h-5 text-tulip-red flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-tulip-red font-medium">{error}</p>
+                <div className="flex items-start gap-3 p-4 bg-[#D85858]/10 border-2 border-[#D85858]/30 rounded-xl">
+                  <AlertCircle className="w-5 h-5 text-[#D85858] flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-[#D85858] font-medium">{error}</p>
                 </div>
               )}
 
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-tulip-blue mb-2">
+                {!isLogin && (
+                  <div className="mb-5">
+                    <label htmlFor="name" className="block text-sm font-semibold text-[#48737F] mb-2">
+                      Nom
+                    </label>
+                    <div className="relative group">
+                      <input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full px-4 py-3.5 border-2 border-[#DAD7CD] rounded-xl focus:ring-2 focus:ring-[#48737F]/20 focus:border-[#48737F] outline-none transition-all bg-white text-[#48737F] hover:border-[#CCBB90]"
+                        placeholder="Votre nom"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-semibold text-[#48737F] mb-2">
                   Email
                 </label>
                 <div className="relative group">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tulip-blue/40 group-focus-within:text-tulip-green transition-colors" />
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#CCBB90] group-focus-within:text-[#48737F] transition-colors" />
                   <input
                     id="email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3.5 border-2 border-tulip-beige rounded-xl focus:ring-2 focus:ring-tulip-green/20 focus:border-tulip-green outline-none transition-all bg-white hover:border-tulip-beige/80"
+                    className="w-full pl-12 pr-4 py-3.5 border-2 border-[#DAD7CD] rounded-xl focus:ring-2 focus:ring-[#48737F]/20 focus:border-[#48737F] outline-none transition-all bg-white text-[#48737F] hover:border-[#CCBB90]"
                     placeholder="votre@email.com"
                     required
                   />
@@ -170,17 +194,17 @@ export default function AuthPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-tulip-blue mb-2">
+                <label htmlFor="password" className="block text-sm font-semibold text-[#48737F] mb-2">
                   Mot de passe
                 </label>
                 <div className="relative group">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tulip-blue/40 group-focus-within:text-tulip-green transition-colors" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#CCBB90] group-focus-within:text-[#48737F] transition-colors" />
                   <input
                     id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3.5 border-2 border-tulip-beige rounded-xl focus:ring-2 focus:ring-tulip-green/20 focus:border-tulip-green outline-none transition-all bg-white hover:border-tulip-beige/80"
+                    className="w-full pl-12 pr-4 py-3.5 border-2 border-[#DAD7CD] rounded-xl focus:ring-2 focus:ring-[#48737F]/20 focus:border-[#48737F] outline-none transition-all bg-white text-[#48737F] hover:border-[#CCBB90]"
                     placeholder="••••••••"
                     required
                   />
@@ -188,18 +212,18 @@ export default function AuthPage() {
               </div>
 
               {!isLogin && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-tulip-blue mb-2">
+                <div>
+                  <label htmlFor="confirmPassword" className="block text-sm font-semibold text-[#48737F] mb-2">
                     Confirmer le mot de passe
                   </label>
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tulip-blue/40 group-focus-within:text-tulip-green transition-colors" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#CCBB90] group-focus-within:text-[#48737F] transition-colors" />
                     <input
                       id="confirmPassword"
                       type="password"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3.5 border-2 border-tulip-beige rounded-xl focus:ring-2 focus:ring-tulip-green/20 focus:border-tulip-green outline-none transition-all bg-white hover:border-tulip-beige/80"
+                      className="w-full pl-12 pr-4 py-3.5 border-2 border-[#DAD7CD] rounded-xl focus:ring-2 focus:ring-[#48737F]/20 focus:border-[#48737F] outline-none transition-all bg-white text-[#48737F] hover:border-[#CCBB90]"
                       placeholder="••••••••"
                       required
                     />
@@ -210,7 +234,7 @@ export default function AuthPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-tulip-green to-tulip-blue text-white py-4 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6"
+                className="w-full bg-[#48737F] text-white py-4 rounded-xl font-semibold hover:bg-[#3A5C66] hover:shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-6"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -231,14 +255,14 @@ export default function AuthPage() {
                   setPassword('');
                   setConfirmPassword('');
                 }}
-                className="text-sm text-tulip-green hover:text-tulip-blue font-semibold transition-colors"
+                className="text-sm text-[#48737F] hover:text-[#3A5C66] font-semibold transition-colors"
               >
                 {isLogin ? 'Pas encore de compte ? Inscrivez-vous' : 'Déjà inscrit ? Connectez-vous'}
               </button>
             </div>
           </div>
 
-          <p className="text-center text-sm text-tulip-blue/50 mt-6">
+          <p className="text-center text-sm text-[#CCBB90] mt-6">
             <Shield className="w-4 h-4 inline mr-1" />
             Authentification locale sécurisée
           </p>

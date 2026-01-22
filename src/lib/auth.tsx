@@ -1,19 +1,22 @@
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
 interface AuthUser {
   id: string;
   email: string;
+  name?: string;
+  role?: string;
 }
 
 interface AuthSession {
   user: AuthUser;
+  token: string;
 }
 
 interface AuthContextType {
   user: AuthUser | null;
   session: AuthSession | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -21,23 +24,44 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'crossfit_audit_auth';
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 
-function readStoredUser(): { user: AuthUser; password: string } | null {
+function readStoredSession(): AuthSession | null {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return null;
   try {
-    return JSON.parse(raw) as { user: AuthUser; password: string };
+    return JSON.parse(raw) as AuthSession;
   } catch {
     return null;
   }
 }
 
-function writeStoredUser(user: AuthUser, password: string) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, password }));
+function writeStoredSession(session: AuthSession) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
 }
 
-function clearStoredUser() {
+function clearStoredSession() {
   localStorage.removeItem(STORAGE_KEY);
+}
+
+async function requestAuth(path: string, body: Record<string, unknown>) {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const text = await response.text();
+  const payload = text ? JSON.parse(text) : null;
+
+  if (!response.ok) {
+    const message = payload?.message || payload?.error || response.statusText;
+    throw new Error(message);
+  }
+
+  return payload as { user: AuthUser; token: string };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -46,48 +70,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = readStoredUser();
-    if (stored?.user) {
+    const stored = readStoredSession();
+    if (stored?.user && stored.token) {
       setUser(stored.user);
-      setSession({ user: stored.user });
+      setSession(stored);
     }
     setLoading(false);
   }, []);
 
-  const signUp = async (email: string, password: string) => {
-    const stored = readStoredUser();
-    if (stored && stored.user.email !== email) {
-      return { error: new Error('Un compte local existe déjà pour un autre email.') };
+  const signUp = async (email: string, password: string, name: string) => {
+    if (!name.trim()) {
+      return { error: new Error('Le nom est requis.') };
     }
 
-    const newUser: AuthUser = {
-      id: stored?.user.id || crypto.randomUUID(),
-      email,
-    };
-
-    writeStoredUser(newUser, password);
-    setUser(newUser);
-    setSession({ user: newUser });
-
-    return { error: null };
+    try {
+      const payload = await requestAuth('/auth/register', { email, password, name });
+      const newSession = { user: payload.user, token: payload.token };
+      writeStoredSession(newSession);
+      setUser(payload.user);
+      setSession(newSession);
+      return { error: null };
+    } catch (error) {
+      return { error };
+    }
   };
 
   const signIn = async (email: string, password: string) => {
-    const stored = readStoredUser();
-    if (!stored) {
-      return { error: new Error('Aucun compte local trouvé. Veuillez créer un compte.') };
+    try {
+      const payload = await requestAuth('/auth/login', { email, password });
+      const newSession = { user: payload.user, token: payload.token };
+      writeStoredSession(newSession);
+      setUser(payload.user);
+      setSession(newSession);
+      return { error: null };
+    } catch (error) {
+      return { error };
     }
-    if (stored.user.email !== email || stored.password !== password) {
-      return { error: new Error('Identifiants invalides.') };
-    }
-
-    setUser(stored.user);
-    setSession({ user: stored.user });
-    return { error: null };
   };
 
   const signOut = async () => {
-    clearStoredUser();
+    clearStoredSession();
     setUser(null);
     setSession(null);
   };

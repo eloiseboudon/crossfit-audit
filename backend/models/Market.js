@@ -178,19 +178,19 @@ class MarketZone {
 // GymOffer Model
 // ============================================
 class GymOffer {
-  static async findByGymId(gymId) {
+  static async findByGymId(gymId, includeInactive = false) {
     const sql = `
       SELECT * FROM gym_offers 
-      WHERE gym_id = ? AND is_active = 1 
+      WHERE gym_id = ? ${includeInactive ? '' : 'AND is_active = 1'}
       ORDER BY is_featured DESC, sort_order ASC, price ASC
     `;
     return await dbAll(sql, [gymId]);
   }
 
-  static async findByAuditId(auditId) {
+  static async findByAuditId(auditId, includeInactive = false) {
     const sql = `
       SELECT * FROM gym_offers 
-      WHERE audit_id = ? AND is_active = 1 
+      WHERE audit_id = ? ${includeInactive ? '' : 'AND is_active = 1'}
       ORDER BY is_featured DESC, sort_order ASC, price ASC
     `;
     return await dbAll(sql, [auditId]);

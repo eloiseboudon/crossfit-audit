@@ -232,6 +232,14 @@ Authorization: Bearer <votre_token>
 | PUT | `/:id` | Modifier une offre | Oui |
 | DELETE | `/:id` | Supprimer une offre | Oui |
 
+### Benchmarks marché (`/api/market-benchmarks`)
+
+| Méthode | Route | Description | Auth |
+|---------|-------|-------------|------|
+| GET | `/` | Liste des benchmarks | Oui |
+| POST | `/` | Créer un benchmark | Oui |
+| PUT | `/:id` | Modifier un benchmark | Oui |
+
 ## 📊 Exemples de requêtes
 
 ### Créer une salle

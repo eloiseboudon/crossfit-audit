@@ -2,6 +2,74 @@ require('dotenv').config();
 const { db } = require('../config/database');
 const fs = require('fs');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+
+const defaultBenchmarks = [
+  {
+    benchmark_code: 'arpm_toulouse',
+    name: 'ARPM moyen Toulouse',
+    value: 85,
+    unit: '€',
+    description: 'Revenu moyen par membre par mois à Toulouse',
+    category: 'pricing'
+  },
+  {
+    benchmark_code: 'churn_target',
+    name: 'Taux de churn cible',
+    value: 2,
+    unit: '%',
+    description: 'Taux de churn mensuel cible',
+    category: 'retention'
+  },
+  {
+    benchmark_code: 'conversion_target',
+    name: 'Taux de conversion cible',
+    value: 40,
+    unit: '%',
+    description: "Taux de conversion essai vers abonnement cible",
+    category: 'acquisition'
+  },
+  {
+    benchmark_code: 'loyer_ratio_max',
+    name: 'Ratio loyer/CA maximum',
+    value: 15,
+    unit: '%',
+    description: 'Ratio loyer/CA à ne pas dépasser',
+    category: 'finance'
+  },
+  {
+    benchmark_code: 'masse_salariale_ratio_max',
+    name: 'Ratio masse salariale/CA maximum',
+    value: 45,
+    unit: '%',
+    description: 'Ratio masse salariale/CA à ne pas dépasser',
+    category: 'finance'
+  },
+  {
+    benchmark_code: 'ebitda_target',
+    name: 'Marge EBITDA cible',
+    value: 20,
+    unit: '%',
+    description: 'Marge EBITDA cible',
+    category: 'finance'
+  },
+  {
+    benchmark_code: 'occupation_target',
+    name: 'Taux occupation cible',
+    value: 70,
+    unit: '%',
+    description: 'Taux de remplissage des cours cible',
+    category: 'exploitation'
+  },
+  {
+    benchmark_code: 'ca_par_m2_target',
+    name: 'CA par m² cible',
+    value: 300,
+    unit: '€',
+    description: 'Chiffre affaires par m² cible annuel',
+    category: 'exploitation'
+  }
+];
 
 const schema = `
 CREATE TABLE IF NOT EXISTS gyms (
@@ -215,20 +283,59 @@ async function initDatabase() {
         console.error('❌ Erreur lors de la création des tables:', err.message);
         reject(err);
       } else {
-        console.log('✅ Base de données initialisée avec succès !');
-        console.log('📊 Tables créées:');
-        console.log('   - users');
-        console.log('   - gyms');
-        console.log('   - audits');
-        console.log('   - answers');
-        console.log('   - kpis');
-        console.log('   - scores');
-        console.log('   - recommendations');
-        console.log('   - market_benchmarks');
-        console.log('   - market_zones');
-        console.log('   - competitors');
-        console.log('   - gym_offers');
-        resolve();
+        const now = new Date().toISOString();
+        const insertSql = `
+          INSERT OR IGNORE INTO market_benchmarks (
+            id, benchmark_code, name, value, unit, description, category, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `;
+
+        const insertStatements = defaultBenchmarks.map((benchmark) => {
+          return new Promise((insertResolve, insertReject) => {
+            db.run(
+              insertSql,
+              [
+                uuidv4(),
+                benchmark.benchmark_code,
+                benchmark.name,
+                benchmark.value,
+                benchmark.unit,
+                benchmark.description,
+                benchmark.category,
+                now
+              ],
+              (insertErr) => {
+                if (insertErr) {
+                  insertReject(insertErr);
+                } else {
+                  insertResolve();
+                }
+              }
+            );
+          });
+        });
+
+        Promise.all(insertStatements)
+          .then(() => {
+            console.log('✅ Base de données initialisée avec succès !');
+            console.log('📊 Tables créées:');
+            console.log('   - users');
+            console.log('   - gyms');
+            console.log('   - audits');
+            console.log('   - answers');
+            console.log('   - kpis');
+            console.log('   - scores');
+            console.log('   - recommendations');
+            console.log('   - market_benchmarks');
+            console.log('   - market_zones');
+            console.log('   - competitors');
+            console.log('   - gym_offers');
+            resolve();
+          })
+          .catch((seedError) => {
+            console.error('❌ Erreur lors du seed des benchmarks:', seedError.message);
+            reject(seedError);
+          });
       }
     });
   });

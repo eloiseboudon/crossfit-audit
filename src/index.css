@@ -7,32 +7,35 @@
 
 @layer base {
   :root {
-    --tulip-green: #5A8E92;
-    --tulip-beige: #E8D7B5;
-    --tulip-beige-light: #FAF8F3;
-    --tulip-blue: #2C5561;
-    --tulip-blue-dark: #1F3D47;
+    /* Tulip Consulting Colors - Mockup 1 */
+    --tulip-green: #48737F;
+    --tulip-beige: #CCBB90;
+    --tulip-beige-light: #DAD7CD;
+    --tulip-blue: #3A5C66;
+    --tulip-blue-dark: #2C4A54;
     --tulip-red: #D85858;
-    --tulip-green-success: #72C77A;
-    --tulip-orange-accent: #E8A356;
+    --tulip-green-success: #7FA99B;
+    --tulip-orange-accent: #E89F5C;
 
-    --text-primary: #1A2F38;
-    --text-secondary: #4A6370;
-    --text-muted: #708A95;
+    --text-primary: #48737F;
+    --text-secondary: #5A8991;
+    --text-muted: #8FA5AB;
 
-    --bg-cream: #FDFCFA;
-    --bg-light: #F7F5F1;
+    --bg-cream: #F5F3EF;
+    --bg-light: #DAD7CD;
     --bg-card: #FFFFFF;
   }
 
   body {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #F7F5F1 0%, #FDFCFA 50%, #FAF8F3 100%);
+    background: linear-gradient(135deg, #DAD7CD 0%, #F5F3EF 100%);
     background-attachment: fixed;
-    color: #1A2F38;
+    color: #48737F;
   }
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-family: 'Rajdhani', sans-serif;
     letter-spacing: 0.5px;
   }
@@ -41,59 +44,107 @@
     font-size: 1.75rem;
     font-weight: 700;
     line-height: 1.2;
+    color: #48737F;
   }
 
   h2 {
     font-size: 1.5rem;
     font-weight: 600;
     line-height: 1.3;
+    color: #48737F;
   }
 
   h3 {
     font-size: 1.25rem;
     font-weight: 600;
     line-height: 1.4;
+    color: #48737F;
   }
 }
 
 @layer utilities {
   .glow-teal {
-    box-shadow: 0 2px 12px rgba(90, 142, 146, 0.15), 0 4px 24px rgba(90, 142, 146, 0.1);
+    box-shadow: 0 2px 12px rgba(72, 115, 127, 0.15), 0 4px 24px rgba(72, 115, 127, 0.1);
   }
 
   .glow-beige {
-    box-shadow: 0 2px 12px rgba(232, 215, 181, 0.2), 0 4px 24px rgba(232, 215, 181, 0.12);
+    box-shadow: 0 2px 12px rgba(204, 187, 144, 0.2), 0 4px 24px rgba(204, 187, 144, 0.12);
   }
 
   .glow-text-teal {
-    text-shadow: 0 1px 3px rgba(90, 142, 146, 0.3);
+    text-shadow: 0 1px 3px rgba(72, 115, 127, 0.3);
   }
 
   .glow-text-beige {
-    text-shadow: 0 1px 3px rgba(232, 215, 181, 0.4);
+    text-shadow: 0 1px 3px rgba(204, 187, 144, 0.4);
   }
 
   .border-accent-teal {
-    border: 2px solid #5A8E92;
-    box-shadow: 0 1px 4px rgba(90, 142, 146, 0.15);
+    border: 2px solid #48737F;
+    box-shadow: 0 1px 4px rgba(72, 115, 127, 0.15);
   }
 
   .border-accent-beige {
-    border: 2px solid #E8D7B5;
-    box-shadow: 0 1px 4px rgba(232, 215, 181, 0.2);
+    border: 2px solid #CCBB90;
+    box-shadow: 0 1px 4px rgba(204, 187, 144, 0.2);
   }
 
   .bg-card-elevated {
-    background: linear-gradient(135deg, #FFFFFF 0%, #FAF8F3 100%);
+    background: linear-gradient(135deg, #FFFFFF 0%, #F5F3EF 100%);
   }
 
   .bg-card-hover:hover {
-    background: linear-gradient(135deg, #FDFCFA 0%, #F7F5F1 100%);
+    background: linear-gradient(135deg, #F5F3EF 0%, #DAD7CD 100%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(90, 142, 146, 0.1);
+    box-shadow: 0 4px 16px rgba(72, 115, 127, 0.1);
   }
 
   .text-shadow-subtle {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Additional Mockup 1 specific utilities */
+  .glow-card {
+    box-shadow: 0 2px 8px rgba(72, 115, 127, 0.1);
+  }
+
+  .glow-card-hover:hover {
+    box-shadow: 0 8px 20px rgba(72, 115, 127, 0.15);
+  }
+
+  .bg-header {
+    background: #48737F;
+  }
+
+  .bg-beige-light {
+    background: #DAD7CD;
+  }
+
+  .bg-beige-accent {
+    background: #CCBB90;
+  }
+
+  .text-beige {
+    color: #CCBB90;
+  }
+
+  .text-beige-light {
+    color: #DAD7CD;
+  }
+
+  .border-left-teal {
+    border-left: 4px solid #48737F;
+  }
+
+  .border-left-beige {
+    border-left: 4px solid #CCBB90;
+  }
+
+  .border-left-orange {
+    border-left: 4px solid #E89F5C;
+  }
+
+  .border-left-success {
+    border-left: 4px solid #7FA99B;
   }
 }

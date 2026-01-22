@@ -124,7 +124,7 @@ lsof -i :5176
 kill -9 <PID>
 
 # Ou changer le port dans .env
-PORT=5177
+PORT=5175
 ```
 
 ### Base de données corrompue
