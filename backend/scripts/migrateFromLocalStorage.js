@@ -5,7 +5,7 @@
  * À exécuter côté frontend/navigateur
  */
 
-const API_URL = 'http://localhost:5177/api'; // Adapter selon votre configuration
+const API_URL = 'http://localhost:5176/api'; // Adapter selon votre configuration
 
 class LocalStorageMigration {
   constructor(apiUrl, authToken) {

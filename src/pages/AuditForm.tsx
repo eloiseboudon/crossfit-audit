@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Save, Calculator, ChevronRight, Check } from 'lucide-react';
+import { ArrowLeft, Calculator, Check, ChevronRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { getAudit, listAnswers, updateAudit, upsertAnswer } from '../lib/api';
-import { Audit, Answer, Question } from '../lib/types';
 import { questionnaireBlocks } from '../lib/questionnaire';
+import { Audit, Question } from '../lib/types';
 
 interface AuditFormProps {
   auditId?: string;
@@ -169,7 +169,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
 
     if (!shouldDisplay) return null;
 
-    const commonClasses = "w-full px-4 py-2 border-2 border-[#D6C7A1]/30 rounded-lg focus:ring-2 focus:ring-[#4F7A7E] focus:border-[#4F7A7E] bg-black/40 text-[#F4F3EE] placeholder-[#D6C7A1]/40";
+    const commonClasses = "w-full px-4 py-2.5 border-2 border-[#DAD7CD] rounded-lg focus:ring-2 focus:ring-[#48737F] focus:border-[#48737F] bg-white text-[#48737F] placeholder-[#CCBB90]";
 
     switch (question.type) {
       case 'number':
@@ -178,12 +178,12 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
 
         return (
           <div key={question.code} className="space-y-2">
-            <label className="block text-sm font-semibold text-[#F4F3EE]">
+            <label className="block text-sm font-semibold text-[#48737F]">
               {question.label}
               {question.required && <span className="text-red-500 ml-1">*</span>}
             </label>
             {question.help_text && (
-              <p className="text-xs text-[#D6C7A1]/70">{question.help_text}</p>
+              <p className="text-xs text-[#CCBB90]">{question.help_text}</p>
             )}
             <div className="relative">
               <input
@@ -230,7 +230,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
                 placeholder="0"
               />
               {question.unit && (
-                <div className="absolute right-3 top-2.5 text-tulip-blue/50 text-sm pointer-events-none">
+                <div className="absolute right-3 top-3 text-[#48737F] opacity-50 text-sm pointer-events-none">
                   {question.unit}
                 </div>
               )}
@@ -241,12 +241,12 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
       case 'text':
         return (
           <div key={question.code} className="space-y-2">
-            <label className="block text-sm font-semibold text-[#F4F3EE]">
+            <label className="block text-sm font-semibold text-[#48737F]">
               {question.label}
               {question.required && <span className="text-red-500 ml-1">*</span>}
             </label>
             {question.help_text && (
-              <p className="text-xs text-[#D6C7A1]/70">{question.help_text}</p>
+              <p className="text-xs text-[#CCBB90]">{question.help_text}</p>
             )}
             <textarea
               value={value ?? ''}
@@ -261,12 +261,12 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
       case 'select':
         return (
           <div key={question.code} className="space-y-2">
-            <label className="block text-sm font-semibold text-[#F4F3EE]">
+            <label className="block text-sm font-semibold text-[#48737F]">
               {question.label}
               {question.required && <span className="text-red-500 ml-1">*</span>}
             </label>
             {question.help_text && (
-              <p className="text-xs text-[#D6C7A1]/70">{question.help_text}</p>
+              <p className="text-xs text-[#CCBB90]">{question.help_text}</p>
             )}
             <select
               value={value ?? ''}
@@ -287,12 +287,12 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
       case 'multiselect':
         return (
           <div key={question.code} className="space-y-2">
-            <label className="block text-sm font-semibold text-[#F4F3EE]">
+            <label className="block text-sm font-semibold text-[#48737F]">
               {question.label}
               {question.required && <span className="text-red-500 ml-1">*</span>}
             </label>
             {question.help_text && (
-              <p className="text-xs text-[#D6C7A1]/70">{question.help_text}</p>
+              <p className="text-xs text-[#CCBB90]">{question.help_text}</p>
             )}
             <div className="space-y-2">
               {question.options?.map((option) => (
@@ -307,9 +307,9 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
                         : current.filter((v: string) => v !== option);
                       saveAnswer(block, question.code, newValue);
                     }}
-                    className="rounded border-[#D6C7A1]/30 bg-black/40 text-[#4F7A7E] focus:ring-[#4F7A7E]"
+                    className="rounded border-[#DAD7CD] bg-white text-[#48737F] focus:ring-[#48737F]"
                   />
-                  <span className="text-sm text-[#F4F3EE]">{option}</span>
+                  <span className="text-sm text-[#48737F]">{option}</span>
                 </label>
               ))}
             </div>
@@ -324,15 +324,15 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
                 type="checkbox"
                 checked={value === true}
                 onChange={(e) => saveAnswer(block, question.code, e.target.checked)}
-                className="rounded border-[#D6C7A1]/30 bg-black/40 text-[#4F7A7E] focus:ring-[#4F7A7E] w-5 h-5"
+                className="rounded border-[#DAD7CD] bg-white text-[#48737F] focus:ring-[#48737F] w-5 h-5"
               />
               <div>
-                <span className="text-sm font-semibold text-[#F4F3EE]">
+                <span className="text-sm font-semibold text-[#48737F]">
                   {question.label}
                   {question.required && <span className="text-red-500 ml-1">*</span>}
                 </span>
                 {question.help_text && (
-                  <p className="text-xs text-[#D6C7A1]/70 mt-1">{question.help_text}</p>
+                  <p className="text-xs text-[#CCBB90] mt-1">{question.help_text}</p>
                 )}
               </div>
             </label>
@@ -342,12 +342,12 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
       case 'date':
         return (
           <div key={question.code} className="space-y-2">
-            <label className="block text-sm font-semibold text-[#F4F3EE]">
+            <label className="block text-sm font-semibold text-[#48737F]">
               {question.label}
               {question.required && <span className="text-red-500 ml-1">*</span>}
             </label>
             {question.help_text && (
-              <p className="text-xs text-[#D6C7A1]/70">{question.help_text}</p>
+              <p className="text-xs text-[#CCBB90]">{question.help_text}</p>
             )}
             <input
               type="date"
@@ -368,8 +368,8 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
     return (
       <div className="flex items-center justify-center h-64">
         <div className="relative">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#4F7A7E] glow-teal"></div>
-          <Calculator className="w-6 h-6 text-[#D6C7A1] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#48737F]"></div>
+          <Calculator className="w-6 h-6 text-[#CCBB90] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
         </div>
       </div>
     );
@@ -378,8 +378,8 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
   if (!audit) {
     return (
       <div className="text-center py-12">
-        <p className="text-tulip-blue/70">Audit introuvable</p>
-        <button onClick={onBack} className="mt-4 text-tulip-blue hover:underline">
+        <p className="text-[#48737F]">Audit introuvable</p>
+        <button onClick={onBack} className="mt-4 text-[#48737F] hover:underline">
           Retour
         </button>
       </div>
@@ -440,32 +440,33 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-4 md:space-y-6 px-2 md:px-0">
-      <div className="bg-gradient-to-r from-[#4F7A7E] to-[#2F4F5A] text-white rounded-xl shadow-xl p-4 md:p-6 border-2 border-[#4F7A7E]/30">
+    <div className="max-w-6xl mx-auto space-y-6 px-2 md:px-0">
+      {/* Header avec progression */}
+      <div className="bg-[#48737F] text-white rounded-xl shadow-md p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-          <div className="flex items-center space-x-3 md:space-x-4">
+          <div className="flex items-center space-x-4">
             <button
               onClick={onBack}
-              className="p-2 hover:bg-white/20 rounded-card transition-all shrink-0"
+              className="p-2 hover:bg-white/20 rounded-lg transition-all shrink-0"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="min-w-0">
-              <h1 className="text-lg md:text-2xl font-bold truncate">
+              <h1 className="text-2xl font-semibold truncate text-[#DAD7CD]">
                 Audit - {audit.gym?.name}
               </h1>
-              <p className="text-white/80 text-xs md:text-sm mt-1">
+              <p className="text-[#CCBB90] text-sm mt-1">
                 {audit.status === 'finalise' ? 'Audit finalisé' : 'Remplissez toutes les sections'}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 md:space-x-3">
+          <div className="flex items-center gap-3">
             {audit.status === 'finalise' && (
               <button
                 onClick={() => onViewDashboard(audit.id)}
-                className="flex items-center space-x-2 px-3 md:px-5 py-2 md:py-2.5 bg-white text-tulip-green rounded-card hover:bg-white/90 transition-all shadow-md font-medium text-sm"
+                className="flex items-center space-x-2 px-5 py-2.5 bg-white text-[#48737F] rounded-lg hover:bg-[#DAD7CD] transition-all shadow-md font-semibold"
               >
-                <Calculator className="w-4 h-4 md:w-5 md:h-5" />
+                <Calculator className="w-5 h-5" />
                 <span className="hidden md:inline">Voir le diagnostic</span>
                 <span className="md:hidden">Diagnostic</span>
               </button>
@@ -474,9 +475,9 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
               <button
                 onClick={calculateAndFinalize}
                 disabled={saving || audit.completion_percentage < 50}
-                className="flex items-center space-x-2 px-3 md:px-5 py-2 md:py-2.5 bg-white text-tulip-green rounded-card hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md font-medium text-sm"
+                className="flex items-center space-x-2 px-5 py-2.5 bg-[#CCBB90] text-[#48737F] rounded-lg hover:bg-[#B8A780] transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md font-semibold"
               >
-                <Calculator className="w-4 h-4 md:w-5 md:h-5" />
+                <Calculator className="w-5 h-5" />
                 <span className="hidden md:inline">{saving ? 'Calcul en cours...' : 'Calculer & Finaliser'}</span>
                 <span className="md:hidden">{saving ? 'Calcul...' : 'Finaliser'}</span>
               </button>
@@ -484,22 +485,23 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
           </div>
         </div>
 
-        <div className="flex flex-col space-y-2 md:space-y-3">
-          <div className="flex items-center justify-between text-xs md:text-sm">
-            <span className="font-medium">Progression globale</span>
-            <span className="font-bold text-base md:text-lg">{Math.round(audit.completion_percentage)}%</span>
+        <div className="flex flex-col space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium text-[#DAD7CD]">Progression globale</span>
+            <span className="font-bold text-lg">{Math.round(audit.completion_percentage)}%</span>
           </div>
-          <div className="w-full bg-white/20 rounded-full h-2 md:h-3 overflow-hidden">
+          <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
             <div
-              className="bg-white h-2 md:h-3 rounded-full transition-all duration-500 shadow-inner"
+              className="bg-white h-3 rounded-full transition-all duration-500"
               style={{ width: `${audit.completion_percentage}%` }}
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-black/60 to-black/40 rounded-xl shadow-xl border-2 border-[#D6C7A1]/30 p-2 md:p-4 backdrop-blur-sm">
-        <div className="flex overflow-x-auto space-x-2 pb-2 scrollbar-thin scrollbar-thumb-tulip-green/30 scrollbar-track-tulip-beige/20">
+      {/* Tabs des blocs */}
+      <div className="bg-white rounded-xl shadow-md p-4 border-b-2 border-[#DAD7CD]">
+        <div className="flex overflow-x-auto space-x-2 pb-2">
           {questionnaireBlocks.map((block, index) => {
             const completion = getBlockCompletion(index);
             const isActive = index === currentBlockIndex;
@@ -509,30 +511,24 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
               <button
                 key={block.code}
                 onClick={() => setCurrentBlockIndex(index)}
-                className={`relative flex flex-col items-center shrink-0 w-20 md:min-w-[120px] md:w-auto px-2 md:px-4 py-2 md:py-3 rounded-card text-[10px] md:text-xs font-medium transition-all ${
-                  isActive
-                    ? 'bg-gradient-to-br from-tulip-green to-tulip-green/80 text-white shadow-md md:scale-105'
+                className={`relative flex flex-col items-center shrink-0 min-w-[120px] px-4 py-3 rounded-lg text-xs font-medium transition-all ${isActive
+                    ? 'bg-[#48737F] text-white shadow-md scale-105'
                     : isComplete
-                    ? 'bg-tulip-green-success/10 text-tulip-green-success hover:bg-tulip-green-success/20'
-                    : 'bg-tulip-beige/30 text-tulip-blue hover:bg-tulip-beige/50'
-                }`}
+                      ? 'bg-[#7FA99B]/10 text-[#7FA99B] hover:bg-[#7FA99B]/20'
+                      : 'bg-[#DAD7CD]/30 text-[#48737F] hover:bg-[#DAD7CD]/50'
+                  }`}
               >
                 <div className="flex items-center space-x-1 mb-1">
-                  <span className={`w-5 h-5 md:w-6 md:h-6 rounded-full flex items-center justify-center text-[10px] md:text-xs font-bold ${
-                    isActive ? 'bg-white/20' : isComplete ? 'bg-tulip-green-success/20' : 'bg-tulip-blue/10'
-                  }`}>
-                    {isComplete ? <Check className="w-3 h-3 md:w-4 md:h-4" /> : index + 1}
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${isActive ? 'bg-white/20' : isComplete ? 'bg-[#7FA99B]/20' : 'bg-[#48737F]/10'
+                    }`}>
+                    {isComplete ? <Check className="w-4 h-4" /> : index + 1}
                   </span>
                 </div>
-                <span className="text-center leading-tight hidden md:block">{block.title.replace(/^\d+\.\s*/, '')}</span>
-                <span className="text-center leading-tight md:hidden" title={block.title}>
-                  {block.title.split(' ')[0].replace(/^\d+\.\s*/, '')}
-                </span>
-                <div className="mt-1 md:mt-2 w-full bg-white/30 rounded-full h-1 overflow-hidden">
+                <span className="text-center leading-tight">{block.title.replace(/^\d+\.\s*/, '')}</span>
+                <div className="mt-2 w-full bg-white/30 rounded-full h-1 overflow-hidden">
                   <div
-                    className={`h-1 rounded-full transition-all duration-500 ${
-                      isActive ? 'bg-white' : isComplete ? 'bg-tulip-green-success' : 'bg-tulip-blue/50'
-                    }`}
+                    className={`h-1 rounded-full transition-all duration-500 ${isActive ? 'bg-white' : isComplete ? 'bg-[#7FA99B]' : 'bg-[#48737F]/50'
+                      }`}
                     style={{ width: `${completion}%` }}
                   />
                 </div>
@@ -542,11 +538,12 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
         </div>
       </div>
 
-      <div className="bg-gradient-to-br from-black/60 to-black/40 rounded-xl shadow-xl border-2 border-[#4F7A7E]/30 p-4 md:p-8 backdrop-blur-sm">
-        <div className="mb-6">
-          <h2 className="text-lg md:text-xl font-bold text-[#F4F3EE] glow-text-teal">{currentBlock.title}</h2>
+      {/* Formulaire */}
+      <div className="bg-white rounded-xl shadow-md p-8 border-b-2 border-[#DAD7CD]">
+        <div className="mb-6 pb-5 border-b-2 border-[#DAD7CD]">
+          <h2 className="text-xl font-semibold text-[#48737F]">{currentBlock.title}</h2>
           {currentBlock.description && (
-            <p className="text-[#D6C7A1]/80 text-sm mt-1">{currentBlock.description}</p>
+            <p className="text-[#CCBB90] text-sm mt-1">{currentBlock.description}</p>
           )}
         </div>
 
@@ -556,11 +553,11 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
           )}
         </div>
 
-        <div className="flex items-center justify-between mt-8 pt-6 border-t border-[#D6C7A1]/20">
+        <div className="flex items-center justify-between mt-8 pt-6 border-t-2 border-[#DAD7CD]">
           <button
             onClick={() => setCurrentBlockIndex(Math.max(0, currentBlockIndex - 1))}
             disabled={currentBlockIndex === 0}
-            className="px-4 py-2 text-[#D6C7A1] hover:bg-[#4F7A7E]/10 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-[#4F7A7E]/30"
+            className="px-4 py-2 text-[#48737F] hover:bg-[#48737F]/10 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed border-2 border-transparent hover:border-[#48737F]/30 font-medium"
           >
             Précédent
           </button>
@@ -574,7 +571,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
                   setCurrentBlockIndex(currentBlockIndex + 1);
                 }
               }}
-              className="flex items-center space-x-2 px-4 py-2 bg-[#4F7A7E] text-[#F4F3EE] rounded-lg hover:glow-teal transition-all shadow-md font-semibold border border-[#4F7A7E]/50"
+              className="flex items-center space-x-2 px-5 py-2.5 bg-[#48737F] text-white rounded-lg hover:bg-[#3A5C66] transition-all shadow-md font-semibold"
             >
               <span>Suivant</span>
               <ChevronRight className="w-4 h-4" />
@@ -583,7 +580,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
             <button
               onClick={calculateAndFinalize}
               disabled={saving}
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-[#6FBF73] to-[#4F7A7E] text-[#F4F3EE] rounded-lg hover:shadow-lg transition-all disabled:opacity-50 font-semibold border border-[#6FBF73]/50"
+              className="flex items-center space-x-2 px-5 py-2.5 bg-[#7FA99B] text-white rounded-lg hover:bg-[#6A9084] transition-all disabled:opacity-50 shadow-md font-semibold"
             >
               <Check className="w-4 h-4" />
               <span>{saving ? 'Finalisation...' : 'Terminer l\'audit'}</span>
