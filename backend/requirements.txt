@@ -1,0 +1,28 @@
+# Requirements pour l'API CrossFit Analyzer
+# ==========================================
+
+# Framework Web
+flask==3.0.0
+flask-cors==4.0.0
+
+# Calculs scientifiques
+numpy==1.26.2
+
+# Optionnel mais recommandé pour la production
+gunicorn==21.2.0  # Serveur WSGI de production
+python-dotenv==1.0.0  # Gestion des variables d'environnement
+
+# Optionnel - Rate limiting
+# flask-limiter==3.5.0
+# redis==5.0.1
+
+# Optionnel - Logging avancé
+# python-json-logger==2.0.7
+
+# Optionnel - Validation de données
+# marshmallow==3.20.1
+
+# Pour les tests
+# pytest==7.4.3
+# pytest-flask==1.3.0
+# requests==2.31.0
