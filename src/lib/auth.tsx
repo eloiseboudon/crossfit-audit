@@ -1,10 +1,17 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+
+interface AuthUser {
+  id: string;
+  email: string;
+}
+
+interface AuthSession {
+  user: AuthUser;
+}
 
 interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  user: AuthUser | null;
+  session: AuthSession | null;
   loading: boolean;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
@@ -13,57 +20,89 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const STORAGE_KEY = 'crossfit_audit_auth';
+
+function readStoredUser(): { user: AuthUser; password: string } | null {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as { user: AuthUser; password: string };
+  } catch {
+    return null;
+  }
+}
+
+function writeStoredUser(user: AuthUser, password: string) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, password }));
+}
+
+function clearStoredUser() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [session, setSession] = useState<AuthSession | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      (async () => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      })();
-    });
-
-    return () => subscription.unsubscribe();
+    const stored = readStoredUser();
+    if (stored?.user) {
+      setUser(stored.user);
+      setSession({ user: stored.user });
+    }
+    setLoading(false);
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signUp({
+    const stored = readStoredUser();
+    if (stored && stored.user.email !== email) {
+      return { error: new Error('Un compte local existe déjà pour un autre email.') };
+    }
+
+    const newUser: AuthUser = {
+      id: stored?.user.id || crypto.randomUUID(),
       email,
-      password,
-    });
-    return { error };
+    };
+
+    writeStoredUser(newUser, password);
+    setUser(newUser);
+    setSession({ user: newUser });
+
+    return { error: null };
   };
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    return { error };
+    const stored = readStoredUser();
+    if (!stored) {
+      return { error: new Error('Aucun compte local trouvé. Veuillez créer un compte.') };
+    }
+    if (stored.user.email !== email || stored.password !== password) {
+      return { error: new Error('Identifiants invalides.') };
+    }
+
+    setUser(stored.user);
+    setSession({ user: stored.user });
+    return { error: null };
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    clearStoredUser();
+    setUser(null);
+    setSession(null);
   };
 
-  const value = {
-    user,
-    session,
-    loading,
-    signUp,
-    signIn,
-    signOut,
-  };
+  const value = useMemo(
+    () => ({
+      user,
+      session,
+      loading,
+      signUp,
+      signIn,
+      signOut,
+    }),
+    [user, session, loading]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

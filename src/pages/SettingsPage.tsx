@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, TrendingUp, MapPin } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { listMarketBenchmarks, updateMarketBenchmark } from '../lib/api';
 import { MarketBenchmark } from '../lib/types';
 
 interface SettingsPageProps {
@@ -20,10 +20,7 @@ export default function SettingsPage({ onBack, onNavigateToZones }: SettingsPage
   const loadBenchmarks = async () => {
     setLoading(true);
     try {
-      const { data } = await supabase
-        .from('market_benchmarks')
-        .select('*')
-        .order('category', { ascending: true });
+      const data = await listMarketBenchmarks();
       setBenchmarks(data || []);
     } catch (error) {
       console.error('Error loading benchmarks:', error);
@@ -36,13 +33,10 @@ export default function SettingsPage({ onBack, onNavigateToZones }: SettingsPage
     setSaving(true);
     try {
       for (const benchmark of benchmarks) {
-        await supabase
-          .from('market_benchmarks')
-          .update({
-            value: benchmark.value,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', benchmark.id);
+        await updateMarketBenchmark(benchmark.id, {
+          value: benchmark.value,
+          updated_at: new Date().toISOString()
+        });
       }
       alert('Paramètres sauvegardés avec succès');
     } catch (error) {

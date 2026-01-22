@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Building2, MapPin, Phone, Globe, Scale } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { createGym, getGym, updateGym } from '../lib/api';
 import { Gym } from '../lib/types';
 import { useAuth } from '../lib/auth';
 
@@ -38,11 +38,7 @@ export default function GymForm({ gymId, onBack }: GymFormProps) {
     if (!gymId) return;
     setLoading(true);
     try {
-      const { data } = await supabase
-        .from('gyms')
-        .select('*')
-        .eq('id', gymId)
-        .maybeSingle();
+      const data = await getGym(gymId);
       if (data) {
         setGym(data);
       }
@@ -59,21 +55,14 @@ export default function GymForm({ gymId, onBack }: GymFormProps) {
 
     try {
       if (gymId) {
-        const { error } = await supabase
-          .from('gyms')
-          .update({ ...gym, updated_at: new Date().toISOString() })
-          .eq('id', gymId);
-
-        if (error) throw error;
+        await updateGym(gymId, { ...gym, updated_at: new Date().toISOString() });
       } else {
-        const { error } = await supabase.from('gyms').insert({
+        await createGym({
           ...gym,
           user_id: user?.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
-
-        if (error) throw error;
       }
       onBack();
     } catch (error: any) {
