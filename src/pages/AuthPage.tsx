@@ -4,6 +4,7 @@ import { Lock, Mail, AlertCircle, Dumbbell, TrendingUp, Shield, Zap } from 'luci
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -15,7 +16,7 @@ export default function AuthPage() {
     e.preventDefault();
     setError('');
 
-    if (!email || !password) {
+    if (!email || !password || (!isLogin && !name)) {
       setError('Veuillez remplir tous les champs');
       return;
     }
@@ -39,7 +40,7 @@ export default function AuthPage() {
           setError(error.message);
         }
       } else {
-        const { error } = await signUp(email, password);
+        const { error } = await signUp(email, password, name);
         if (error) {
           setError(error.message);
         } else {
@@ -150,6 +151,27 @@ export default function AuthPage() {
                   <p className="text-sm text-tulip-red font-medium">{error}</p>
                 </div>
               )}
+
+              <div>
+                {!isLogin && (
+                  <div className="animate-in fade-in slide-in-from-top-2 duration-300 mb-5">
+                    <label htmlFor="name" className="block text-sm font-semibold text-tulip-blue mb-2">
+                      Nom
+                    </label>
+                    <div className="relative group">
+                      <input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full pl-4 pr-4 py-3.5 border-2 border-tulip-beige rounded-xl focus:ring-2 focus:ring-tulip-green/20 focus:border-tulip-green outline-none transition-all bg-white hover:border-tulip-beige/80"
+                        placeholder="Votre nom"
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
 
               <div>
                 <label htmlFor="email" className="block text-sm font-semibold text-tulip-blue mb-2">

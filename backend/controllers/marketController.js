@@ -260,13 +260,14 @@ const deleteMarketZone = async (req, res, next) => {
 // @access  Private
 const getGymOffers = async (req, res, next) => {
   try {
-    const { gym_id, audit_id } = req.query;
+    const { gym_id, audit_id, include_inactive } = req.query;
+    const includeInactive = include_inactive === '1' || include_inactive === 'true';
     let offers;
     
     if (gym_id) {
-      offers = await GymOffer.findByGymId(gym_id);
+      offers = await GymOffer.findByGymId(gym_id, includeInactive);
     } else if (audit_id) {
-      offers = await GymOffer.findByAuditId(audit_id);
+      offers = await GymOffer.findByAuditId(audit_id, includeInactive);
     } else {
       return res.status(400).json({ 
         error: 'Paramètre manquant',
