@@ -22,3 +22,6 @@ dist-ssr
 *.sw?
 .env
 backend/data/*.db
+
+
+TODO.md
