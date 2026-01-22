@@ -14,7 +14,7 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, MapPin, Edit2, Trash2, AlertCircle, Save, X } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { createMarketZone, listMarketZones, updateMarketZone } from '../lib/api';
 import { MarketZone, PriceLevel, GeographicScope, PopulationDensity } from '../lib/types';
 
 interface MarketZonesPageProps {
@@ -58,7 +58,7 @@ export default function MarketZonesPage({ onBack }: MarketZonesPageProps) {
   // ========================================================================
 
   /**
-   * Charge toutes les zones de marché actives depuis Supabase
+   * Charge toutes les zones de marché actives depuis l'API SQLite
    * Trie par niveau de prix (budget -> luxe)
    */
   const loadZones = async () => {
@@ -68,13 +68,7 @@ export default function MarketZonesPage({ onBack }: MarketZonesPageProps) {
     try {
       console.log('[MarketZones] Chargement des zones...');
 
-      const { data, error: fetchError } = await supabase
-        .from('market_zones')
-        .select('*')
-        .eq('is_active', true)
-        .order('price_level');
-
-      if (fetchError) throw fetchError;
+      const data = await listMarketZones();
 
       setZones(data || []);
       console.log(`[MarketZones] ${data?.length || 0} zones chargées`);
@@ -162,43 +156,34 @@ export default function MarketZonesPage({ onBack }: MarketZonesPageProps) {
         // Mise à jour d'une zone existante
         console.log('[MarketZones] Mise à jour de la zone:', editingZone.id);
 
-        const { error: updateError } = await supabase
-          .from('market_zones')
-          .update({
-            name: formData.name.trim(),
-            description: formData.description.trim() || null,
-            price_level: formData.price_level,
-            avg_subscription_min: formData.avg_subscription_min,
-            avg_subscription_max: formData.avg_subscription_max,
-            geographic_scope: formData.geographic_scope,
-            population_density: formData.population_density,
-            avg_household_income_range: formData.avg_household_income_range.trim() || null,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', editingZone.id);
-
-        if (updateError) throw updateError;
+        await updateMarketZone(editingZone.id, {
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
+          price_level: formData.price_level,
+          avg_subscription_min: formData.avg_subscription_min,
+          avg_subscription_max: formData.avg_subscription_max,
+          geographic_scope: formData.geographic_scope,
+          population_density: formData.population_density,
+          avg_household_income_range: formData.avg_household_income_range.trim() || null,
+          updated_at: new Date().toISOString()
+        });
 
         console.log('[MarketZones] Zone mise à jour avec succès');
       } else {
         // Création d'une nouvelle zone
         console.log('[MarketZones] Création d\'une nouvelle zone');
 
-        const { error: insertError } = await supabase
-          .from('market_zones')
-          .insert({
-            name: formData.name.trim(),
-            description: formData.description.trim() || null,
-            price_level: formData.price_level,
-            avg_subscription_min: formData.avg_subscription_min,
-            avg_subscription_max: formData.avg_subscription_max,
-            geographic_scope: formData.geographic_scope,
-            population_density: formData.population_density,
-            avg_household_income_range: formData.avg_household_income_range.trim() || null,
-            is_active: true
-          });
-
-        if (insertError) throw insertError;
+        await createMarketZone({
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
+          price_level: formData.price_level,
+          avg_subscription_min: formData.avg_subscription_min,
+          avg_subscription_max: formData.avg_subscription_max,
+          geographic_scope: formData.geographic_scope,
+          population_density: formData.population_density,
+          avg_household_income_range: formData.avg_household_income_range.trim() || null,
+          is_active: true
+        });
 
         console.log('[MarketZones] Zone créée avec succès');
       }
@@ -225,12 +210,7 @@ export default function MarketZonesPage({ onBack }: MarketZonesPageProps) {
     try {
       console.log('[MarketZones] Suppression de la zone:', zone.id);
 
-      const { error: deleteError } = await supabase
-        .from('market_zones')
-        .update({ is_active: false })
-        .eq('id', zone.id);
-
-      if (deleteError) throw deleteError;
+      await updateMarketZone(zone.id, { is_active: false });
 
       console.log('[MarketZones] Zone supprimée avec succès');
       await loadZones();

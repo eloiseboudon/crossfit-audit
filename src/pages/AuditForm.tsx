@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Save, Calculator, ChevronRight, Check } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { getAudit, listAnswers, updateAudit, upsertAnswer } from '../lib/api';
 import { Audit, Answer, Question } from '../lib/types';
 import { questionnaireBlocks } from '../lib/questionnaire';
 
@@ -29,19 +29,12 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
     if (!auditId) return;
     setLoading(true);
     try {
-      const { data: auditData } = await supabase
-        .from('audits')
-        .select('*, gym:gyms(*)')
-        .eq('id', auditId)
-        .maybeSingle();
+      const auditData = await getAudit(auditId, true);
 
       if (auditData) {
         setAudit(auditData);
 
-        const { data: answersData } = await supabase
-          .from('answers')
-          .select('*')
-          .eq('audit_id', auditId);
+        const answersData = await listAnswers(auditId);
 
         const answersMap: Record<string, any> = {};
         answersData?.forEach((answer) => {
@@ -70,14 +63,12 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
       if (!auditId) return;
 
       try {
-        await supabase.from('answers').upsert({
+        await upsertAnswer({
           audit_id: auditId,
           block_code: blockCode,
           question_code: questionCode,
           value: value,
           updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'audit_id,block_code,question_code'
         });
 
         const updatedAnswers = { ...answers, [key]: value };
@@ -98,14 +89,12 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
     }
 
     try {
-      await supabase.from('answers').upsert({
+      await upsertAnswer({
         audit_id: auditId,
         block_code: blockCode,
         question_code: questionCode,
         value: value,
         updated_at: new Date().toISOString()
-      }, {
-        onConflict: 'audit_id,block_code,question_code'
       });
 
       const updatedAnswers = { ...answers, [key]: value };
@@ -146,10 +135,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
 
     const percentage = totalQuestions > 0 ? Math.min(100, Math.round((answeredQuestions / totalQuestions) * 100)) : 0;
 
-    await supabase
-      .from('audits')
-      .update({ completion_percentage: percentage })
-      .eq('id', auditId);
+    await updateAudit(auditId, { completion_percentage: percentage });
 
     if (audit) {
       setAudit({ ...audit, completion_percentage: percentage });
@@ -161,13 +147,10 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
     setSaving(true);
 
     try {
-      await supabase
-        .from('audits')
-        .update({
-          status: 'finalise',
-          audit_date_end: new Date().toISOString().split('T')[0]
-        })
-        .eq('id', auditId);
+      await updateAudit(auditId, {
+        status: 'finalise',
+        audit_date_end: new Date().toISOString().split('T')[0]
+      });
 
       onViewDashboard(auditId);
     } catch (error) {

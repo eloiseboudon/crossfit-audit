@@ -12,7 +12,14 @@ import {
   BarChart3,
   FileText
 } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import {
+  getAudit,
+  listAnswers,
+  listMarketBenchmarks,
+  replaceRecommendations,
+  upsertKpis,
+  upsertScores
+} from '../lib/api';
 import { Audit, Answer, MarketBenchmark } from '../lib/types';
 import {
   calculateKPIs,
@@ -74,28 +81,19 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
   }, [auditId]);
 
   /**
-   * Charge les données de l'audit depuis Supabase
+   * Charge les données de l'audit depuis l'API SQLite
    */
   const loadData = async () => {
     setLoading(true);
     try {
       // Charger l'audit
-      const { data: auditData } = await supabase
-        .from('audits')
-        .select('*, gym:gyms(*)')
-        .eq('id', auditId)
-        .maybeSingle();
+      const auditData = await getAudit(auditId, true);
 
       // Charger les réponses
-      const { data: answersData } = await supabase
-        .from('answers')
-        .select('*')
-        .eq('audit_id', auditId);
+      const answersData = await listAnswers(auditId);
 
       // Charger les benchmarks
-      const { data: benchmarksData } = await supabase
-        .from('market_benchmarks')
-        .select('*');
+      const benchmarksData = await listMarketBenchmarks();
 
       setAudit(auditData);
       setAnswers(answersData || []);
@@ -114,7 +112,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
 
   /**
    * Calcule tous les KPIs (basiques + avancés)
-   * Sauvegarde dans Supabase pour traçabilité
+   * Sauvegarde dans SQLite pour traçabilité
    */
   const calculateAll = async (answersData: Answer[], benchmarksData: MarketBenchmark[]) => {
     setCalculating(true);
@@ -132,9 +130,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
               key.includes('conversion') || key.includes('occupation') || key.includes('marge') ? '%' : '€',
         computed_at: new Date().toISOString()
       }));
-      await supabase.from('kpis').upsert(kpisToUpsert, {
-        onConflict: 'audit_id,kpi_code'
-      });
+      await upsertKpis(kpisToUpsert);
 
       // === KPIs AVANCÉS ===
       const advFinKPIs = calculateAdvancedFinancialKPIs(calculatedKPIs, answersData);
@@ -154,16 +150,13 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
         computed_at: new Date().toISOString(),
         details: score.details
       }));
-      await supabase.from('scores').upsert(scoresToUpsert, {
-        onConflict: 'audit_id,pillar_code'
-      });
+      await upsertScores(scoresToUpsert);
 
       // Générer les recommandations
       const generatedRecommendations = generateRecommendations(calculatedKPIs, answersData, benchmarksData);
       setRecommendations(generatedRecommendations);
 
       // Sauvegarder les recommandations
-      await supabase.from('recommendations').delete().eq('audit_id', auditId);
       const recsToInsert = generatedRecommendations.map((rec) => ({
         audit_id: auditId,
         rec_code: rec.rec_code,
@@ -176,7 +169,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
         category: rec.category,
         computed_at: new Date().toISOString()
       }));
-      await supabase.from('recommendations').insert(recsToInsert);
+      await replaceRecommendations(auditId, recsToInsert);
 
       setScenarios([]);
     } catch (error) {

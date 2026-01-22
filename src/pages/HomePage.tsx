@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Dumbbell, FileBarChart, Edit, Trash2, Calendar, TrendingUp, Filter, Activity, Target, Zap } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { createAudit, deleteAudit as removeAudit, deleteGym as removeGym, listAudits, listGyms } from '../lib/api';
 import { Gym, Audit } from '../lib/types';
 
 // Type View from App.tsx
@@ -23,18 +23,8 @@ export default function HomePage({ onNavigate }: HomePageProps) {
   const loadData = async () => {
     setLoading(true);
     try {
-      const { data: gymsData } = await supabase
-        .from('gyms')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      const { data: auditsData } = await supabase
-        .from('audits')
-        .select(`
-          *,
-          gym:gyms(*)
-        `)
-        .order('created_at', { ascending: false });
+      const gymsData = await listGyms();
+      const auditsData = await listAudits(true);
 
       setGyms(gymsData || []);
       setAudits(auditsData || []);
@@ -60,7 +50,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cette salle ? Tous les audits associés seront également supprimés.')) {
       return;
     }
-    await supabase.from('gyms').delete().eq('id', id);
+    await removeGym(id);
     loadData();
   };
 
@@ -68,7 +58,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet audit ?')) {
       return;
     }
-    await supabase.from('audits').delete().eq('id', id);
+    await removeAudit(id);
     loadData();
   };
 
@@ -262,20 +252,15 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                   <div className="flex gap-2">
                     <button
                       onClick={() => {
-                        supabase
-                          .from('audits')
-                          .insert({
-                            gym_id: gym.id,
-                            status: 'brouillon',
-                            audit_date_start: new Date().toISOString().split('T')[0]
-                          })
-                          .select()
-                          .single()
-                          .then(({ data }) => {
-                            if (data) {
-                              onNavigate('audit-form', undefined, data.id);
-                            }
-                          });
+                        createAudit({
+                          gym_id: gym.id,
+                          status: 'brouillon',
+                          audit_date_start: new Date().toISOString().split('T')[0]
+                        }).then((data) => {
+                          if (data) {
+                            onNavigate('audit-form', undefined, data.id);
+                          }
+                        });
                       }}
                       className="flex-1 flex items-center justify-center space-x-2 px-4 py-2.5 bg-gradient-to-r from-[#4F7A7E] to-[#4F7A7E]/80 text-[#F4F3EE] rounded-lg hover:glow-teal transition-all shadow-md hover:shadow-lg text-sm font-semibold border border-[#4F7A7E]/50"
                     >

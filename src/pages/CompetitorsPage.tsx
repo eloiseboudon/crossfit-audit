@@ -18,7 +18,12 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Edit2, Trash2, AlertCircle, Save, X, MapPin, DollarSign, Award, Users } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import {
+  createCompetitor,
+  listCompetitors,
+  listMarketZones,
+  updateCompetitor as updateCompetitorRecord
+} from '../lib/api';
 import { Competitor, CompetitorPositioning, EquipmentQuality, MarketZone } from '../lib/types';
 
 interface CompetitorsPageProps {
@@ -115,26 +120,10 @@ export default function CompetitorsPage({ onBack, gymId }: CompetitorsPageProps)
       console.log('[Competitors] Chargement des données pour gym:', gymId);
 
       // Charger les concurrents avec leurs zones de marché
-      const { data: competitorsData, error: competitorsError } = await supabase
-        .from('competitors')
-        .select(`
-          *,
-          market_zone:market_zones(*)
-        `)
-        .eq('gym_id', gymId)
-        .eq('is_active', true)
-        .order('distance_km', { ascending: true, nullsFirst: false });
-
-      if (competitorsError) throw competitorsError;
+      const competitorsData = await listCompetitors(gymId);
 
       // Charger les zones de marché pour le formulaire
-      const { data: zonesData, error: zonesError } = await supabase
-        .from('market_zones')
-        .select('*')
-        .eq('is_active', true)
-        .order('price_level');
-
-      if (zonesError) throw zonesError;
+      const zonesData = await listMarketZones();
 
       setCompetitors(competitorsData || []);
       setMarketZones(zonesData || []);
@@ -291,19 +280,10 @@ export default function CompetitorsPage({ onBack, gymId }: CompetitorsPageProps)
 
       if (editingCompetitor) {
         console.log('[Competitors] Mise à jour:', editingCompetitor.id);
-        const { error: updateError } = await supabase
-          .from('competitors')
-          .update(competitorData)
-          .eq('id', editingCompetitor.id);
-
-        if (updateError) throw updateError;
+        await updateCompetitorRecord(editingCompetitor.id, competitorData);
       } else {
         console.log('[Competitors] Création nouveau concurrent');
-        const { error: insertError } = await supabase
-          .from('competitors')
-          .insert(competitorData);
-
-        if (insertError) throw insertError;
+        await createCompetitor(competitorData);
       }
 
       await loadData();
@@ -321,12 +301,10 @@ export default function CompetitorsPage({ onBack, gymId }: CompetitorsPageProps)
 
     try {
       console.log('[Competitors] Suppression:', competitor.id);
-      const { error: deleteError } = await supabase
-        .from('competitors')
-        .update({ is_active: false })
-        .eq('id', competitor.id);
-
-      if (deleteError) throw deleteError;
+      await updateCompetitorRecord(competitor.id, {
+        is_active: false,
+        updated_at: new Date().toISOString()
+      });
       await loadData();
     } catch (err: any) {
       console.error('[Competitors] Erreur de suppression:', err);

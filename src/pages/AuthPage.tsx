@@ -240,7 +240,7 @@ export default function AuthPage() {
 
           <p className="text-center text-sm text-tulip-blue/50 mt-6">
             <Shield className="w-4 h-4 inline mr-1" />
-            Authentification sécurisée par Supabase
+            Authentification locale sécurisée
           </p>
         </div>
       </div>

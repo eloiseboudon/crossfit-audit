@@ -15,7 +15,7 @@
 
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Plus, Edit2, Trash2, AlertCircle, Save, X, DollarSign, Users, TrendingUp, Eye, EyeOff } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { createGymOffer, deleteGymOffer, listGymOffers, updateGymOffer } from '../lib/api';
 import { GymOffer, OfferType } from '../lib/types';
 
 interface OffersPageProps {
@@ -71,13 +71,7 @@ export default function OffersPage({ onBack, gymId }: OffersPageProps) {
     try {
       console.log('[Offers] Chargement des offres pour gym:', gymId);
 
-      const { data, error: fetchError } = await supabase
-        .from('gym_offers')
-        .select('*')
-        .eq('gym_id', gymId)
-        .order('sort_order', { ascending: true });
-
-      if (fetchError) throw fetchError;
+      const data = await listGymOffers(gymId);
 
       setOffers(data || []);
       console.log(`[Offers] ${data?.length || 0} offres chargées`);
@@ -166,19 +160,10 @@ export default function OffersPage({ onBack, gymId }: OffersPageProps) {
 
       if (editingOffer) {
         console.log('[Offers] Mise à jour:', editingOffer.id);
-        const { error: updateError } = await supabase
-          .from('gym_offers')
-          .update(offerData)
-          .eq('id', editingOffer.id);
-
-        if (updateError) throw updateError;
+        await updateGymOffer(editingOffer.id, offerData);
       } else {
         console.log('[Offers] Création nouvelle offre');
-        const { error: insertError } = await supabase
-          .from('gym_offers')
-          .insert(offerData);
-
-        if (insertError) throw insertError;
+        await createGymOffer(offerData);
       }
 
       await loadOffers();
@@ -197,12 +182,7 @@ export default function OffersPage({ onBack, gymId }: OffersPageProps) {
   const toggleOfferStatus = async (offer: GymOffer) => {
     try {
       console.log('[Offers] Toggle status:', offer.id, !offer.is_active);
-      const { error: updateError } = await supabase
-        .from('gym_offers')
-        .update({ is_active: !offer.is_active })
-        .eq('id', offer.id);
-
-      if (updateError) throw updateError;
+      await updateGymOffer(offer.id, { is_active: !offer.is_active });
       await loadOffers();
     } catch (err: any) {
       console.error('[Offers] Erreur toggle:', err);
@@ -218,12 +198,7 @@ export default function OffersPage({ onBack, gymId }: OffersPageProps) {
 
     try {
       console.log('[Offers] Suppression:', offer.id);
-      const { error: deleteError } = await supabase
-        .from('gym_offers')
-        .delete()
-        .eq('id', offer.id);
-
-      if (deleteError) throw deleteError;
+      await deleteGymOffer(offer.id);
       await loadOffers();
     } catch (err: any) {
       console.error('[Offers] Erreur de suppression:', err);
