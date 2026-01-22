@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from 'react';
 
 interface AuthUser {
   id: string;
@@ -24,7 +24,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'crossfit_audit_auth';
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5176/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 
 function readStoredSession(): AuthSession | null {
   const raw = localStorage.getItem(STORAGE_KEY);

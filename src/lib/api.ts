@@ -1,17 +1,17 @@
 import {
-  Audit,
   Answer,
-  Gym,
-  MarketBenchmark,
-  MarketZone,
+  Audit,
   Competitor,
+  Gym,
   GymOffer,
   KPI,
-  Score,
+  MarketBenchmark,
+  MarketZone,
   Recommendation,
+  Score,
 } from './types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5176/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
 const AUTH_STORAGE_KEY = 'crossfit_audit_auth';
 
 type ApiResponse<T> = {

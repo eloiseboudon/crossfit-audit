@@ -66,7 +66,7 @@ if (process.env.NODE_ENV === 'development') {
 
 // Route de santé
 app.get('/health', (req, res) => {
-  res.json({ 
+  res.json({
     status: 'ok',
     message: 'CrossFit Audit API is running',
     timestamp: new Date().toISOString(),
@@ -113,7 +113,7 @@ app.use(errorHandler);
 // DÉMARRAGE DU SERVEUR
 // ============================================
 
-const PORT = process.env.PORT || 5176;
+const PORT = process.env.PORT || 5177;
 
 const startServer = async () => {
   try {

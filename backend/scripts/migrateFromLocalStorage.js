@@ -5,7 +5,7 @@
  * À exécuter côté frontend/navigateur
  */
 
-const API_URL = 'http://localhost:5176/api'; // Adapter selon votre configuration
+const API_URL = 'http://localhost:5177/api'; // Adapter selon votre configuration
 
 class LocalStorageMigration {
   constructor(apiUrl, authToken) {
@@ -158,7 +158,7 @@ class LocalStorageMigration {
     // 1. Migrer les salles
     console.log('\n📍 ÉTAPE 1/4 : Migration des salles');
     const migratedGyms = await this.migrateGyms(data.gyms);
-    
+
     // Créer un mapping ancien ID -> nouveau ID
     const gymMapping = {};
     if (data.gyms && migratedGyms) {
@@ -204,7 +204,7 @@ class LocalStorageMigration {
     console.log(`   - Audits migrés: ${migratedAudits.length}`);
     console.log(`\n💡 Les données ont été migrées vers la base de données !`);
     console.log(`💡 Vous pouvez maintenant utiliser l'API pour gérer vos données.`);
-    
+
     return {
       gyms: migratedGyms,
       audits: migratedAudits,
