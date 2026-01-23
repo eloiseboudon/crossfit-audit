@@ -14,8 +14,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Variables à modifier selon votre configuration
-DOMAIN="audit.tulipconseil.fr"  # Changez par votre domaine
-GITHUB_REPO="https://github.com/VOTRE_USERNAME/crossfit-audit.git"  # Changez par votre repo
+DOMAIN="crossfit-audit.tulip-saas.fr/"  
+GITHUB_REPO="https://github.com/eloiseboudon/crossfit-audit.git"
 APP_DIR="/home/ubuntu/crossfit-audit"
 BRANCH="main"
 
