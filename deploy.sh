@@ -115,6 +115,29 @@ fi
 # 6. Redémarrage des services
 echo -e "\n${YELLOW}[6/7]${NC} Redémarrage des services..."
 
+# Vérifier que les services systemd existent
+if ! systemctl list-unit-files | grep -q crossfit-audit-backend.service; then
+    echo -e "${RED}✗${NC} Les services systemd n'existent pas encore"
+    echo -e "  ${YELLOW}Vous devez d'abord terminer l'installation initiale :${NC}"
+    echo -e ""
+    echo -e "  ${BLUE}1. Copiez les fichiers de configuration systemd :${NC}"
+    echo -e "     cd $APP_DIR"
+    echo -e "     sudo cp deploy/crossfit-audit-backend.service /etc/systemd/system/"
+    echo -e "     sudo cp deploy/crossfit-audit-frontend.service /etc/systemd/system/"
+    echo -e ""
+    echo -e "  ${BLUE}2. Activez et démarrez les services :${NC}"
+    echo -e "     sudo systemctl daemon-reload"
+    echo -e "     sudo systemctl enable crossfit-audit-backend crossfit-audit-frontend"
+    echo -e "     sudo systemctl start crossfit-audit-backend crossfit-audit-frontend"
+    echo -e ""
+    echo -e "  ${BLUE}3. Configurez Nginx :${NC}"
+    echo -e "     sudo cp deploy/nginx-crossfit-audit /etc/nginx/sites-available/crossfit-audit"
+    echo -e "     sudo ln -sf /etc/nginx/sites-available/crossfit-audit /etc/nginx/sites-enabled/"
+    echo -e "     sudo nginx -t && sudo systemctl reload nginx"
+    echo -e ""
+    exit 1
+fi
+
 # Redémarrer le backend
 sudo systemctl restart crossfit-audit-backend
 sleep 2

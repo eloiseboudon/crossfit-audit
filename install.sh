@@ -14,8 +14,8 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Variables à modifier selon votre configuration
-DOMAIN="crossfit-audit.tulip-saas.fr/"  
-GITHUB_REPO="https://github.com/eloiseboudon/crossfit-audit.git"
+DOMAIN="audit.tulipconseil.fr"  # Changez par votre domaine
+GITHUB_REPO="https://github.com/VOTRE_USERNAME/crossfit-audit.git"  # Changez par votre repo
 APP_DIR="/home/ubuntu/crossfit-audit"
 BRANCH="main"
 
@@ -43,15 +43,11 @@ echo -e "${GREEN}✓${NC} npm ${NPM_VERSION} installé"
 echo -e "\n${YELLOW}[2/8]${NC} Clonage du repository GitHub..."
 
 if [ -d "$APP_DIR" ]; then
-    echo -e "${YELLOW}⚠${NC}  Le répertoire $APP_DIR existe déjà"
-    read -p "Voulez-vous le supprimer et recommencer ? (o/N) " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Oo]$ ]]; then
-        rm -rf "$APP_DIR"
-    else
-        echo -e "${RED}✗${NC} Installation annulée"
-        exit 1
-    fi
+    echo -e "${RED}✗${NC} Le répertoire $APP_DIR existe déjà"
+    echo -e "  L'application semble déjà installée."
+    echo -e "  ${YELLOW}Pour mettre à jour l'application existante, utilisez :${NC}"
+    echo -e "  ${BLUE}cd $APP_DIR && ./deploy.sh${NC}"
+    exit 1
 fi
 
 git clone -b $BRANCH $GITHUB_REPO $APP_DIR

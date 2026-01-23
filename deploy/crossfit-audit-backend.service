@@ -1,0 +1,20 @@
+[Unit]
+Description=CrossFit Audit Backend API
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/crossfit-audit/backend
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=crossfit-audit-backend
+
+Environment=NODE_ENV=production
+Environment=PORT=5177
+
+[Install]
+WantedBy=multi-user.target

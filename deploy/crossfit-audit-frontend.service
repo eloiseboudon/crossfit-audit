@@ -1,0 +1,17 @@
+[Unit]
+Description=CrossFit Audit Frontend (Vite Preview)
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/crossfit-audit
+ExecStart=/usr/bin/npm run preview -- --port 5176 --host
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=crossfit-audit-frontend
+
+[Install]
+WantedBy=multi-user.target
