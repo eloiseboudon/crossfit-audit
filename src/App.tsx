@@ -1,15 +1,15 @@
+import { Dumbbell, Home, LogOut, Settings, Zap } from 'lucide-react';
 import { useState } from 'react';
-import { Dumbbell, Settings, Home, Zap, LogOut } from 'lucide-react';
 import { useAuth } from './lib/auth';
-import HomePage from './pages/HomePage';
-import GymForm from './pages/GymForm';
 import AuditForm from './pages/AuditForm';
-import Dashboard from './pages/Dashboard';
-import SettingsPage from './pages/SettingsPage';
-import MarketZonesPage from './pages/MarketZonesPage';
-import CompetitorsPage from './pages/CompetitorsPage';
-import OffersPage from './pages/OffersPage';
 import AuthPage from './pages/AuthPage';
+import CompetitorsPage from './pages/CompetitorsPage';
+import Dashboard from './pages/Dashboard';
+import GymForm from './pages/GymForm';
+import HomePage from './pages/HomePage';
+import MarketZonesPage from './pages/MarketZonesPage';
+import OffersPage from './pages/OffersPage';
+import SettingsPage from './pages/SettingsPage';
 
 /**
  * Type des vues disponibles dans l'application
@@ -134,28 +134,27 @@ export default function App() {
                   CrossFit <span className="text-[#4F7A7E]">AUDIT</span>
                   <Zap className="w-5 h-5 text-[#D6C7A1]" />
                 </h1>
-                <p className="text-xs text-[#D6C7A1]/80 tracking-wide">Performance Analysis Platform</p>
+                <p className="text-xs text-[#D6C7A1]/80 tracking-wide">Analyse de la performance</p>
+                <p className="text-sm font-bold text-[#F4F3EE] glow-text-teal">By Tulip Conseil</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => navigate('home')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-                  nav.view === 'home'
-                    ? 'bg-[#4F7A7E] text-[#F4F3EE] glow-teal'
-                    : 'text-[#D6C7A1] hover:text-[#F4F3EE] hover:bg-[#4F7A7E]/20 border border-transparent hover:border-[#4F7A7E]/30'
-                }`}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${nav.view === 'home'
+                  ? 'bg-[#4F7A7E] text-[#F4F3EE] glow-teal'
+                  : 'text-[#D6C7A1] hover:text-[#F4F3EE] hover:bg-[#4F7A7E]/20 border border-transparent hover:border-[#4F7A7E]/30'
+                  }`}
               >
                 <Home className="w-4 h-4" />
                 <span className="hidden sm:inline">Accueil</span>
               </button>
               <button
                 onClick={() => navigate('settings')}
-                className={`p-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
-                  nav.view === 'settings'
-                    ? 'bg-[#4F7A7E] text-[#F4F3EE] glow-teal'
-                    : 'text-[#D6C7A1] hover:text-[#F4F3EE] hover:bg-[#4F7A7E]/20 border border-transparent hover:border-[#4F7A7E]/30'
-                }`}
+                className={`p-2 rounded-lg text-sm font-semibold transition-all duration-300 ${nav.view === 'settings'
+                  ? 'bg-[#4F7A7E] text-[#F4F3EE] glow-teal'
+                  : 'text-[#D6C7A1] hover:text-[#F4F3EE] hover:bg-[#4F7A7E]/20 border border-transparent hover:border-[#4F7A7E]/30'
+                  }`}
               >
                 <Settings className="w-5 h-5" />
               </button>
