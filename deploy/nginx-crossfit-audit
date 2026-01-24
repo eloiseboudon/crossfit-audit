@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name crossfit-audit.tulipe-saas.fr/;
+    server_name crossfit-audit.tulipe-saas.fr;
     
     client_max_body_size 10M;
 
