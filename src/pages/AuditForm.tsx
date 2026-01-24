@@ -524,7 +524,9 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
                     {isComplete ? <Check className="w-4 h-4" /> : index + 1}
                   </span>
                 </div>
-                <span className="text-center leading-tight">{block.title.replace(/^\d+\.\s*/, '')}</span>
+                <span className="text-center leading-tight">
+                  {block.title.replace(/^\d+(?:\.\d+)*\s*/, '')}
+                </span>
                 <div className="mt-2 w-full bg-white/30 rounded-full h-1 overflow-hidden">
                   <div
                     className={`h-1 rounded-full transition-all duration-500 ${isActive ? 'bg-white' : isComplete ? 'bg-[#7FA99B]' : 'bg-[#48737F]/50'
