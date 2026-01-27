@@ -15,12 +15,11 @@ import {
 import {
   getAudit,
   listAnswers,
-  listMarketBenchmarks,
   replaceRecommendations,
   upsertKpis,
   upsertScores
 } from '../lib/api';
-import { Audit, Answer, MarketBenchmark } from '../lib/types';
+import { Audit, Answer } from '../lib/types';
 import {
   calculateKPIs,
   calculateScores,
@@ -59,7 +58,6 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
   // État principal
   const [audit, setAudit] = useState<Audit | null>(null);
   const [answers, setAnswers] = useState<Answer[]>([]);
-  const [benchmarks, setBenchmarks] = useState<MarketBenchmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [calculating, setCalculating] = useState(false);
 
@@ -92,16 +90,12 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
       // Charger les réponses
       const answersData = await listAnswers(auditId);
 
-      // Charger les benchmarks
-      const benchmarksData = await listMarketBenchmarks();
-
       setAudit(auditData);
       setAnswers(answersData || []);
-      setBenchmarks(benchmarksData || []);
 
       // Calculer les KPIs si des réponses existent
       if (answersData && answersData.length > 0) {
-        await calculateAll(answersData, benchmarksData || []);
+        await calculateAll(answersData);
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -114,7 +108,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
    * Calcule tous les KPIs (basiques + avancés)
    * Sauvegarde dans SQLite pour traçabilité
    */
-  const calculateAll = async (answersData: Answer[], benchmarksData: MarketBenchmark[]) => {
+  const calculateAll = async (answersData: Answer[]) => {
     setCalculating(true);
     try {
       // === KPIs DE BASE ===
@@ -137,7 +131,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
       setAdvancedFinancialKPIs(advFinKPIs);
 
       // === SCORES ET RECOMMANDATIONS ===
-      const { scores: calculatedScores, globalScore } = calculateScores(calculatedKPIs, benchmarksData);
+      const { scores: calculatedScores, globalScore } = calculateScores(calculatedKPIs);
       setScores({ scores: calculatedScores, globalScore });
 
       // Sauvegarder les scores
@@ -153,7 +147,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
       await upsertScores(scoresToUpsert);
 
       // Générer les recommandations
-      const generatedRecommendations = generateRecommendations(calculatedKPIs, answersData, benchmarksData);
+      const generatedRecommendations = generateRecommendations(calculatedKPIs, answersData);
       setRecommendations(generatedRecommendations);
 
       // Sauvegarder les recommandations

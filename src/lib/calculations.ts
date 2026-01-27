@@ -1,4 +1,4 @@
-import { Answer, CalculatedKPIs, PillarScore, RecommendationOutput, MarketBenchmark } from './types';
+import { Answer, CalculatedKPIs, PillarScore, RecommendationOutput } from './types';
 import { extractAllData } from './extractData';
 
 export function calculateKPIs(answers: Answer[]): CalculatedKPIs {
@@ -26,8 +26,7 @@ function clamp(value: number, min: number, max: number): number {
 }
 
 export function calculateScores(
-  kpis: CalculatedKPIs,
-  benchmarks: MarketBenchmark[]
+  kpis: CalculatedKPIs
 ): { scores: PillarScore[]; globalScore: number } {
   const scores: PillarScore[] = [];
 
@@ -175,8 +174,7 @@ export function calculateScores(
 
 export function generateRecommendations(
   kpis: CalculatedKPIs,
-  answers: Answer[],
-  benchmarks: MarketBenchmark[]
+  answers: Answer[]
 ): RecommendationOutput[] {
   const recommendations: RecommendationOutput[] = [];
   const data = extractAllData(answers);

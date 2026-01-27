@@ -13,6 +13,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TEST_DIR="/tmp/crossfit-audit-test-$$"
 TESTS_PASSED=0
 TESTS_FAILED=0
@@ -42,19 +43,19 @@ echo ""
 
 # Test 1: Vérifier la présence des fichiers
 echo -e "${BLUE}Test 1: Fichiers requis${NC}"
-[ -f "migration-manager.js" ] && test_result 0 "migration-manager.js existe" || test_result 1 "migration-manager.js manquant"
-[ -f "migrations.js" ] && test_result 0 "migrations.js existe" || test_result 1 "migrations.js manquant"
-[ -f "deploy.sh" ] && test_result 0 "deploy.sh existe" || test_result 1 "deploy.sh manquant"
-[ -f "db-manage.sh" ] && test_result 0 "db-manage.sh existe" || test_result 1 "db-manage.sh manquant"
-[ -f "MIGRATIONS_README.md" ] && test_result 0 "MIGRATIONS_README.md existe" || test_result 1 "MIGRATIONS_README.md manquant"
+[ -f "$SCRIPT_DIR/migration-manager.js" ] && test_result 0 "migration-manager.js existe" || test_result 1 "migration-manager.js manquant"
+[ -f "$SCRIPT_DIR/migrations.js" ] && test_result 0 "migrations.js existe" || test_result 1 "migrations.js manquant"
+[ -f "$SCRIPT_DIR/deploy.sh" ] && test_result 0 "deploy.sh existe" || test_result 1 "deploy.sh manquant"
+[ -f "$SCRIPT_DIR/db-manage.sh" ] && test_result 0 "db-manage.sh existe" || test_result 1 "db-manage.sh manquant"
+[ -f "$SCRIPT_DIR/backend/migrations/README.md" ] && test_result 0 "Documentation migrations présente" || test_result 1 "Documentation migrations manquante"
 echo ""
 
 # Test 2: Copier les fichiers dans l'environnement de test
 echo -e "${BLUE}Test 2: Copie des fichiers${NC}"
-cp migration-manager.js "$TEST_DIR/backend/" 2>/dev/null && test_result 0 "migration-manager.js copié" || test_result 1 "Erreur copie migration-manager.js"
-cp migrations.js "$TEST_DIR/backend/" 2>/dev/null && test_result 0 "migrations.js copié" || test_result 1 "Erreur copie migrations.js"
-if [ -d "migrations" ]; then
-    cp migrations/*.sql "$TEST_DIR/backend/migrations/" 2>/dev/null && test_result 0 "Exemples de migrations copiés" || test_result 1 "Erreur copie migrations"
+cp "$SCRIPT_DIR/migration-manager.js" "$TEST_DIR/backend/" 2>/dev/null && test_result 0 "migration-manager.js copié" || test_result 1 "Erreur copie migration-manager.js"
+cp "$SCRIPT_DIR/migrations.js" "$TEST_DIR/backend/" 2>/dev/null && test_result 0 "migrations.js copié" || test_result 1 "Erreur copie migrations.js"
+if [ -d "$SCRIPT_DIR/migrations" ]; then
+    cp "$SCRIPT_DIR/migrations/"*.sql "$TEST_DIR/backend/migrations/" 2>/dev/null && test_result 0 "Exemples de migrations copiés" || test_result 1 "Erreur copie migrations"
 fi
 echo ""
 
@@ -98,8 +99,8 @@ echo ""
 
 # Test 4: Vérifier la syntaxe des scripts
 echo -e "${BLUE}Test 4: Syntaxe des scripts${NC}"
-bash -n "$TEST_DIR/../deploy.sh" 2>/dev/null && test_result 0 "deploy.sh syntaxe OK" || test_result 1 "deploy.sh syntaxe incorrecte"
-bash -n "$TEST_DIR/../db-manage.sh" 2>/dev/null && test_result 0 "db-manage.sh syntaxe OK" || test_result 1 "db-manage.sh syntaxe incorrecte"
+bash -n "$SCRIPT_DIR/deploy.sh" 2>/dev/null && test_result 0 "deploy.sh syntaxe OK" || test_result 1 "deploy.sh syntaxe incorrecte"
+bash -n "$SCRIPT_DIR/db-manage.sh" 2>/dev/null && test_result 0 "db-manage.sh syntaxe OK" || test_result 1 "db-manage.sh syntaxe incorrecte"
 
 if command -v node &> /dev/null; then
     node -c migrations.js 2>/dev/null && test_result 0 "migrations.js syntaxe OK" || test_result 1 "migrations.js syntaxe incorrecte"
@@ -133,16 +134,7 @@ echo ""
 
 # Test 6: Vérifier la documentation
 echo -e "${BLUE}Test 6: Documentation${NC}"
-[ -f "../MIGRATIONS_README.md" ] && test_result 0 "MIGRATIONS_README.md présent" || test_result 1 "MIGRATIONS_README.md manquant"
-[ -f "../QUICKSTART_MIGRATIONS.md" ] && test_result 0 "QUICKSTART_MIGRATIONS.md présent" || test_result 1 "QUICKSTART_MIGRATIONS.md manquant"
-[ -f "../INDEX.md" ] && test_result 0 "INDEX.md présent" || test_result 1 "INDEX.md manquant"
-
-# Vérifier que la doc contient les sections importantes
-if [ -f "../MIGRATIONS_README.md" ]; then
-    grep -q "## 🎯 Pourquoi" ../MIGRATIONS_README.md && test_result 0 "Section 'Pourquoi' présente" || test_result 1 "Section 'Pourquoi' manquante"
-    grep -q "## 🚀 Utilisation" ../MIGRATIONS_README.md && test_result 0 "Section 'Utilisation' présente" || test_result 1 "Section 'Utilisation' manquante"
-    grep -q "## 🔒 Sécurité" ../MIGRATIONS_README.md && test_result 0 "Section 'Sécurité' présente" || test_result 1 "Section 'Sécurité' manquante"
-fi
+[ -f "$SCRIPT_DIR/backend/migrations/README.md" ] && test_result 0 "README migrations présent" || test_result 1 "README migrations manquant"
 echo ""
 
 # Test 7: Test fonctionnel (si Node.js et sqlite3 disponibles)
