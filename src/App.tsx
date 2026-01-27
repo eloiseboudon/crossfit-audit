@@ -129,7 +129,7 @@ export default function App() {
               <div>
                 {/* <Dumbbell className="w-6 h-6 text-[#F4F3EE]" strokeWidth={2.5} /> */}
                 <img
-                  src="assets/Logo.audit.tulip.svg"
+                  src="public/Logo.audit.tulip.svg"
                   alt="Logo Tulip Conseil"
                   height="80"
                   width="80"
