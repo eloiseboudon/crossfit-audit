@@ -95,7 +95,7 @@ npm run build
 echo -e "${GREEN}✓${NC} Frontend rebuilé"
 
 # 5. Mise à jour de la base de données (migrations automatiques)
-echo -e "\n${YELLOW}[5/7]${NC} Vérification de la base de données..."
+echo -e "\n${YELLOW}[5/7]${NC} Mise à jour de la base de données..."
 cd $APP_DIR/backend
 
 # Vérifier que la base de données existe, sinon l'initialiser
@@ -110,6 +110,19 @@ if [ ! -f "database/crossfit_audit.db" ]; then
     fi
 else
     echo -e "${GREEN}✓${NC} Base de données existante trouvée"
+fi
+
+# Appliquer les migrations sur la base existante
+echo -e "${YELLOW}→${NC} Application des migrations..."
+npm run migrate
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✓${NC} Migrations appliquées avec succès"
+else
+    echo -e "${RED}✗${NC} Erreur lors des migrations"
+    echo -e "${YELLOW}ℹ${NC}  Consultez les logs ci-dessus pour plus de détails"
+    echo -e "${YELLOW}ℹ${NC}  La sauvegarde est disponible dans: $BACKUP_DIR"
+    echo -e "${YELLOW}ℹ${NC}  Rollback possible avec: ./db-manage.sh restore"
+    exit 1
 fi
 
 # 6. Redémarrage des services

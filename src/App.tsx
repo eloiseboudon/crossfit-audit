@@ -126,8 +126,14 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-br from-[#4F7A7E] to-[#4F7A7E]/70 p-2.5 rounded-lg glow-teal">
-                <Dumbbell className="w-6 h-6 text-[#F4F3EE]" strokeWidth={2.5} />
+              <div>
+                {/* <Dumbbell className="w-6 h-6 text-[#F4F3EE]" strokeWidth={2.5} /> */}
+                <img
+                  src="src/assets/Logo.audit.tulip.svg"
+                  alt="Logo Tulip Conseil"
+                  height="80"
+                  width="80"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-[#F4F3EE] glow-text-teal flex items-center gap-2">
@@ -135,7 +141,7 @@ export default function App() {
                   <Zap className="w-5 h-5 text-[#D6C7A1]" />
                 </h1>
                 <p className="text-xs text-[#D6C7A1]/80 tracking-wide">Analyse de la performance</p>
-                <p className="text-sm font-bold text-[#F4F3EE] glow-text-teal">By Tulip Conseil</p>
+                <p className="text-sm font-bold text-[#F4F3EE] glow-text-teal font-poppins">Par Tulip Conseil</p>
               </div>
             </div>
             <div className="flex items-center space-x-2">

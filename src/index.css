@@ -6,6 +6,11 @@
 @tailwind utilities;
 
 @layer base {
+
+  .font-poppins {
+    font-family: 'Poppins', sans-serif;
+  }
+
   :root {
     /* Tulip Consulting Colors - Mockup 1 */
     --tulip-green: #48737F;

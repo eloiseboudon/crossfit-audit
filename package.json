@@ -8,7 +8,11 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json"
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "init-db": "node init-db.js",
+    "migrate": "node migrations.js migrate",
+    "migrate:status": "node migrations.js status",
+    "migrate:create": "node migrations.js create"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",
