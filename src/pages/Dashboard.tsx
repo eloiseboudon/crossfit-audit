@@ -1,17 +1,12 @@
-import { useState, useEffect } from 'react';
 import {
   ArrowLeft,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Activity,
-  Target,
-  Users,
-  Clock,
   Award,
   BarChart3,
-  FileText
+  Clock,
+  DollarSign,
+  Users
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import {
   getAudit,
   listAnswers,
@@ -19,13 +14,13 @@ import {
   upsertKpis,
   upsertScores
 } from '../lib/api';
-import { Audit, Answer } from '../lib/types';
 import {
+  calculateAdvancedFinancialKPIs,
   calculateKPIs,
   calculateScores,
-  generateRecommendations,
-  calculateAdvancedFinancialKPIs
+  generateRecommendations
 } from '../lib/calculations';
+import { Answer, Audit } from '../lib/types';
 
 /**
  * Props du composant Dashboard
@@ -121,7 +116,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
         kpi_code: key,
         value: value as number,
         unit: key.includes('ratio') || key.includes('pourcent') || key.includes('mensuel') ||
-              key.includes('conversion') || key.includes('occupation') || key.includes('marge') ? '%' : '€',
+          key.includes('conversion') || key.includes('occupation') || key.includes('marge') ? '%' : '€',
         computed_at: new Date().toISOString()
       }));
       await upsertKpis(kpisToUpsert);
@@ -285,11 +280,10 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center space-x-2 px-4 py-3 rounded-card font-medium transition-all ${
-                  isActive
+                className={`flex items-center space-x-2 px-4 py-3 rounded-card font-medium transition-all ${isActive
                     ? 'bg-gradient-to-r from-tulip-blue to-tulip-green text-white shadow-md'
                     : 'bg-tulip-beige/20 text-tulip-blue hover:bg-tulip-beige/40'
-                }`}
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 <span className="text-sm">{tab.label}</span>
@@ -482,8 +476,6 @@ const INFO_DETAILS = {
     'Masse salariale annuelle totale saisie.',
   cout_moyen_coach_annuel:
     'Coût moyen par coach = masse salariale annuelle / nombre de coachs.',
-  ratio_masse_salariale_ca_pct:
-    'Ratio masse salariale/CA = masse salariale annuelle / CA total × 100.',
   ca_par_coach_annuel:
     'CA par coach = CA total annuel / nombre de coachs.',
   nps_coaching:
@@ -589,8 +581,8 @@ function OverviewTab({ scores, kpis, recommendations, scenarios, formatNumber, f
                     <div className="text-sm text-tulip-blue/70 font-medium mt-1">/ 100</div>
                     <div className="text-xs text-tulip-blue/50 mt-2">
                       {scores.globalScore >= 80 ? 'Excellent' :
-                       scores.globalScore >= 60 ? 'Bon' :
-                       scores.globalScore >= 40 ? 'Moyen' : 'À améliorer'}
+                        scores.globalScore >= 60 ? 'Bon' :
+                          scores.globalScore >= 40 ? 'Moyen' : 'À améliorer'}
                     </div>
                   </div>
                 </div>
@@ -627,14 +619,13 @@ function OverviewTab({ scores, kpis, recommendations, scenarios, formatNumber, f
                   </div>
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-tulip-blue/70">Poids: {formatNumber(score.weight * 100, 0)}%</span>
-                    <span className={`font-semibold ${
-                      score.score >= 80 ? 'text-tulip-green-success' :
-                      score.score >= 60 ? 'text-tulip-green' :
-                      score.score >= 40 ? 'text-orange-500' : 'text-tulip-red'
-                    }`}>
+                    <span className={`font-semibold ${score.score >= 80 ? 'text-tulip-green-success' :
+                        score.score >= 60 ? 'text-tulip-green' :
+                          score.score >= 40 ? 'text-orange-500' : 'text-tulip-red'
+                      }`}>
                       {score.score >= 80 ? '✓ Excellent' :
-                       score.score >= 60 ? '→ Bon' :
-                       score.score >= 40 ? '⚠ Moyen' : '✗ Faible'}
+                        score.score >= 60 ? '→ Bon' :
+                          score.score >= 40 ? '⚠ Moyen' : '✗ Faible'}
                     </span>
                   </div>
                 </div>
@@ -728,11 +719,10 @@ function OverviewTab({ scores, kpis, recommendations, scenarios, formatNumber, f
               return (
                 <div
                   key={index}
-                  className={`relative p-6 rounded-card border-2 transition-all ${
-                    isRecommended
+                  className={`relative p-6 rounded-card border-2 transition-all ${isRecommended
                       ? 'border-tulip-green bg-gradient-to-br from-tulip-green/5 to-tulip-green/10 shadow-lg'
                       : 'border-tulip-beige/50 bg-white'
-                  }`}
+                    }`}
                 >
                   {isRecommended && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
