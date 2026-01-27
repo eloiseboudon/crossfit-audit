@@ -357,6 +357,190 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
 // ONGLET 1: VUE D'ENSEMBLE
 // ============================================================================
 
+const INFO_DETAILS = {
+  score_global:
+    'Score global = somme pondérée des scores Finance (30%), Commercial & rétention (35%) et Organisation & pilotage (35%).\nDonnées: réponses de l\'audit sur chaque pilier.',
+  score_finance:
+    'Score Finance = 40% marge EBITDA + 20% ratio loyer/CA + 20% masse salariale/CA + 20% CA/m².\nLes sous-scores sont déterminés via les seuils internes.',
+  score_clientele:
+    'Score Commercial & rétention = 40% % de CA récurrent + 35% ARPM + 25% churn mensuel.\nBasé sur les données membres et revenus.',
+  score_exploitation:
+    'Score Organisation & pilotage = 60% taux d\'occupation global + 40% taux de conversion essai.\nBasé sur capacités et funnel.',
+  ca_total_12m:
+    'Somme des revenus annuels (abonnements, drop-in, PT, merchandising, autres).\nDonnées: bloc Finance > Revenus.',
+  arpm:
+    'ARPM = CA total annuel / 12 / nombre de membres actifs.\nDonnées: CA total + membres actifs.',
+  marge_ebitda:
+    'Marge EBITDA = EBITDA / CA total × 100.\nEBITDA = CA total - (charges totales hors amortissements, provisions et frais financiers).',
+  churn_mensuel:
+    'Churn mensuel = résiliations mensuelles / membres actifs × 100.\nDonnées: bloc Rétention & churn.',
+  ca_abonnements:
+    'Somme des revenus abonnements mensuels, trimestriels, semestriels et annuels.',
+  pct_ca_abonnements:
+    '% CA abonnements = CA abonnements / CA total × 100.',
+  ca_drop_in:
+    'Revenus drop-in = cartes 10/20 + séances unitaires.\nDonnées: bloc Produits/Exploitation.',
+  pct_ca_drop_in:
+    '% CA drop-in = CA drop-in / CA total × 100.',
+  ca_personal_training:
+    'Revenus Personal Training saisis dans l\'audit (coaching individuel).',
+  ca_merchandising:
+    'Revenus merchandising = vêtements + accessoires.',
+  ebitda:
+    'EBITDA calculé à partir du CA et des charges d\'exploitation (hors amortissements, provisions, frais financiers).',
+  marge_ebitda_pct:
+    'Marge EBITDA = EBITDA / CA total × 100.',
+  resultat_net:
+    'Résultat net = CA total - charges totales (incluant amortissements, provisions, frais financiers).',
+  marge_nette_pct:
+    'Marge nette = résultat net / CA total × 100.',
+  marge_brute_pct:
+    'Marge brute = (CA total - charges directes) / CA total × 100.\nCalculée à partir des charges déclarées.',
+  ratio_loyer_ca_pct:
+    'Ratio loyer/CA = loyer annuel / CA total × 100.',
+  ratio_masse_salariale_ca_pct:
+    'Ratio masse salariale/CA = masse salariale annuelle / CA total × 100.',
+  ratio_marketing_ca_pct:
+    'Ratio marketing/CA = dépenses marketing annuelles / CA total × 100.',
+  ca_par_m2:
+    'CA par m² = CA total annuel / surface totale (m²).',
+  membres_actifs_total:
+    'Nombre total de membres actifs saisi dans l\'audit.',
+  membres_illimites:
+    'Nombre de membres avec abonnement illimité saisi.',
+  membres_limites:
+    'Nombre de membres avec abonnement limité (2-3x/sem) saisi.',
+  membres_premium:
+    'Nombre de membres avec offre premium saisi.',
+  leads_mois:
+    'Leads mensuels saisis (demandes entrantes).',
+  essais_gratuits_mois:
+    'Essais gratuits mensuels saisis.',
+  taux_conversion_lead_essai_pct:
+    'Conversion lead → essai = essais gratuits / leads × 100 (ou taux saisi).',
+  nouveaux_membres_mois:
+    'Nouveaux membres mensuels (conversions essai → abonné) saisis.',
+  taux_conversion_essai_membre_pct:
+    'Conversion essai → membre = conversions essai / essais × 100.',
+  cac_moyen:
+    'CAC moyen = coût d\'acquisition moyen saisi.',
+  ltv_moyen:
+    'LTV estimée = ARPM × ancienneté moyenne (mois).',
+  ratio_ltv_cac:
+    'Ratio LTV/CAC = LTV estimée / CAC.',
+  temps_retour_cac_mois:
+    'Payback CAC = CAC / revenu mensuel moyen par membre (ARPM).',
+  taux_retention_mensuel_pct:
+    'Rétention mensuelle = 100% - churn mensuel (ou taux de renouvellement saisi).',
+  taux_churn_mensuel_pct:
+    'Churn mensuel = résiliations mensuelles / membres actifs × 100.',
+  anciennete_moyenne_mois:
+    'Ancienneté moyenne des membres (mois) saisie.',
+  nps_score:
+    'NPS = % promoteurs - % détracteurs (saisi dans l\'audit).',
+  creneaux_semaine:
+    'Nombre de créneaux par semaine saisi.',
+  heures_ouverture_semaine:
+    'Nombre d\'heures d\'ouverture hebdomadaires saisi.',
+  seances_mois:
+    'Séances mensuelles estimées à partir des créneaux hebdomadaires.',
+  surface_totale_m2:
+    'Surface totale déclarée (m²).',
+  occupation_6h_9h_pct:
+    'Taux d\'occupation 6h-9h = participants moyens / capacité × 100.',
+  occupation_12h_14h_pct:
+    'Taux d\'occupation 12h-14h = participants moyens / capacité × 100.',
+  occupation_17h_20h_pct:
+    'Taux d\'occupation 17h-20h = participants moyens / capacité × 100.',
+  ca_par_seance:
+    'CA par séance = CA total / nombre de séances.',
+  cout_par_seance:
+    'Coût par séance = charges totales / nombre de séances.',
+  marge_par_seance:
+    'Marge par séance = CA par séance - coût par séance.',
+  ca_par_heure_ouverture:
+    'CA par heure d\'ouverture = CA total / heures d\'ouverture annuelles.',
+  nombre_coaches:
+    'Nombre total de coachs saisi.',
+  nombre_salaries_temps_plein:
+    'Nombre de salariés temps plein saisi.',
+  nombre_salaries_temps_partiel:
+    'Nombre de salariés temps partiel saisi.',
+  nombre_auto_entrepreneurs:
+    'Nombre d\'auto-entrepreneurs/freelances saisi.',
+  coaches_cf_l1:
+    'Nombre de coachs certifiés CF Level 1 saisi.',
+  coaches_cf_l2:
+    'Nombre de coachs certifiés CF Level 2 saisi.',
+  coaches_cf_l3:
+    'Nombre de coachs certifiés CF Level 3 saisi.',
+  coaches_cf_l4:
+    'Nombre de coachs certifiés CF Level 4 saisi.',
+  score_qualifications_moyen:
+    'Score moyen de qualifications calculé à partir du niveau de certifications.',
+  masse_salariale_annuelle:
+    'Masse salariale annuelle totale saisie.',
+  cout_moyen_coach_annuel:
+    'Coût moyen par coach = masse salariale annuelle / nombre de coachs.',
+  ratio_masse_salariale_ca_pct:
+    'Ratio masse salariale/CA = masse salariale annuelle / CA total × 100.',
+  ca_par_coach_annuel:
+    'CA par coach = CA total annuel / nombre de coachs.',
+  nps_coaching:
+    'NPS coaching saisi (promoteurs - détracteurs).',
+  taux_satisfaction_membres_coaching_pct:
+    'Satisfaction membres coaching (%) saisie.',
+  taux_turnover_annuel_pct:
+    'Turnover annuel = départs annuels / effectif moyen × 100.',
+  stabilite_equipe_score:
+    'Score de stabilité équipe basé sur l\'ancienneté et le turnover.'
+};
+
+function InfoTooltip({ label, details }: { label: string; details: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <span className="relative inline-flex">
+      <button
+        type="button"
+        className="flex h-4 w-4 items-center justify-center rounded-full border border-tulip-blue/30 text-[10px] font-semibold text-tulip-blue/70 hover:border-tulip-blue/60 hover:text-tulip-blue"
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
+        onBlur={() => setOpen(false)}
+        aria-label={`Détails du calcul: ${label}`}
+      >
+        i
+      </button>
+      {open && (
+        <div className="absolute left-1/2 top-6 z-20 w-64 -translate-x-1/2 rounded-md border border-tulip-beige bg-white p-3 text-xs text-tulip-blue/80 shadow-lg whitespace-pre-line">
+          {details}
+        </div>
+      )}
+    </span>
+  );
+}
+
+function InfoLabel({
+  label,
+  details,
+  labelClassName,
+  wrapperClassName
+}: {
+  label: string;
+  details: string;
+  labelClassName?: string;
+  wrapperClassName?: string;
+}) {
+  return (
+    <div className={`flex items-center gap-2 ${wrapperClassName ?? ''}`}>
+      <span className={labelClassName}>{label}</span>
+      <InfoTooltip label={label} details={details} />
+    </div>
+  );
+}
+
 /**
  * Onglet Vue d'ensemble - Score global, KPIs clés, recommandations prioritaires
  */
@@ -366,7 +550,12 @@ function OverviewTab({ scores, kpis, recommendations, scenarios, formatNumber, f
       {/* Score Global */}
       {scores && (
         <div className="bg-white rounded-card shadow-card border border-tulip-beige/30 p-4 md:p-8">
-          <h2 className="text-xl md:text-2xl font-bold text-tulip-blue mb-6 md:mb-8 text-center">Score Global de Performance</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-tulip-blue mb-6 md:mb-8 text-center">
+            <span className="flex items-center justify-center gap-2">
+              Score Global de Performance
+              <InfoTooltip label="Score Global de Performance" details={INFO_DETAILS.score_global} />
+            </span>
+          </h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-center">
             {/* Score circulaire */}
             <div className="lg:col-span-1 flex justify-center">
@@ -413,7 +602,19 @@ function OverviewTab({ scores, kpis, recommendations, scenarios, formatNumber, f
               {scores.scores.map((score: any) => (
                 <div key={score.code} className="group p-5 bg-gradient-to-br from-tulip-beige/10 to-white border-2 border-tulip-beige rounded-card hover:border-tulip-green/40 hover:shadow-lg transition-all">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-tulip-blue text-sm group-hover:text-tulip-green transition-colors">{score.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-tulip-blue text-sm group-hover:text-tulip-green transition-colors">{score.name}</h3>
+                      <InfoTooltip
+                        label={`Score ${score.name}`}
+                        details={
+                          score.code === 'finance'
+                            ? INFO_DETAILS.score_finance
+                            : score.code === 'clientele'
+                              ? INFO_DETAILS.score_clientele
+                              : INFO_DETAILS.score_exploitation
+                        }
+                      />
+                    </div>
                     <span className="text-2xl font-bold bg-gradient-to-r from-tulip-blue to-tulip-green bg-clip-text text-transparent">
                       {formatNumber(score.score, 0)}
                     </span>
@@ -448,19 +649,39 @@ function OverviewTab({ scores, kpis, recommendations, scenarios, formatNumber, f
         <h2 className="text-xl font-bold text-tulip-blue mb-6">Indicateurs Clés</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-5 bg-gradient-to-br from-tulip-green/5 to-tulip-green/10 border border-tulip-green/20 rounded-card">
-            <p className="text-xs font-semibold text-tulip-blue/70 uppercase mb-2">CA Total</p>
+            <InfoLabel
+              label="CA Total"
+              details={INFO_DETAILS.ca_total_12m}
+              labelClassName="text-xs font-semibold text-tulip-blue/70 uppercase"
+              wrapperClassName="mb-2"
+            />
             <p className="text-2xl font-bold text-tulip-blue">{formatCurrency(kpis.ca_total_12m)}</p>
           </div>
           <div className="p-5 bg-gradient-to-br from-tulip-blue/5 to-tulip-blue/10 border border-tulip-blue/20 rounded-card">
-            <p className="text-xs font-semibold text-tulip-blue/70 uppercase mb-2">ARPM</p>
+            <InfoLabel
+              label="ARPM"
+              details={INFO_DETAILS.arpm}
+              labelClassName="text-xs font-semibold text-tulip-blue/70 uppercase"
+              wrapperClassName="mb-2"
+            />
             <p className="text-2xl font-bold text-tulip-blue">{formatCurrency(kpis.arpm)}</p>
           </div>
           <div className="p-5 bg-tulip-beige/20 border border-tulip-beige rounded-card">
-            <p className="text-xs font-semibold text-tulip-blue/70 uppercase mb-2">Marge EBITDA</p>
+            <InfoLabel
+              label="Marge EBITDA"
+              details={INFO_DETAILS.marge_ebitda}
+              labelClassName="text-xs font-semibold text-tulip-blue/70 uppercase"
+              wrapperClassName="mb-2"
+            />
             <p className="text-2xl font-bold text-tulip-blue">{formatNumber(kpis.marge_ebitda, 1)}%</p>
           </div>
           <div className="p-5 bg-tulip-beige/20 border border-tulip-beige rounded-card">
-            <p className="text-xs font-semibold text-tulip-blue/70 uppercase mb-2">Taux Churn</p>
+            <InfoLabel
+              label="Taux Churn"
+              details={INFO_DETAILS.churn_mensuel}
+              labelClassName="text-xs font-semibold text-tulip-blue/70 uppercase"
+              wrapperClassName="mb-2"
+            />
             <p className="text-2xl font-bold text-tulip-blue">{formatNumber(kpis.churn_mensuel, 1)}%</p>
           </div>
         </div>
@@ -604,21 +825,47 @@ function FinanceTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any) {
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Structure du Chiffre d'Affaires</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CA Abonnements</p>
+              <InfoLabel
+                label="CA Abonnements"
+                details={INFO_DETAILS.ca_abonnements}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-lg font-bold text-tulip-blue">{formatCurrency(advancedKPIs.ca_abonnements)}</p>
-              <p className="text-xs text-tulip-green mt-1">{formatNumber(advancedKPIs.pct_ca_abonnements, 1)}%</p>
+              <div className="mt-1 flex items-center gap-2 text-xs text-tulip-green">
+                <span>{formatNumber(advancedKPIs.pct_ca_abonnements, 1)}%</span>
+                <InfoTooltip label="% CA abonnements" details={INFO_DETAILS.pct_ca_abonnements} />
+              </div>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CA Drop-in</p>
+              <InfoLabel
+                label="CA Drop-in"
+                details={INFO_DETAILS.ca_drop_in}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-lg font-bold text-tulip-blue">{formatCurrency(advancedKPIs.ca_drop_in)}</p>
-              <p className="text-xs text-tulip-green mt-1">{formatNumber(advancedKPIs.pct_ca_drop_in, 1)}%</p>
+              <div className="mt-1 flex items-center gap-2 text-xs text-tulip-green">
+                <span>{formatNumber(advancedKPIs.pct_ca_drop_in, 1)}%</span>
+                <InfoTooltip label="% CA drop-in" details={INFO_DETAILS.pct_ca_drop_in} />
+              </div>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CA Personal Training</p>
+              <InfoLabel
+                label="CA Personal Training"
+                details={INFO_DETAILS.ca_personal_training}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-lg font-bold text-tulip-blue">{formatCurrency(advancedKPIs.ca_personal_training)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CA Merchandising</p>
+              <InfoLabel
+                label="CA Merchandising"
+                details={INFO_DETAILS.ca_merchandising}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-lg font-bold text-tulip-blue">{formatCurrency(advancedKPIs.ca_merchandising)}</p>
             </div>
           </div>
@@ -629,17 +876,38 @@ function FinanceTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any) {
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Marges & Rentabilité</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-5 bg-gradient-to-br from-tulip-green/10 to-white border border-tulip-green/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-2">EBITDA</p>
+              <InfoLabel
+                label="EBITDA"
+                details={INFO_DETAILS.ebitda}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-2"
+              />
               <p className="text-2xl font-bold text-tulip-green">{formatCurrency(advancedKPIs.ebitda)}</p>
-              <p className="text-xs text-tulip-blue/70 mt-2">Marge: {formatNumber(advancedKPIs.marge_ebitda_pct, 1)}%</p>
+              <div className="mt-2 flex items-center gap-2 text-xs text-tulip-blue/70">
+                <span>Marge: {formatNumber(advancedKPIs.marge_ebitda_pct, 1)}%</span>
+                <InfoTooltip label="Marge EBITDA" details={INFO_DETAILS.marge_ebitda_pct} />
+              </div>
             </div>
             <div className="p-5 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-2">Résultat Net</p>
+              <InfoLabel
+                label="Résultat Net"
+                details={INFO_DETAILS.resultat_net}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-2"
+              />
               <p className="text-2xl font-bold text-tulip-blue">{formatCurrency(advancedKPIs.resultat_net)}</p>
-              <p className="text-xs text-tulip-blue/70 mt-2">Marge: {formatNumber(advancedKPIs.marge_nette_pct, 1)}%</p>
+              <div className="mt-2 flex items-center gap-2 text-xs text-tulip-blue/70">
+                <span>Marge: {formatNumber(advancedKPIs.marge_nette_pct, 1)}%</span>
+                <InfoTooltip label="Marge nette" details={INFO_DETAILS.marge_nette_pct} />
+              </div>
             </div>
             <div className="p-5 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-2">Marge Brute</p>
+              <InfoLabel
+                label="Marge Brute"
+                details={INFO_DETAILS.marge_brute_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-2"
+              />
               <p className="text-2xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.marge_brute_pct, 1)}%</p>
             </div>
           </div>
@@ -650,22 +918,42 @@ function FinanceTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any) {
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Structure de Coûts</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Ratio Loyer/CA</p>
+              <InfoLabel
+                label="Ratio Loyer/CA"
+                details={INFO_DETAILS.ratio_loyer_ca_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.ratio_loyer_ca_pct, 1)}%</p>
               <p className="text-xs text-tulip-blue/50 mt-1">Cible: &lt;20%</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Ratio MS/CA</p>
+              <InfoLabel
+                label="Ratio MS/CA"
+                details={INFO_DETAILS.ratio_masse_salariale_ca_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.ratio_masse_salariale_ca_pct, 1)}%</p>
               <p className="text-xs text-tulip-blue/50 mt-1">Cible: 30-40%</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Ratio Marketing/CA</p>
+              <InfoLabel
+                label="Ratio Marketing/CA"
+                details={INFO_DETAILS.ratio_marketing_ca_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.ratio_marketing_ca_pct, 1)}%</p>
               <p className="text-xs text-tulip-blue/50 mt-1">Cible: 5-10%</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CA par m²</p>
+              <InfoLabel
+                label="CA par m²"
+                details={INFO_DETAILS.ca_par_m2}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.ca_par_m2, 0)} €</p>
             </div>
           </div>
@@ -721,19 +1009,39 @@ function ClienteleTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any)
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Base Membres</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-tulip-green/10 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Membres Actifs</p>
+              <InfoLabel
+                label="Membres Actifs"
+                details={INFO_DETAILS.membres_actifs_total}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-2xl font-bold text-tulip-green">{formatNumber(advancedKPIs.membres_actifs_total)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Illimités</p>
+              <InfoLabel
+                label="Illimités"
+                details={INFO_DETAILS.membres_illimites}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.membres_illimites)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Limités</p>
+              <InfoLabel
+                label="Limités"
+                details={INFO_DETAILS.membres_limites}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.membres_limites)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Premium</p>
+              <InfoLabel
+                label="Premium"
+                details={INFO_DETAILS.membres_premium}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.membres_premium)}</p>
             </div>
           </div>
@@ -744,18 +1052,39 @@ function ClienteleTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any)
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Funnel d'Acquisition</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-5 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-2">Leads/mois</p>
+              <InfoLabel
+                label="Leads/mois"
+                details={INFO_DETAILS.leads_mois}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-2"
+              />
               <p className="text-2xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.leads_mois)}</p>
             </div>
             <div className="p-5 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-2">Essais/mois</p>
+              <InfoLabel
+                label="Essais/mois"
+                details={INFO_DETAILS.essais_gratuits_mois}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-2"
+              />
               <p className="text-2xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.essais_gratuits_mois)}</p>
-              <p className="text-xs text-tulip-green mt-1">Conv: {formatNumber(advancedKPIs.taux_conversion_lead_essai_pct, 0)}%</p>
+              <div className="mt-1 flex items-center gap-2 text-xs text-tulip-green">
+                <span>Conv: {formatNumber(advancedKPIs.taux_conversion_lead_essai_pct, 0)}%</span>
+                <InfoTooltip label="Conversion lead → essai" details={INFO_DETAILS.taux_conversion_lead_essai_pct} />
+              </div>
             </div>
             <div className="p-5 bg-tulip-green/10 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-2">Nouveaux/mois</p>
+              <InfoLabel
+                label="Nouveaux/mois"
+                details={INFO_DETAILS.nouveaux_membres_mois}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-2"
+              />
               <p className="text-2xl font-bold text-tulip-green">{formatNumber(advancedKPIs.nouveaux_membres_mois)}</p>
-              <p className="text-xs text-tulip-green mt-1">Conv: {formatNumber(advancedKPIs.taux_conversion_essai_membre_pct, 0)}%</p>
+              <div className="mt-1 flex items-center gap-2 text-xs text-tulip-green">
+                <span>Conv: {formatNumber(advancedKPIs.taux_conversion_essai_membre_pct, 0)}%</span>
+                <InfoTooltip label="Conversion essai → membre" details={INFO_DETAILS.taux_conversion_essai_membre_pct} />
+              </div>
             </div>
           </div>
         </div>
@@ -765,20 +1094,40 @@ function ClienteleTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any)
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Économie Unitaire</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CAC</p>
+              <InfoLabel
+                label="CAC"
+                details={INFO_DETAILS.cac_moyen}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatCurrency(advancedKPIs.cac_moyen)}</p>
             </div>
             <div className="p-4 bg-tulip-green/10 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">LTV</p>
+              <InfoLabel
+                label="LTV"
+                details={INFO_DETAILS.ltv_moyen}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-green">{formatCurrency(advancedKPIs.ltv_moyen)}</p>
             </div>
             <div className="p-4 bg-tulip-blue/10 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Ratio LTV/CAC</p>
+              <InfoLabel
+                label="Ratio LTV/CAC"
+                details={INFO_DETAILS.ratio_ltv_cac}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.ratio_ltv_cac, 1)}</p>
               <p className="text-xs text-tulip-blue/50 mt-1">Cible: &gt;3</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Payback CAC</p>
+              <InfoLabel
+                label="Payback CAC"
+                details={INFO_DETAILS.temps_retour_cac_mois}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.temps_retour_cac_mois, 0)} mois</p>
             </div>
           </div>
@@ -789,19 +1138,39 @@ function ClienteleTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any)
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Rétention & Churn</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-tulip-green/10 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Rétention Mensuelle</p>
+              <InfoLabel
+                label="Rétention Mensuelle"
+                details={INFO_DETAILS.taux_retention_mensuel_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-green">{formatNumber(advancedKPIs.taux_retention_mensuel_pct, 1)}%</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Churn Mensuel</p>
+              <InfoLabel
+                label="Churn Mensuel"
+                details={INFO_DETAILS.taux_churn_mensuel_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.taux_churn_mensuel_pct, 1)}%</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Ancienneté Moyenne</p>
+              <InfoLabel
+                label="Ancienneté Moyenne"
+                details={INFO_DETAILS.anciennete_moyenne_mois}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.anciennete_moyenne_mois, 0)} mois</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">NPS Score</p>
+              <InfoLabel
+                label="NPS Score"
+                details={INFO_DETAILS.nps_score}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.nps_score, 0)}</p>
             </div>
           </div>
@@ -857,19 +1226,39 @@ function OperationsTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Planning & Volume</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Créneaux/semaine</p>
+              <InfoLabel
+                label="Créneaux/semaine"
+                details={INFO_DETAILS.creneaux_semaine}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.creneaux_semaine)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Heures Ouverture/sem</p>
+              <InfoLabel
+                label="Heures Ouverture/sem"
+                details={INFO_DETAILS.heures_ouverture_semaine}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.heures_ouverture_semaine)} h</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Séances/mois</p>
+              <InfoLabel
+                label="Séances/mois"
+                details={INFO_DETAILS.seances_mois}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.seances_mois, 0)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Surface Totale</p>
+              <InfoLabel
+                label="Surface Totale"
+                details={INFO_DETAILS.surface_totale_m2}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.surface_totale_m2)} m²</p>
             </div>
           </div>
@@ -880,15 +1269,30 @@ function OperationsTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Taux d'Occupation par Tranche Horaire</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">6h-9h (Early Morning)</p>
+              <InfoLabel
+                label="6h-9h (Early Morning)"
+                details={INFO_DETAILS.occupation_6h_9h_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.occupation_6h_9h_pct, 0)}%</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">12h-14h (Midi)</p>
+              <InfoLabel
+                label="12h-14h (Midi)"
+                details={INFO_DETAILS.occupation_12h_14h_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.occupation_12h_14h_pct, 0)}%</p>
             </div>
             <div className="p-4 bg-tulip-green/10 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">17h-20h (Peak)</p>
+              <InfoLabel
+                label="17h-20h (Peak)"
+                details={INFO_DETAILS.occupation_17h_20h_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-green">{formatNumber(advancedKPIs.occupation_17h_20h_pct, 0)}%</p>
             </div>
           </div>
@@ -899,19 +1303,39 @@ function OperationsTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Productivité</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CA/séance</p>
+              <InfoLabel
+                label="CA/séance"
+                details={INFO_DETAILS.ca_par_seance}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatCurrency(advancedKPIs.ca_par_seance)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Coût/séance</p>
+              <InfoLabel
+                label="Coût/séance"
+                details={INFO_DETAILS.cout_par_seance}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatCurrency(advancedKPIs.cout_par_seance)}</p>
             </div>
             <div className="p-4 bg-tulip-green/10 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Marge/séance</p>
+              <InfoLabel
+                label="Marge/séance"
+                details={INFO_DETAILS.marge_par_seance}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-green">{formatCurrency(advancedKPIs.marge_par_seance)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CA/heure ouverture</p>
+              <InfoLabel
+                label="CA/heure ouverture"
+                details={INFO_DETAILS.ca_par_heure_ouverture}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatCurrency(advancedKPIs.ca_par_heure_ouverture)}</p>
             </div>
           </div>
@@ -967,19 +1391,39 @@ function RHTab({ advancedKPIs, formatNumber, formatCurrency }: any) {
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Structure de l'Équipe</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-tulip-green/10 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Total Coaches</p>
+              <InfoLabel
+                label="Total Coaches"
+                details={INFO_DETAILS.nombre_coaches}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-2xl font-bold text-tulip-green">{formatNumber(advancedKPIs.nombre_coaches)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Temps Plein</p>
+              <InfoLabel
+                label="Temps Plein"
+                details={INFO_DETAILS.nombre_salaries_temps_plein}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.nombre_salaries_temps_plein)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Temps Partiel</p>
+              <InfoLabel
+                label="Temps Partiel"
+                details={INFO_DETAILS.nombre_salaries_temps_partiel}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.nombre_salaries_temps_partiel)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Auto-entrepreneurs</p>
+              <InfoLabel
+                label="Auto-entrepreneurs"
+                details={INFO_DETAILS.nombre_auto_entrepreneurs}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.nombre_auto_entrepreneurs)}</p>
             </div>
           </div>
@@ -990,23 +1434,48 @@ function RHTab({ advancedKPIs, formatNumber, formatCurrency }: any) {
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Certifications CrossFit</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CF-L1</p>
+              <InfoLabel
+                label="CF-L1"
+                details={INFO_DETAILS.coaches_cf_l1}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.coaches_cf_l1)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CF-L2</p>
+              <InfoLabel
+                label="CF-L2"
+                details={INFO_DETAILS.coaches_cf_l2}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.coaches_cf_l2)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CF-L3</p>
+              <InfoLabel
+                label="CF-L3"
+                details={INFO_DETAILS.coaches_cf_l3}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.coaches_cf_l3)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CF-L4</p>
+              <InfoLabel
+                label="CF-L4"
+                details={INFO_DETAILS.coaches_cf_l4}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.coaches_cf_l4)}</p>
             </div>
             <div className="p-4 bg-tulip-blue/10 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Score Qualif.</p>
+              <InfoLabel
+                label="Score Qualif."
+                details={INFO_DETAILS.score_qualifications_moyen}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.score_qualifications_moyen, 0)}/100</p>
             </div>
           </div>
@@ -1017,20 +1486,40 @@ function RHTab({ advancedKPIs, formatNumber, formatCurrency }: any) {
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Coûts RH</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Masse Salariale/an</p>
+              <InfoLabel
+                label="Masse Salariale/an"
+                details={INFO_DETAILS.masse_salariale_annuelle}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatCurrency(advancedKPIs.masse_salariale_annuelle)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Coût Moyen/coach</p>
+              <InfoLabel
+                label="Coût Moyen/coach"
+                details={INFO_DETAILS.cout_moyen_coach_annuel}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatCurrency(advancedKPIs.cout_moyen_coach_annuel)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Ratio MS/CA</p>
+              <InfoLabel
+                label="Ratio MS/CA"
+                details={INFO_DETAILS.ratio_masse_salariale_ca_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.ratio_masse_salariale_ca_pct, 1)}%</p>
               <p className="text-xs text-tulip-blue/50 mt-1">Cible: 30-40%</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">CA/coach/an</p>
+              <InfoLabel
+                label="CA/coach/an"
+                details={INFO_DETAILS.ca_par_coach_annuel}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatCurrency(advancedKPIs.ca_par_coach_annuel)}</p>
             </div>
           </div>
@@ -1041,19 +1530,39 @@ function RHTab({ advancedKPIs, formatNumber, formatCurrency }: any) {
           <h3 className="text-lg font-semibold text-tulip-blue mb-4">Qualité & Performance</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-4 bg-tulip-green/10 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">NPS Coaching</p>
+              <InfoLabel
+                label="NPS Coaching"
+                details={INFO_DETAILS.nps_coaching}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-green">{formatNumber(advancedKPIs.nps_coaching, 0)}</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Satisfaction Membres</p>
+              <InfoLabel
+                label="Satisfaction Membres"
+                details={INFO_DETAILS.taux_satisfaction_membres_coaching_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.taux_satisfaction_membres_coaching_pct, 0)}%</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Turnover/an</p>
+              <InfoLabel
+                label="Turnover/an"
+                details={INFO_DETAILS.taux_turnover_annuel_pct}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.taux_turnover_annuel_pct, 0)}%</p>
             </div>
             <div className="p-4 bg-tulip-beige/20 rounded-card">
-              <p className="text-xs text-tulip-blue/70 mb-1">Stabilité Équipe</p>
+              <InfoLabel
+                label="Stabilité Équipe"
+                details={INFO_DETAILS.stabilite_equipe_score}
+                labelClassName="text-xs text-tulip-blue/70"
+                wrapperClassName="mb-1"
+              />
               <p className="text-xl font-bold text-tulip-blue">{formatNumber(advancedKPIs.stabilite_equipe_score, 0)}/100</p>
             </div>
           </div>
