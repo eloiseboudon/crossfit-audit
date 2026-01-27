@@ -42,7 +42,6 @@ FILES_TO_COPY=(
     "migrations.js"
     "db-manage.sh"
     "deploy.sh"
-    "MIGRATIONS_README.md"
 )
 
 for file in "${FILES_TO_COPY[@]}"; do
@@ -52,9 +51,6 @@ for file in "${FILES_TO_COPY[@]}"; do
             cp "$file" "$APP_DIR/"
             chmod +x "$APP_DIR/$file"
             echo "✓ $file → $APP_DIR/"
-        elif [[ "$file" == "MIGRATIONS_README.md" ]]; then
-            cp "$file" "$BACKEND_DIR/"
-            echo "✓ $file → $BACKEND_DIR/"
         else
             # Fichiers JS dans backend
             cp "$file" "$BACKEND_DIR/"
@@ -126,8 +122,8 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 echo "✅ Installation terminée !"
 echo ""
-echo "📚 Documentation complète disponible dans:"
-echo "   $BACKEND_DIR/MIGRATIONS_README.md"
+echo "📚 Documentation disponible dans:"
+echo "   $BACKEND_DIR/migrations/README.md"
 echo ""
 echo "🚀 Commandes principales:"
 echo ""

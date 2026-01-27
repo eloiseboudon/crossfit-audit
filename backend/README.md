@@ -8,6 +8,22 @@ Backend Node.js/Express pour l'application d'audit CrossFit - Tulip Conseil
 - npm ou yarn
 - SQLite3 (inclus avec sqlite3 package)
 
+## 🚀 Démarrage rapide (5 minutes)
+
+```bash
+cd backend
+npm install
+cp .env.example .env
+npm run init-db
+npm run dev
+```
+
+Vérifier l'API :
+
+```bash
+curl http://localhost:5176/health
+```
+
 ## 🚀 Installation
 
 ### 1. Installation des dépendances
