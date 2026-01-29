@@ -18,6 +18,16 @@ CREATE TABLE IF NOT EXISTS gyms (
   updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS gym_user_access (
+  id TEXT PRIMARY KEY,
+  gym_id TEXT NOT NULL REFERENCES gyms(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  access_level TEXT NOT NULL CHECK (access_level IN ('read', 'write')),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE(gym_id, user_id)
+);
+
 CREATE TABLE IF NOT EXISTS audits (
   id TEXT PRIMARY KEY,
   gym_id TEXT NOT NULL REFERENCES gyms(id) ON DELETE CASCADE,

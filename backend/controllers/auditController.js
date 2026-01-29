@@ -1,7 +1,37 @@
 const Audit = require('../models/Audit');
-const Gym = require('../models/Gym');
 const Answer = require('../models/Answer');
 const { KPI, Score, Recommendation } = require('../models/AuditData');
+const { resolveGymAccess } = require('../utils/gymAccess');
+
+const ensureAuditAccess = async (req, res, { write = false } = {}) => {
+  const audit = await Audit.findById(req.params.id);
+  if (!audit) {
+    res.status(404).json({ 
+      error: 'Audit non trouvé',
+      message: 'Cet audit n\'existe pas' 
+    });
+    return null;
+  }
+
+  const access = await resolveGymAccess({ gymId: audit.gym_id, user: req.user });
+  if (!access.canRead) {
+    res.status(403).json({ 
+      error: 'Accès interdit',
+      message: 'Vous n\'avez pas accès à cet audit' 
+    });
+    return null;
+  }
+
+  if (write && !access.canWrite) {
+    res.status(403).json({ 
+      error: 'Accès interdit',
+      message: 'Vous ne pouvez pas modifier cet audit' 
+    });
+    return null;
+  }
+
+  return { audit, access };
+};
 
 // @desc    Get all audits
 // @route   GET /api/audits
@@ -9,7 +39,13 @@ const { KPI, Score, Recommendation } = require('../models/AuditData');
 const getAudits = async (req, res, next) => {
   try {
     const { gym_id } = req.query;
-    const audits = await Audit.findAll(gym_id);
+    let audits;
+
+    if (req.user.role === 'admin') {
+      audits = await Audit.findAll(gym_id);
+    } else {
+      audits = await Audit.findAllForUser(req.user.id, gym_id);
+    }
     
     res.json({
       success: true,
@@ -26,14 +62,9 @@ const getAudits = async (req, res, next) => {
 // @access  Private
 const getAudit = async (req, res, next) => {
   try {
-    const audit = await Audit.findById(req.params.id);
-    
-    if (!audit) {
-      return res.status(404).json({ 
-        error: 'Audit non trouvé',
-        message: 'Cet audit n\'existe pas' 
-      });
-    }
+    const result = await ensureAuditAccess(req, res);
+    if (!result) return;
+    const { audit } = result;
 
     res.json({
       success: true,
@@ -49,14 +80,9 @@ const getAudit = async (req, res, next) => {
 // @access  Private
 const getCompleteAudit = async (req, res, next) => {
   try {
+    const accessResult = await ensureAuditAccess(req, res);
+    if (!accessResult) return;
     const audit = await Audit.getComplete(req.params.id);
-    
-    if (!audit) {
-      return res.status(404).json({ 
-        error: 'Audit non trouvé',
-        message: 'Cet audit n\'existe pas' 
-      });
-    }
 
     res.json({
       success: true,
@@ -81,12 +107,18 @@ const createAudit = async (req, res, next) => {
       });
     }
 
-    // Vérifier que la gym existe
-    const gym = await Gym.findById(gym_id);
-    if (!gym) {
+    const access = await resolveGymAccess({ gymId: gym_id, user: req.user });
+    if (!access.gym) {
       return res.status(404).json({ 
         error: 'Gym non trouvée',
         message: 'Cette salle n\'existe pas' 
+      });
+    }
+
+    if (!access.canWrite) {
+      return res.status(403).json({ 
+        error: 'Accès interdit',
+        message: 'Vous ne pouvez pas créer un audit pour cette salle' 
       });
     }
 
@@ -107,14 +139,8 @@ const createAudit = async (req, res, next) => {
 // @access  Private
 const updateAudit = async (req, res, next) => {
   try {
-    const audit = await Audit.findById(req.params.id);
-    
-    if (!audit) {
-      return res.status(404).json({ 
-        error: 'Audit non trouvé',
-        message: 'Cet audit n\'existe pas' 
-      });
-    }
+    const result = await ensureAuditAccess(req, res, { write: true });
+    if (!result) return;
 
     const updatedAudit = await Audit.update(req.params.id, req.body);
     
@@ -133,14 +159,8 @@ const updateAudit = async (req, res, next) => {
 // @access  Private
 const deleteAudit = async (req, res, next) => {
   try {
-    const audit = await Audit.findById(req.params.id);
-    
-    if (!audit) {
-      return res.status(404).json({ 
-        error: 'Audit non trouvé',
-        message: 'Cet audit n\'existe pas' 
-      });
-    }
+    const result = await ensureAuditAccess(req, res, { write: true });
+    if (!result) return;
 
     await Audit.delete(req.params.id);
     
@@ -158,6 +178,8 @@ const deleteAudit = async (req, res, next) => {
 // @access  Private
 const saveAnswers = async (req, res, next) => {
   try {
+    const result = await ensureAuditAccess(req, res, { write: true });
+    if (!result) return;
     const { answers } = req.body;
     
     if (!Array.isArray(answers)) {
@@ -187,6 +209,8 @@ const saveAnswers = async (req, res, next) => {
 // @access  Private
 const getAnswers = async (req, res, next) => {
   try {
+    const result = await ensureAuditAccess(req, res);
+    if (!result) return;
     const answers = await Answer.findByAuditId(req.params.id);
     
     res.json({
@@ -204,6 +228,8 @@ const getAnswers = async (req, res, next) => {
 // @access  Private
 const saveKPIs = async (req, res, next) => {
   try {
+    const result = await ensureAuditAccess(req, res, { write: true });
+    if (!result) return;
     const { kpis } = req.body;
     
     if (!Array.isArray(kpis)) {
@@ -230,6 +256,8 @@ const saveKPIs = async (req, res, next) => {
 // @access  Private
 const saveScores = async (req, res, next) => {
   try {
+    const result = await ensureAuditAccess(req, res, { write: true });
+    if (!result) return;
     const { scores } = req.body;
     
     if (!Array.isArray(scores)) {
@@ -256,6 +284,8 @@ const saveScores = async (req, res, next) => {
 // @access  Private
 const getGlobalScore = async (req, res, next) => {
   try {
+    const result = await ensureAuditAccess(req, res);
+    if (!result) return;
     const globalScore = await Score.getGlobalScore(req.params.id);
     
     if (!globalScore) {
@@ -279,6 +309,8 @@ const getGlobalScore = async (req, res, next) => {
 // @access  Private
 const saveRecommendations = async (req, res, next) => {
   try {
+    const result = await ensureAuditAccess(req, res, { write: true });
+    if (!result) return;
     const { recommendations } = req.body;
     
     if (!Array.isArray(recommendations)) {
@@ -305,6 +337,8 @@ const saveRecommendations = async (req, res, next) => {
 // @access  Private
 const getRecommendations = async (req, res, next) => {
   try {
+    const result = await ensureAuditAccess(req, res);
+    if (!result) return;
     const recommendations = await Recommendation.findByAuditId(req.params.id);
     
     res.json({

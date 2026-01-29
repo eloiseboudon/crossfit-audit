@@ -5,7 +5,9 @@ const {
   getGym,
   createGym,
   updateGym,
-  deleteGym
+  deleteGym,
+  addGymAccess,
+  removeGymAccess
 } = require('../controllers/gymController');
 const { auth } = require('../middleware/auth');
 
@@ -20,5 +22,11 @@ router.route('/:id')
   .get(getGym)
   .put(updateGym)
   .delete(deleteGym);
+
+router.route('/:id/access')
+  .post(addGymAccess);
+
+router.route('/:id/access/:userId')
+  .delete(removeGymAccess);
 
 module.exports = router;

@@ -14,6 +14,23 @@ class Gym {
     return await dbAll(sql, params);
   }
 
+  static async findAllForUser(userId) {
+    const sql = `
+      SELECT g.*, 
+        CASE 
+          WHEN g.user_id = ? THEN 'owner'
+          ELSE ga.access_level
+        END AS access_level
+      FROM gyms g
+      LEFT JOIN gym_user_access ga
+        ON ga.gym_id = g.id AND ga.user_id = ?
+      WHERE g.user_id = ? OR ga.user_id = ?
+      GROUP BY g.id
+      ORDER BY g.created_at DESC
+    `;
+    return await dbAll(sql, [userId, userId, userId, userId]);
+  }
+
   static async findById(id) {
     const sql = `SELECT * FROM gyms WHERE id = ?`;
     return await dbGet(sql, [id]);

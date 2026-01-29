@@ -25,6 +25,32 @@ class Audit {
     return await dbAll(sql, params);
   }
 
+  static async findAllForUser(userId, gymId = null) {
+    let sql = `
+      SELECT a.*, g.name as gym_name
+      FROM audits a
+      LEFT JOIN gyms g ON a.gym_id = g.id
+      LEFT JOIN gym_user_access ga ON ga.gym_id = a.gym_id AND ga.user_id = ?
+      WHERE g.user_id = ? OR ga.user_id = ?
+      ORDER BY a.created_at DESC
+    `;
+    let params = [userId, userId, userId];
+
+    if (gymId) {
+      sql = `
+        SELECT a.*, g.name as gym_name
+        FROM audits a
+        LEFT JOIN gyms g ON a.gym_id = g.id
+        LEFT JOIN gym_user_access ga ON ga.gym_id = a.gym_id AND ga.user_id = ?
+        WHERE a.gym_id = ? AND (g.user_id = ? OR ga.user_id = ?)
+        ORDER BY a.created_at DESC
+      `;
+      params = [userId, gymId, userId, userId];
+    }
+
+    return await dbAll(sql, params);
+  }
+
   static async findById(id) {
     const sql = `
       SELECT a.*, g.name as gym_name
