@@ -34,6 +34,8 @@ const readAuthToken = (): string | null => {
   }
 };
 
+export const getAuthToken = (): string | null => readAuthToken();
+
 const toBoolean = (value: unknown): boolean => {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number') return value === 1;
