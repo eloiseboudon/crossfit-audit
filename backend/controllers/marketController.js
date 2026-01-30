@@ -1,4 +1,35 @@
 const { Competitor, MarketZone, GymOffer } = require('../models/Market');
+const Audit = require('../models/Audit');
+const { resolveGymAccess } = require('../utils/gymAccess');
+
+const ensureGymAccess = async (req, res, gymId, { write = false } = {}) => {
+  const access = await resolveGymAccess({ gymId, user: req.user });
+  if (!access.gym) {
+    res.status(404).json({ 
+      error: 'Gym non trouvée',
+      message: 'Cette salle n\'existe pas' 
+    });
+    return null;
+  }
+
+  if (!access.canRead) {
+    res.status(403).json({ 
+      error: 'Accès interdit',
+      message: 'Vous n\'avez pas accès à cette salle' 
+    });
+    return null;
+  }
+
+  if (write && !access.canWrite) {
+    res.status(403).json({ 
+      error: 'Accès interdit',
+      message: 'Vous ne pouvez pas modifier cette salle' 
+    });
+    return null;
+  }
+
+  return access;
+};
 
 // ============================================
 // COMPETITORS
@@ -17,6 +48,9 @@ const getCompetitors = async (req, res, next) => {
         message: 'L\'ID de la salle est requis' 
       });
     }
+
+    const access = await ensureGymAccess(req, res, gym_id);
+    if (!access) return;
 
     const competitors = await Competitor.findByGymId(gym_id);
     
@@ -44,6 +78,9 @@ const getCompetitor = async (req, res, next) => {
       });
     }
 
+    const access = await ensureGymAccess(req, res, competitor.gym_id);
+    if (!access) return;
+
     res.json({
       success: true,
       data: competitor
@@ -66,6 +103,9 @@ const createCompetitor = async (req, res, next) => {
         message: 'L\'ID de la salle et le nom sont requis' 
       });
     }
+
+    const access = await ensureGymAccess(req, res, gym_id, { write: true });
+    if (!access) return;
 
     const competitor = await Competitor.create(req.body);
     
@@ -93,6 +133,9 @@ const updateCompetitor = async (req, res, next) => {
       });
     }
 
+    const access = await ensureGymAccess(req, res, competitor.gym_id, { write: true });
+    if (!access) return;
+
     const updated = await Competitor.update(req.params.id, req.body);
     
     res.json({
@@ -118,6 +161,9 @@ const deleteCompetitor = async (req, res, next) => {
         message: 'Ce concurrent n\'existe pas' 
       });
     }
+
+    const access = await ensureGymAccess(req, res, competitor.gym_id, { write: true });
+    if (!access) return;
 
     await Competitor.delete(req.params.id);
     
@@ -265,8 +311,19 @@ const getGymOffers = async (req, res, next) => {
     let offers;
     
     if (gym_id) {
+      const access = await ensureGymAccess(req, res, gym_id);
+      if (!access) return;
       offers = await GymOffer.findByGymId(gym_id, includeInactive);
     } else if (audit_id) {
+      const audit = await Audit.findById(audit_id);
+      if (!audit) {
+        return res.status(404).json({ 
+          error: 'Audit non trouvé',
+          message: 'Cet audit n\'existe pas' 
+        });
+      }
+      const access = await ensureGymAccess(req, res, audit.gym_id);
+      if (!access) return;
       offers = await GymOffer.findByAuditId(audit_id, includeInactive);
     } else {
       return res.status(400).json({ 
@@ -299,6 +356,9 @@ const getGymOffer = async (req, res, next) => {
       });
     }
 
+    const access = await ensureGymAccess(req, res, offer.gym_id);
+    if (!access) return;
+
     res.json({
       success: true,
       data: offer
@@ -321,6 +381,9 @@ const createGymOffer = async (req, res, next) => {
         message: 'Tous les champs requis doivent être fournis' 
       });
     }
+
+    const access = await ensureGymAccess(req, res, gym_id, { write: true });
+    if (!access) return;
 
     const offer = await GymOffer.create(req.body);
     
@@ -348,6 +411,9 @@ const updateGymOffer = async (req, res, next) => {
       });
     }
 
+    const access = await ensureGymAccess(req, res, offer.gym_id, { write: true });
+    if (!access) return;
+
     const updated = await GymOffer.update(req.params.id, req.body);
     
     res.json({
@@ -373,6 +439,9 @@ const deleteGymOffer = async (req, res, next) => {
         message: 'Cette offre n\'existe pas' 
       });
     }
+
+    const access = await ensureGymAccess(req, res, offer.gym_id, { write: true });
+    if (!access) return;
 
     await GymOffer.delete(req.params.id);
     

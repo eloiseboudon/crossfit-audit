@@ -264,6 +264,16 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS gym_user_access (
+  id TEXT PRIMARY KEY,
+  gym_id TEXT NOT NULL REFERENCES gyms(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  access_level TEXT NOT NULL CHECK (access_level IN ('read', 'write')),
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  UNIQUE(gym_id, user_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_audits_gym_id ON audits(gym_id);
 CREATE INDEX IF NOT EXISTS idx_answers_audit_id ON answers(audit_id);
 CREATE INDEX IF NOT EXISTS idx_kpis_audit_id ON kpis(audit_id);
@@ -272,6 +282,8 @@ CREATE INDEX IF NOT EXISTS idx_recommendations_audit_id ON recommendations(audit
 CREATE INDEX IF NOT EXISTS idx_competitors_gym_id ON competitors(gym_id);
 CREATE INDEX IF NOT EXISTS idx_gym_offers_gym_id ON gym_offers(gym_id);
 CREATE INDEX IF NOT EXISTS idx_gym_offers_audit_id ON gym_offers(audit_id);
+CREATE INDEX IF NOT EXISTS idx_gym_user_access_gym_id ON gym_user_access(gym_id);
+CREATE INDEX IF NOT EXISTS idx_gym_user_access_user_id ON gym_user_access(user_id);
 `;
 
 async function initDatabase() {
