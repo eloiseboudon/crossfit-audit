@@ -14,6 +14,7 @@ const gymRoutes = require('./routes/gyms');
 const auditRoutes = require('./routes/audits');
 const marketRoutes = require('./routes/market');
 const benchmarkRoutes = require('./routes/benchmarks');
+const dataTablesRoutes = require('./routes/dataTables');
 
 const app = express();
 
@@ -80,6 +81,7 @@ app.use('/api/gyms', gymRoutes);
 app.use('/api/audits', auditRoutes);
 app.use('/api/market-benchmarks', benchmarkRoutes);
 app.use('/api', marketRoutes);
+app.use('/api/data-tables', dataTablesRoutes);
 
 // Route par défaut
 app.get('/', (req, res) => {

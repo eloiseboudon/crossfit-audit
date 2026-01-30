@@ -1,10 +1,11 @@
-import { Dumbbell, Home, LogOut, Settings, Zap } from 'lucide-react';
+import { Database, Dumbbell, Home, LogOut, Settings, Zap } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from './lib/auth';
 import AuditForm from './pages/AuditForm';
 import AuthPage from './pages/AuthPage';
 import CompetitorsPage from './pages/CompetitorsPage';
 import Dashboard from './pages/Dashboard';
+import DataTablesPage from './pages/DataTablesPage';
 import GymForm from './pages/GymForm';
 import HomePage from './pages/HomePage';
 import MarketZonesPage from './pages/MarketZonesPage';
@@ -21,8 +22,18 @@ import SettingsPage from './pages/SettingsPage';
  * - zones: Gestion des zones de marché
  * - competitors: Gestion des concurrents (nécessite gymId)
  * - offers: Gestion des offres commerciales (nécessite gymId)
+ * - data-tables: Vue des tables de données en direct
  */
-type View = 'home' | 'gym-form' | 'audit-form' | 'dashboard' | 'settings' | 'zones' | 'competitors' | 'offers';
+type View =
+  | 'home'
+  | 'gym-form'
+  | 'audit-form'
+  | 'dashboard'
+  | 'settings'
+  | 'zones'
+  | 'competitors'
+  | 'offers'
+  | 'data-tables';
 
 interface NavigationState {
   view: View;
@@ -80,6 +91,9 @@ export default function App() {
             onBack={() => navigate('audit-form', undefined, nav.auditId)}
           />
         );
+
+      case 'data-tables':
+        return <DataTablesPage />;
 
       case 'settings':
         return (
@@ -155,6 +169,16 @@ export default function App() {
               >
                 <Home className="w-4 h-4" />
                 <span className="hidden sm:inline">Accueil</span>
+              </button>
+              <button
+                onClick={() => navigate('data-tables')}
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${nav.view === 'data-tables'
+                  ? 'bg-[#4F7A7E] text-[#F4F3EE] glow-teal'
+                  : 'text-[#D6C7A1] hover:text-[#F4F3EE] hover:bg-[#4F7A7E]/20 border border-transparent hover:border-[#4F7A7E]/30'
+                  }`}
+              >
+                <Database className="w-4 h-4" />
+                <span className="hidden sm:inline">Données</span>
               </button>
               <button
                 onClick={() => navigate('settings')}

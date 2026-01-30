@@ -5,6 +5,8 @@ import {
   Gym,
   GymOffer,
   KPI,
+  DataTableData,
+  DataTableSummary,
   MarketBenchmark,
   MarketZone,
   Recommendation,
@@ -386,4 +388,17 @@ export async function replaceRecommendations(auditId: string, records: Partial<R
     method: 'POST',
     body: JSON.stringify({ recommendations }),
   });
+}
+
+export async function listDataTables(): Promise<DataTableSummary[]> {
+  const payload = await request<ApiResponse<DataTableSummary[]>>('/data-tables');
+  return payload.data ?? [];
+}
+
+export async function getDataTable(name: string): Promise<DataTableData> {
+  const payload = await request<ApiResponse<DataTableData>>(`/data-tables/${encodeURIComponent(name)}`);
+  if (!payload.data) {
+    throw new Error('Table not found');
+  }
+  return payload.data;
 }
