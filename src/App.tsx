@@ -33,6 +33,7 @@ interface NavigationState {
 export default function App() {
   const { user, loading, signOut } = useAuth();
   const [nav, setNav] = useState<NavigationState>({ view: 'home' });
+  const isAuthEnabled = false;
 
   const navigate = (view: View, gymId?: string, auditId?: string) => {
     setNav({ view, gymId, auditId });
@@ -51,7 +52,7 @@ export default function App() {
     );
   }
 
-  if (!user) {
+  if (isAuthEnabled && !user) {
     return <AuthPage />;
   }
 
