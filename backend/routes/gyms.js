@@ -9,24 +9,24 @@ const {
   addGymAccess,
   removeGymAccess
 } = require('../controllers/gymController');
-const { auth } = require('../middleware/auth');
+const { auth, optionalAuth } = require('../middleware/auth');
 
-// Toutes les routes nécessitent l'authentification
-router.use(auth);
+// Lecture possible sans authentification
+router.use(optionalAuth);
 
 router.route('/')
   .get(getGyms)
-  .post(createGym);
+  .post(auth, createGym);
 
 router.route('/:id')
   .get(getGym)
-  .put(updateGym)
-  .delete(deleteGym);
+  .put(auth, updateGym)
+  .delete(auth, deleteGym);
 
 router.route('/:id/access')
-  .post(addGymAccess);
+  .post(auth, addGymAccess);
 
 router.route('/:id/access/:userId')
-  .delete(removeGymAccess);
+  .delete(auth, removeGymAccess);
 
 module.exports = router;

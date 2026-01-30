@@ -13,6 +13,18 @@ const ensureAuditAccess = async (req, res, { write = false } = {}) => {
     return null;
   }
 
+  if (!req.user) {
+    if (write) {
+      res.status(401).json({ 
+        error: 'Accès non autorisé',
+        message: 'Token manquant' 
+      });
+      return null;
+    }
+
+    return { audit, access: { canRead: true, canWrite: false } };
+  }
+
   const access = await resolveGymAccess({ gymId: audit.gym_id, user: req.user });
   if (!access.canRead) {
     res.status(403).json({ 
@@ -41,7 +53,9 @@ const getAudits = async (req, res, next) => {
     const { gym_id } = req.query;
     let audits;
 
-    if (req.user.role === 'admin') {
+    if (!req.user) {
+      audits = await Audit.findAll(gym_id);
+    } else if (req.user.role === 'admin') {
       audits = await Audit.findAll(gym_id);
     } else {
       audits = await Audit.findAllForUser(req.user.id, gym_id);

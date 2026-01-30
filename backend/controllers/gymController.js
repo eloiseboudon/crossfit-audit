@@ -8,6 +8,15 @@ const { resolveGymAccess } = require('../utils/gymAccess');
 // @access  Private
 const getGyms = async (req, res, next) => {
   try {
+    if (!req.user) {
+      const gyms = await Gym.findAll();
+      return res.json({
+        success: true,
+        count: gyms.length,
+        data: gyms,
+      });
+    }
+
     if (req.user.role === 'admin') {
       const gyms = await Gym.findAll();
       return res.json({
@@ -34,6 +43,21 @@ const getGyms = async (req, res, next) => {
 // @access  Private
 const getGym = async (req, res, next) => {
   try {
+    if (!req.user) {
+      const gym = await Gym.getWithStats(req.params.id);
+      if (!gym) {
+        return res.status(404).json({ 
+          error: 'Gym non trouvée',
+          message: 'Cette salle n\'existe pas' 
+        });
+      }
+
+      return res.json({
+        success: true,
+        data: gym
+      });
+    }
+
     const access = await resolveGymAccess({ gymId: req.params.id, user: req.user });
     if (!access.gym) {
       return res.status(404).json({ 

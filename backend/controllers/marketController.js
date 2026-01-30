@@ -1,8 +1,30 @@
 const { Competitor, MarketZone, GymOffer } = require('../models/Market');
+const Gym = require('../models/Gym');
 const Audit = require('../models/Audit');
 const { resolveGymAccess } = require('../utils/gymAccess');
 
 const ensureGymAccess = async (req, res, gymId, { write = false } = {}) => {
+  if (!req.user) {
+    const gym = await Gym.findById(gymId);
+    if (!gym) {
+      res.status(404).json({ 
+        error: 'Gym non trouvée',
+        message: 'Cette salle n\'existe pas' 
+      });
+      return null;
+    }
+
+    if (write) {
+      res.status(401).json({ 
+        error: 'Accès non autorisé',
+        message: 'Token manquant' 
+      });
+      return null;
+    }
+
+    return { gym, canRead: true, canWrite: false, accessLevel: 'guest', isOwner: false };
+  }
+
   const access = await resolveGymAccess({ gymId, user: req.user });
   if (!access.gym) {
     res.status(404).json({ 

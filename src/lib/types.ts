@@ -709,3 +709,15 @@ export interface AdvancedHRKPIs {
   computed_at: string;
   periode_analyse: string;
 }
+
+export interface DataTableSummary {
+  name: string;
+  rowCount: number;
+}
+
+export interface DataTableData {
+  name: string;
+  columns: string[];
+  rows: Record<string, unknown>[];
+  rowCount: number;
+}
