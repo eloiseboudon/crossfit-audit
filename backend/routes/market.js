@@ -17,45 +17,45 @@ const {
   updateGymOffer,
   deleteGymOffer
 } = require('../controllers/marketController');
-const { auth } = require('../middleware/auth');
+const { auth, optionalAuth } = require('../middleware/auth');
 
-// Toutes les routes nécessitent l'authentification
-router.use(auth);
+// Lecture possible sans authentification
+router.use(optionalAuth);
 
 // ============================================
 // COMPETITORS ROUTES
 // ============================================
 router.route('/competitors')
   .get(getCompetitors)
-  .post(createCompetitor);
+  .post(auth, createCompetitor);
 
 router.route('/competitors/:id')
   .get(getCompetitor)
-  .put(updateCompetitor)
-  .delete(deleteCompetitor);
+  .put(auth, updateCompetitor)
+  .delete(auth, deleteCompetitor);
 
 // ============================================
 // MARKET ZONES ROUTES
 // ============================================
 router.route('/market-zones')
   .get(getMarketZones)
-  .post(createMarketZone);
+  .post(auth, createMarketZone);
 
 router.route('/market-zones/:id')
   .get(getMarketZone)
-  .put(updateMarketZone)
-  .delete(deleteMarketZone);
+  .put(auth, updateMarketZone)
+  .delete(auth, deleteMarketZone);
 
 // ============================================
 // GYM OFFERS ROUTES
 // ============================================
 router.route('/gym-offers')
   .get(getGymOffers)
-  .post(createGymOffer);
+  .post(auth, createGymOffer);
 
 router.route('/gym-offers/:id')
   .get(getGymOffer)
-  .put(updateGymOffer)
-  .delete(deleteGymOffer);
+  .put(auth, updateGymOffer)
+  .delete(auth, deleteGymOffer);
 
 module.exports = router;
