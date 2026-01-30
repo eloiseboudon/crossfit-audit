@@ -15,6 +15,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [localInputs, setLocalInputs] = useState<Record<string, string>>({});
   const [currentBlockIndex, setCurrentBlockIndex] = useState(0);
+  const [showIntro, setShowIntro] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const saveTimeoutRef = useState<Record<string, NodeJS.Timeout>>({});[0];
@@ -382,6 +383,129 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
         <button onClick={onBack} className="mt-4 text-[#48737F] hover:underline">
           Retour
         </button>
+      </div>
+    );
+  }
+
+  if (showIntro) {
+    const top25Sections = [
+      {
+        title: '⭐ TOP 25 Questions ESSENTIELLES pour un Audit CrossFit',
+        description: 'Ces questions clés suffisent pour établir un premier diagnostic fiable.',
+        items: []
+      },
+      {
+        title: '🏢 IDENTITÉ & INFRASTRUCTURE (5 questions)',
+        items: [
+          { code: 'raison_sociale', label: 'Identité de base' },
+          { code: 'annee_ouverture', label: 'Ancienneté/maturité de la box' },
+          { code: 'surface_crossfit', label: 'Surface exploitable pour calcul du ratio revenus/m²' },
+          { code: 'capacite_max_cours', label: 'Capacité opérationnelle' },
+          { code: 'nb_places_parking', label: 'Accessibilité (impact acquisition)' }
+        ]
+      },
+      {
+        title: '💰 FINANCE - TOP PRIORITÉ (8 questions)',
+        items: [
+          { code: 'ca_abonnements_mensuels', label: 'Source principale de revenus' },
+          { code: 'loyer_mensuel_ht', label: 'Charge fixe #1 (20-30% du CA typiquement)' },
+          { code: 'electricite_annuel', label: 'Charge fixe #2' },
+          { code: 'salaires_bruts_coachs', label: 'Masse salariale (30-40% du CA)' },
+          { code: 'charges_sociales_patronales', label: 'Charges sur salaires' },
+          { code: 'tresorerie_actuelle', label: 'Santé financière immédiate' },
+          { code: 'emprunts_capital_restant', label: 'Endettement' },
+          { code: 'echeance_mensuelle_emprunts', label: 'Impact trésorerie mensuelle' }
+        ]
+      },
+      {
+        title: '👥 MEMBRES - CRITIQUES (7 questions)',
+        items: [
+          { code: 'nb_membres_actifs_total', label: 'Base client' },
+          { code: 'nb_membres_illimite', label: 'Segment premium (plus rentable)' },
+          { code: 'prix_illimite_sans_engagement', label: 'Tarif de référence' },
+          { code: 'nb_essais_mois_actuel', label: 'Pipeline d’acquisition' },
+          { code: 'nb_conversions_mois_actuel', label: 'Performance commerciale' },
+          { code: 'nb_resiliations_mois_actuel', label: 'Churn rate' },
+          { code: 'duree_moyenne_adhesion', label: 'Lifetime Value indicator' }
+        ]
+      },
+      {
+        title: '📅 PLANNING & OPÉRATIONS (3 questions)',
+        items: [
+          { code: 'nb_cours_lundi → nb_cours_vendredi', label: 'Volume semaine (groupées en 1 métrique)' },
+          { code: 'participants_moyen_cours', label: 'Taux d’occupation' },
+          { code: 'nb_cours_complets_semaine', label: 'Saturation/capacité' }
+        ]
+      },
+      {
+        title: '👨‍🏫 RH & COACHING (2 questions)',
+        items: [
+          { code: 'nb_total_coachs', label: 'Ressources humaines' },
+          { code: 'remuneration_coach_temps_plein', label: 'Structure de coûts RH' }
+        ]
+      }
+    ];
+
+    return (
+      <div className="max-w-5xl mx-auto space-y-6 px-2 md:px-0">
+        <div className="bg-white rounded-xl shadow-md p-8 border-b-2 border-[#DAD7CD]">
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-semibold text-[#48737F]">Page principale de l’audit</h1>
+              <p className="text-[#CCBB90] mt-2">
+                Avant de commencer le questionnaire complet, voici les 25 questions essentielles à collecter.
+              </p>
+            </div>
+            <button
+              onClick={onBack}
+              className="px-4 py-2 text-[#48737F] hover:bg-[#48737F]/10 rounded-lg transition-all border border-[#48737F]/20"
+            >
+              Retour
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {top25Sections.map((section, index) => (
+              <div key={section.title} className="border border-[#DAD7CD]/70 rounded-xl p-5">
+                <h2 className="text-lg font-semibold text-[#48737F] mb-2">
+                  {section.title}
+                </h2>
+                {section.description && (
+                  <p className="text-sm text-[#CCBB90] mb-3">{section.description}</p>
+                )}
+                {section.items.length > 0 && (
+                  <ul className="space-y-2">
+                    {section.items.map((item) => (
+                      <li key={item.code} className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
+                        <span className="text-sm font-mono text-[#48737F] bg-[#48737F]/10 px-2 py-1 rounded-md inline-flex w-fit">
+                          {item.code}
+                        </span>
+                        <span className="text-sm text-[#48737F]/90">{item.label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {index === 0 && (
+                  <div className="mt-4 text-sm text-[#48737F]/80">
+                    Une fois ces réponses saisies, le bilan mettra en avant les ratios clés calculables.
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-[#48737F]/70">
+              Vous pouvez commencer l’audit maintenant ou revenir plus tard.
+            </p>
+            <button
+              onClick={() => setShowIntro(false)}
+              className="px-6 py-3 bg-[#48737F] text-white rounded-lg hover:bg-[#3A5C66] transition-all shadow-md font-semibold"
+            >
+              Commencer le questionnaire
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
