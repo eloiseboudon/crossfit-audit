@@ -60,6 +60,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
   // KPIs de base et avancés
   const [kpis, setKpis] = useState<any>(null);
   const [advancedFinancialKPIs, setAdvancedFinancialKPIs] = useState<any>(null);
+  const [missingEssentialFields, setMissingEssentialFields] = useState<string[]>([]);
   const [keyRatios, setKeyRatios] = useState<any>(null);
 
   // Scores et recommandations
@@ -112,45 +113,107 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
       const calculatedKPIs = calculateKPIs(answersData);
       setKpis(calculatedKPIs);
 
-      const caAbonnementsMensuels = getAnswerValue(answersData, 'produits_exploitation', 'ca_abonnements_mensuels', 0);
-      const nbMembresActifs = getAnswerValue(answersData, 'membres_actifs', 'nb_membres_actifs_total', 0);
-      const surfaceCrossfit = getAnswerValue(answersData, 'infrastructure_detaillee', 'surface_crossfit', 0);
-      const capaciteMaxCours = getAnswerValue(answersData, 'capacite_occupation', 'capacite_max_cours', 0);
-      const participantsMoyenCours = getAnswerValue(answersData, 'capacite_occupation', 'participants_moyen_cours', 0);
-      const nbEssaisMois = getAnswerValue(answersData, 'acquisition_conversion', 'nb_essais_mois_actuel', 0);
-      const nbConversionsMois = getAnswerValue(answersData, 'acquisition_conversion', 'nb_conversions_mois_actuel', 0);
-      const nbResiliationsMois = getAnswerValue(answersData, 'retention_churn', 'nb_resiliations_mois_actuel', 0);
-      const nbTotalCoachs = getAnswerValue(answersData, 'structure_equipe', 'nb_total_coachs', 0);
-      const salairesBrutsCoachs = getAnswerValue(answersData, 'charges_exploitation', 'salaires_bruts_coachs', 0);
-      const chargesSocialesPatronales = getAnswerValue(answersData, 'charges_exploitation', 'charges_sociales_patronales', 0);
-      const loyerMensuelHt = getAnswerValue(answersData, 'charges_exploitation', 'loyer_mensuel_ht', 0);
-      const tresorerieActuelle = getAnswerValue(answersData, 'resultat_tresorerie', 'tresorerie_actuelle', 0);
+      const essentialQuestions: Array<{
+        block: string;
+        code?: string;
+        codes?: string[];
+        label: string;
+      }> = [
+        { block: 'identite_legale', code: 'raison_sociale', label: 'Raison sociale' },
+        { block: 'identite_legale', code: 'annee_ouverture', label: 'Année d’ouverture' },
+        { block: 'infrastructure_detaillee', code: 'surface_crossfit', label: 'Surface CrossFit' },
+        { block: 'capacite_occupation', code: 'capacite_max_cours', label: 'Capacité max cours' },
+        { block: 'infrastructure_detaillee', code: 'nb_places_parking', label: 'Places de parking' },
+        { block: 'produits_exploitation', code: 'ca_abonnements_mensuels', label: 'CA abonnements mensuels' },
+        { block: 'charges_exploitation', code: 'loyer_mensuel_ht', label: 'Loyer mensuel HT' },
+        { block: 'charges_exploitation', code: 'electricite_annuel', label: 'Électricité annuelle' },
+        { block: 'charges_exploitation', code: 'salaires_bruts_coachs', label: 'Salaires bruts coachs' },
+        { block: 'charges_exploitation', code: 'charges_sociales_patronales', label: 'Charges sociales patronales' },
+        { block: 'resultat_tresorerie', code: 'tresorerie_actuelle', label: 'Trésorerie actuelle' },
+        { block: 'resultat_tresorerie', code: 'emprunts_capital_restant', label: 'Emprunts - capital restant' },
+        { block: 'resultat_tresorerie', code: 'echeance_mensuelle_emprunts', label: 'Échéance mensuelle emprunts' },
+        { block: 'structure_base', code: 'nb_membres_actifs_total', label: 'Membres actifs total' },
+        { block: 'structure_base', code: 'nb_membres_illimite', label: 'Membres illimités' },
+        { block: 'tarification_detaillee', code: 'prix_illimite_sans_engagement', label: 'Prix illimité sans engagement' },
+        { block: 'acquisition_conversion', code: 'nb_essais_mois_actuel', label: 'Essais mois actuel' },
+        { block: 'acquisition_conversion', code: 'nb_conversions_mois_actuel', label: 'Conversions mois actuel' },
+        { block: 'retention_churn', code: 'nb_resiliations_mois_actuel', label: 'Résiliations mois actuel' },
+        { block: 'retention_churn', code: 'duree_moyenne_adhesion', label: 'Durée moyenne adhésion' },
+        {
+          block: 'structure_planning',
+          codes: ['nb_cours_lundi', 'nb_cours_mardi', 'nb_cours_mercredi', 'nb_cours_jeudi', 'nb_cours_vendredi'],
+          label: 'Volume semaine (lundi à vendredi)'
+        },
+        { block: 'capacite_occupation', code: 'participants_moyen_cours', label: 'Participants moyens' },
+        { block: 'capacite_occupation', code: 'nb_cours_complets_semaine', label: 'Cours complets semaine' },
+        { block: 'structure_equipe', code: 'nb_total_coachs', label: 'Total coachs' },
+        { block: 'remuneration', code: 'remuneration_coach_temps_plein', label: 'Rémunération coach temps plein' }
+      ];
 
-      const monthlyRevenue = caAbonnementsMensuels;
-      const annualRevenueReference = monthlyRevenue * 12;
-      const revenuePerMember = nbMembresActifs > 0 ? monthlyRevenue / nbMembresActifs : 0;
-      const revenuePerM2 = surfaceCrossfit > 0 ? monthlyRevenue / surfaceCrossfit : 0;
-      const occupancyRate = capaciteMaxCours > 0 ? (participantsMoyenCours / capaciteMaxCours) * 100 : 0;
-      const conversionRate = nbEssaisMois > 0 ? (nbConversionsMois / nbEssaisMois) * 100 : 0;
-      const churnRate = nbMembresActifs > 0 ? (nbResiliationsMois / nbMembresActifs) * 100 : 0;
-      const membersPerCoach = nbTotalCoachs > 0 ? nbMembresActifs / nbTotalCoachs : 0;
-      const payrollToRevenue = annualRevenueReference > 0
-        ? ((salairesBrutsCoachs + chargesSocialesPatronales) / annualRevenueReference) * 100
-        : 0;
-      const rentToRevenue = monthlyRevenue > 0 ? (loyerMensuelHt / monthlyRevenue) * 100 : 0;
-      const cashMonths = monthlyRevenue > 0 ? tresorerieActuelle / monthlyRevenue : 0;
+      const isAnswered = (value: unknown) => {
+        if (Array.isArray(value)) {
+          return value.length > 0;
+        }
+        return value !== null && value !== undefined && value !== '';
+      };
 
-      setKeyRatios({
-        revenuePerMember,
-        revenuePerM2,
-        occupancyRate,
-        conversionRate,
-        churnRate,
-        membersPerCoach,
-        payrollToRevenue,
-        rentToRevenue,
-        cashMonths
-      });
+      const getRawAnswer = (blockCode: string, questionCode: string) =>
+        answersData.find((answer) => answer.block_code === blockCode && answer.question_code === questionCode)?.value;
+
+      const missingFields = essentialQuestions
+        .filter((question) => {
+          if (question.codes) {
+            return question.codes.some((code) => !isAnswered(getRawAnswer(question.block, code)));
+          }
+          return !isAnswered(getRawAnswer(question.block, question.code ?? ''));
+        })
+        .map((question) => question.label);
+
+      setMissingEssentialFields(missingFields);
+
+      if (missingFields.length === 0) {
+        const caAbonnementsMensuels = getAnswerValue(answersData, 'produits_exploitation', 'ca_abonnements_mensuels', 0);
+        const nbMembresActifs = getAnswerValue(answersData, 'structure_base', 'nb_membres_actifs_total', 0);
+        const surfaceCrossfit = getAnswerValue(answersData, 'infrastructure_detaillee', 'surface_crossfit', 0);
+        const capaciteMaxCours = getAnswerValue(answersData, 'capacite_occupation', 'capacite_max_cours', 0);
+        const participantsMoyenCours = getAnswerValue(answersData, 'capacite_occupation', 'participants_moyen_cours', 0);
+        const nbEssaisMois = getAnswerValue(answersData, 'acquisition_conversion', 'nb_essais_mois_actuel', 0);
+        const nbConversionsMois = getAnswerValue(answersData, 'acquisition_conversion', 'nb_conversions_mois_actuel', 0);
+        const nbResiliationsMois = getAnswerValue(answersData, 'retention_churn', 'nb_resiliations_mois_actuel', 0);
+        const nbTotalCoachs = getAnswerValue(answersData, 'structure_equipe', 'nb_total_coachs', 0);
+        const salairesBrutsCoachs = getAnswerValue(answersData, 'charges_exploitation', 'salaires_bruts_coachs', 0);
+        const chargesSocialesPatronales = getAnswerValue(answersData, 'charges_exploitation', 'charges_sociales_patronales', 0);
+        const loyerMensuelHt = getAnswerValue(answersData, 'charges_exploitation', 'loyer_mensuel_ht', 0);
+        const tresorerieActuelle = getAnswerValue(answersData, 'resultat_tresorerie', 'tresorerie_actuelle', 0);
+
+        const monthlyRevenue = caAbonnementsMensuels;
+        const annualRevenueReference = monthlyRevenue * 12;
+        const revenuePerMember = nbMembresActifs > 0 ? monthlyRevenue / nbMembresActifs : 0;
+        const revenuePerM2 = surfaceCrossfit > 0 ? monthlyRevenue / surfaceCrossfit : 0;
+        const occupancyRate = capaciteMaxCours > 0 ? (participantsMoyenCours / capaciteMaxCours) * 100 : 0;
+        const conversionRate = nbEssaisMois > 0 ? (nbConversionsMois / nbEssaisMois) * 100 : 0;
+        const churnRate = nbMembresActifs > 0 ? (nbResiliationsMois / nbMembresActifs) * 100 : 0;
+        const membersPerCoach = nbTotalCoachs > 0 ? nbMembresActifs / nbTotalCoachs : 0;
+        const payrollToRevenue = annualRevenueReference > 0
+          ? ((salairesBrutsCoachs + chargesSocialesPatronales) / annualRevenueReference) * 100
+          : 0;
+        const rentToRevenue = monthlyRevenue > 0 ? (loyerMensuelHt / monthlyRevenue) * 100 : 0;
+        const cashMonths = monthlyRevenue > 0 ? tresorerieActuelle / monthlyRevenue : 0;
+
+        setKeyRatios({
+          revenuePerMember,
+          revenuePerM2,
+          occupancyRate,
+          conversionRate,
+          churnRate,
+          membersPerCoach,
+          payrollToRevenue,
+          rentToRevenue,
+          cashMonths
+        });
+      } else {
+        setKeyRatios(null);
+      }
 
       // Sauvegarder les KPIs de base
       const kpisToUpsert = Object.entries(calculatedKPIs).map(([key, value]) => ({
@@ -344,6 +407,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
             recommendations={recommendations}
             scenarios={scenarios}
             keyRatios={keyRatios}
+            missingEssentialFields={missingEssentialFields}
             formatNumber={formatNumber}
             formatCurrency={formatCurrency}
             getPriorityColor={getPriorityColor}
@@ -579,7 +643,18 @@ function InfoLabel({
 /**
  * Onglet Vue d'ensemble - Score global, KPIs clés, recommandations prioritaires
  */
-function OverviewTab({ scores, kpis, recommendations, scenarios, keyRatios, formatNumber, formatCurrency, getPriorityColor, getEffortIcon }: any) {
+function OverviewTab({
+  scores,
+  kpis,
+  recommendations,
+  scenarios,
+  keyRatios,
+  missingEssentialFields,
+  formatNumber,
+  formatCurrency,
+  getPriorityColor,
+  getEffortIcon
+}: any) {
   return (
     <div className="space-y-6">
       {/* Score Global */}
@@ -722,7 +797,7 @@ function OverviewTab({ scores, kpis, recommendations, scenarios, keyRatios, form
       </div>
 
       {/* Ratios clés calculables */}
-      {kpis && (
+      {kpis && keyRatios && (
         <div className="bg-white rounded-card shadow-card border border-tulip-beige/30 p-6">
           <div className="flex items-center justify-between flex-wrap gap-2 mb-6">
             <h2 className="text-xl font-bold text-tulip-blue">📊 Ratios clés calculables</h2>
@@ -779,6 +854,16 @@ function OverviewTab({ scores, kpis, recommendations, scenarios, keyRatios, form
               <p className="text-xs text-tulip-blue/60 mt-1">Trésorerie / CA mensuel moyen</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {kpis && !keyRatios && missingEssentialFields?.length > 0 && (
+        <div className="bg-white rounded-card shadow-card border border-tulip-beige/30 p-6">
+          <h2 className="text-xl font-bold text-tulip-blue mb-2">📊 Ratios clés calculables</h2>
+          <p className="text-sm text-tulip-blue/70">
+            Renseignez les 25 questions essentielles pour afficher ces ratios. Il manque encore{' '}
+            <span className="font-semibold text-tulip-blue">{missingEssentialFields.length}</span> champ(s).
+          </p>
         </div>
       )}
 
