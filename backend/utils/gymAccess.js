@@ -7,7 +7,11 @@ const resolveGymAccess = async ({ gymId, user }) => {
     return { gym: null, canRead: false, canWrite: false, accessLevel: null, isOwner: false };
   }
 
-  if (user.role === 'admin') {
+  if (!user || !user.id) {
+    return { gym, canRead: true, canWrite: true, accessLevel: 'public', isOwner: false };
+  }
+
+  if (user?.role === 'admin') {
     return { gym, canRead: true, canWrite: true, accessLevel: 'admin', isOwner: false };
   }
 
