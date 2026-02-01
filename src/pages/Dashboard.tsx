@@ -20,6 +20,7 @@ import {
   calculateScores,
   generateRecommendations
 } from '../lib/calculations';
+import { essentialQuestionItems } from '../lib/essentialQuestions';
 import { getAnswerValue } from '../lib/extractData';
 import { Answer, Audit } from '../lib/types';
 
@@ -113,43 +114,6 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
       const calculatedKPIs = calculateKPIs(answersData);
       setKpis(calculatedKPIs);
 
-      const essentialQuestions: Array<{
-        block: string;
-        code?: string;
-        codes?: string[];
-        label: string;
-      }> = [
-        { block: 'identite_legale', code: 'raison_sociale', label: 'Raison sociale' },
-        { block: 'identite_legale', code: 'annee_ouverture', label: 'Année d’ouverture' },
-        { block: 'infrastructure_detaillee', code: 'surface_crossfit', label: 'Surface CrossFit' },
-        { block: 'capacite_occupation', code: 'capacite_max_cours', label: 'Capacité max cours' },
-        { block: 'infrastructure_detaillee', code: 'nb_places_parking', label: 'Places de parking' },
-        { block: 'produits_exploitation', code: 'ca_abonnements_mensuels', label: 'CA abonnements mensuels' },
-        { block: 'charges_exploitation', code: 'loyer_mensuel_ht', label: 'Loyer mensuel HT' },
-        { block: 'charges_exploitation', code: 'electricite_annuel', label: 'Électricité annuelle' },
-        { block: 'charges_exploitation', code: 'salaires_bruts_coachs', label: 'Salaires bruts coachs' },
-        { block: 'charges_exploitation', code: 'charges_sociales_patronales', label: 'Charges sociales patronales' },
-        { block: 'resultat_tresorerie', code: 'tresorerie_actuelle', label: 'Trésorerie actuelle' },
-        { block: 'resultat_tresorerie', code: 'emprunts_capital_restant', label: 'Emprunts - capital restant' },
-        { block: 'resultat_tresorerie', code: 'echeance_mensuelle_emprunts', label: 'Échéance mensuelle emprunts' },
-        { block: 'structure_base', code: 'nb_membres_actifs_total', label: 'Membres actifs total' },
-        { block: 'structure_base', code: 'nb_membres_illimite', label: 'Membres illimités' },
-        { block: 'tarification_detaillee', code: 'prix_illimite_sans_engagement', label: 'Prix illimité sans engagement' },
-        { block: 'acquisition_conversion', code: 'nb_essais_mois_actuel', label: 'Essais mois actuel' },
-        { block: 'acquisition_conversion', code: 'nb_conversions_mois_actuel', label: 'Conversions mois actuel' },
-        { block: 'retention_churn', code: 'nb_resiliations_mois_actuel', label: 'Résiliations mois actuel' },
-        { block: 'retention_churn', code: 'duree_moyenne_adhesion', label: 'Durée moyenne adhésion' },
-        {
-          block: 'structure_planning',
-          codes: ['nb_cours_lundi', 'nb_cours_mardi', 'nb_cours_mercredi', 'nb_cours_jeudi', 'nb_cours_vendredi'],
-          label: 'Volume semaine (lundi à vendredi)'
-        },
-        { block: 'capacite_occupation', code: 'participants_moyen_cours', label: 'Participants moyens' },
-        { block: 'capacite_occupation', code: 'nb_cours_complets_semaine', label: 'Cours complets semaine' },
-        { block: 'structure_equipe', code: 'nb_total_coachs', label: 'Total coachs' },
-        { block: 'remuneration', code: 'remuneration_coach_temps_plein', label: 'Rémunération coach temps plein' }
-      ];
-
       const isAnswered = (value: unknown) => {
         if (Array.isArray(value)) {
           return value.length > 0;
@@ -160,7 +124,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
       const getRawAnswer = (blockCode: string, questionCode: string) =>
         answersData.find((answer) => answer.block_code === blockCode && answer.question_code === questionCode)?.value;
 
-      const missingFields = essentialQuestions
+      const missingFields = essentialQuestionItems
         .filter((question) => {
           if (question.codes) {
             return question.codes.some((code) => !isAnswered(getRawAnswer(question.block, code)));

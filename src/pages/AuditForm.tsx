@@ -1,6 +1,7 @@
 import { ArrowLeft, Calculator, Check, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { getAudit, listAnswers, updateAudit, upsertAnswer } from '../lib/api';
+import { essentialQuestionItems, essentialQuestionSections } from '../lib/essentialQuestions';
 import { questionnaireBlocks } from '../lib/questionnaire';
 import { Audit, Question } from '../lib/types';
 
@@ -388,63 +389,32 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
   }
 
   if (showIntro) {
-    const top25Sections = [
-      {
-        title: '⭐ TOP 25 Questions ESSENTIELLES pour un Audit CrossFit',
-        description: 'Ces questions clés suffisent pour établir un premier diagnostic fiable.',
-        items: []
+    const questionLookup = questionnaireBlocks.reduce<Record<string, Record<string, Question>>>(
+      (acc, block) => {
+        acc[block.code] = block.questions.reduce<Record<string, Question>>((questionAcc, question) => {
+          questionAcc[question.code] = question;
+          return questionAcc;
+        }, {});
+        return acc;
       },
-      {
-        title: '🏢 IDENTITÉ & INFRASTRUCTURE (5 questions)',
-        items: [
-          { code: 'raison_sociale', label: 'Identité de base' },
-          { code: 'annee_ouverture', label: 'Ancienneté/maturité de la box' },
-          { code: 'surface_crossfit', label: 'Surface exploitable pour calcul du ratio revenus/m²' },
-          { code: 'capacite_max_cours', label: 'Capacité opérationnelle' },
-          { code: 'nb_places_parking', label: 'Accessibilité (impact acquisition)' }
-        ]
-      },
-      {
-        title: '💰 FINANCE - TOP PRIORITÉ (8 questions)',
-        items: [
-          { code: 'ca_abonnements_mensuels', label: 'Source principale de revenus' },
-          { code: 'loyer_mensuel_ht', label: 'Charge fixe #1 (20-30% du CA typiquement)' },
-          { code: 'electricite_annuel', label: 'Charge fixe #2' },
-          { code: 'salaires_bruts_coachs', label: 'Masse salariale (30-40% du CA)' },
-          { code: 'charges_sociales_patronales', label: 'Charges sur salaires' },
-          { code: 'tresorerie_actuelle', label: 'Santé financière immédiate' },
-          { code: 'emprunts_capital_restant', label: 'Endettement' },
-          { code: 'echeance_mensuelle_emprunts', label: 'Impact trésorerie mensuelle' }
-        ]
-      },
-      {
-        title: '👥 MEMBRES - CRITIQUES (7 questions)',
-        items: [
-          { code: 'nb_membres_actifs_total', label: 'Base client' },
-          { code: 'nb_membres_illimite', label: 'Segment premium (plus rentable)' },
-          { code: 'prix_illimite_sans_engagement', label: 'Tarif de référence' },
-          { code: 'nb_essais_mois_actuel', label: 'Pipeline d’acquisition' },
-          { code: 'nb_conversions_mois_actuel', label: 'Performance commerciale' },
-          { code: 'nb_resiliations_mois_actuel', label: 'Churn rate' },
-          { code: 'duree_moyenne_adhesion', label: 'Lifetime Value indicator' }
-        ]
-      },
-      {
-        title: '📅 PLANNING & OPÉRATIONS (3 questions)',
-        items: [
-          { code: 'nb_cours_lundi → nb_cours_vendredi', label: 'Volume semaine (groupées en 1 métrique)' },
-          { code: 'participants_moyen_cours', label: 'Taux d’occupation' },
-          { code: 'nb_cours_complets_semaine', label: 'Saturation/capacité' }
-        ]
-      },
-      {
-        title: '👨‍🏫 RH & COACHING (2 questions)',
-        items: [
-          { code: 'nb_total_coachs', label: 'Ressources humaines' },
-          { code: 'remuneration_coach_temps_plein', label: 'Structure de coûts RH' }
-        ]
+      {}
+    );
+
+    const isAnswered = (value: unknown) => {
+      if (Array.isArray(value)) {
+        return value.length > 0;
       }
-    ];
+      return value !== null && value !== undefined && value !== '';
+    };
+
+    const missingEssentials = essentialQuestionItems
+      .filter((item) => {
+        if (item.codes) {
+          return item.codes.some((code) => !isAnswered(answers[`${item.block}_${code}`]));
+        }
+        return !isAnswered(answers[`${item.block}_${item.code ?? ''}`]);
+      })
+      .map((item) => item.label);
 
     return (
       <div className="max-w-5xl mx-auto space-y-6 px-2 md:px-0">
@@ -465,7 +435,18 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
           </div>
 
           <div className="space-y-6">
-            {top25Sections.map((section, index) => (
+            <div className="border border-[#DAD7CD]/70 rounded-xl p-5">
+              <h2 className="text-lg font-semibold text-[#48737F] mb-2">
+                ⭐ TOP 25 Questions ESSENTIELLES pour un Audit CrossFit
+              </h2>
+              <p className="text-sm text-[#CCBB90] mb-4">
+                Ces questions clés suffisent pour établir un premier diagnostic fiable.
+              </p>
+              <div className="text-sm text-[#48737F]/80">
+                Les réponses saisies ci-dessous alimentent directement les champs du questionnaire complet.
+              </div>
+            </div>
+            {essentialQuestionSections.map((section, index) => (
               <div key={section.title} className="border border-[#DAD7CD]/70 rounded-xl p-5">
                 <h2 className="text-lg font-semibold text-[#48737F] mb-2">
                   {section.title}
@@ -474,16 +455,32 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
                   <p className="text-sm text-[#CCBB90] mb-3">{section.description}</p>
                 )}
                 {section.items.length > 0 && (
-                  <ul className="space-y-2">
-                    {section.items.map((item) => (
-                      <li key={item.code} className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
-                        <span className="text-sm font-mono text-[#48737F] bg-[#48737F]/10 px-2 py-1 rounded-md inline-flex w-fit">
-                          {item.code}
-                        </span>
-                        <span className="text-sm text-[#48737F]/90">{item.label}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="space-y-6">
+                    {section.items.map((item) => {
+                      if (item.codes) {
+                        return (
+                          <div key={`${item.block}-${item.label}`} className="space-y-3">
+                            <div className="text-sm font-semibold text-[#48737F]">{item.label}</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {item.codes.map((code) => {
+                                const question = questionLookup[item.block]?.[code];
+                                return question ? renderQuestionInput(item.block, question) : null;
+                              })}
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      const question = item.code ? questionLookup[item.block]?.[item.code] : null;
+                      if (!question) return null;
+                      return (
+                        <div key={`${item.block}-${item.code}`} className="space-y-2">
+                          <div className="text-sm font-semibold text-[#48737F]">{item.label}</div>
+                          {renderQuestionInput(item.block, question)}
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
                 {index === 0 && (
                   <div className="mt-4 text-sm text-[#48737F]/80">
@@ -495,15 +492,29 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
           </div>
 
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-[#48737F]/70">
-              Vous pouvez commencer l’audit maintenant ou revenir plus tard.
-            </p>
-            <button
-              onClick={() => setShowIntro(false)}
-              className="px-6 py-3 bg-[#48737F] text-white rounded-lg hover:bg-[#3A5C66] transition-all shadow-md font-semibold"
-            >
-              Commencer le questionnaire
-            </button>
+            <div className="text-sm text-[#48737F]/70 space-y-1">
+              <p>Vous pouvez commencer l’audit maintenant ou calculer les ratios clés dès que ces réponses sont saisies.</p>
+              {missingEssentials.length > 0 && (
+                <p className="text-[#B45309]">
+                  Champs essentiels manquants : {missingEssentials.join(', ')}.
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <button
+                onClick={() => setShowIntro(false)}
+                className="px-6 py-3 bg-[#48737F] text-white rounded-lg hover:bg-[#3A5C66] transition-all shadow-md font-semibold"
+              >
+                Commencer le questionnaire
+              </button>
+              <button
+                onClick={() => auditId && onViewDashboard(auditId)}
+                disabled={missingEssentials.length > 0}
+                className="px-6 py-3 bg-[#CCBB90] text-[#48737F] rounded-lg hover:bg-[#B8A780] transition-all shadow-md font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Calculer les ratios clés
+              </button>
+            </div>
           </div>
         </div>
       </div>
