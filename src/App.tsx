@@ -189,13 +189,15 @@ export default function App() {
               >
                 <Settings className="w-5 h-5" />
               </button>
-              <button
-                onClick={signOut}
-                className="p-2 rounded-lg text-sm font-semibold transition-all duration-300 text-tulip-red hover:text-white hover:bg-tulip-red/90 border border-transparent hover:border-tulip-red/50"
-                title="Déconnexion"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
+              {isAuthEnabled && (
+                <button
+                  onClick={signOut}
+                  className="p-2 rounded-lg text-sm font-semibold transition-all duration-300 text-tulip-red hover:text-white hover:bg-tulip-red/90 border border-transparent hover:border-tulip-red/50"
+                  title="Déconnexion"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              )}
             </div>
           </div>
         </div>

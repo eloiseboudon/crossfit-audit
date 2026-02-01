@@ -1,6 +1,6 @@
 import { Activity, Calendar, Dumbbell, Edit, Filter, Plus, Target, Trash2, TrendingUp, Zap } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { createAudit, getAuthToken, listAudits, listGyms, deleteAudit as removeAudit, deleteGym as removeGym } from '../lib/api';
+import { createAudit, listAudits, listGyms, deleteAudit as removeAudit, deleteGym as removeGym } from '../lib/api';
 import { Audit, Gym } from '../lib/types';
 
 // Type View from App.tsx
@@ -232,10 +232,6 @@ export default function HomePage({ onNavigate }: HomePageProps) {
 
                   <button
                     onClick={async () => {
-                      if (!getAuthToken()) {
-                        alert('Un token d’authentification est requis pour créer un audit.');
-                        return;
-                      }
                       try {
                         const data = await createAudit({
                           gym_id: gym.id,
@@ -247,7 +243,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
                         }
                       } catch (error) {
                         console.error('Erreur lors de la création de l’audit :', error);
-                        alert('Impossible de créer l’audit. Vérifiez votre authentification.');
+                        alert('Impossible de créer l’audit. Veuillez réessayer.');
                       }
                     }}
                     className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 bg-[#48737F] text-white rounded-lg hover:bg-[#3A5C66] transition-all shadow-sm hover:shadow-md font-semibold"

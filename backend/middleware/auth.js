@@ -6,10 +6,7 @@ const auth = (req, res, next) => {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ 
-        error: 'Accès non autorisé',
-        message: 'Token manquant' 
-      });
+      return next();
     }
 
     const token = authHeader.substring(7); // Enlever "Bearer "
@@ -26,17 +23,7 @@ const auth = (req, res, next) => {
 
     next();
   } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        error: 'Token expiré',
-        message: 'Votre session a expiré, veuillez vous reconnecter' 
-      });
-    }
-    
-    return res.status(401).json({ 
-      error: 'Token invalide',
-      message: 'Authentification échouée' 
-    });
+    return next();
   }
 };
 
