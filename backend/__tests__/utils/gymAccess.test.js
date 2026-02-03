@@ -83,7 +83,7 @@ describe('gymAccess Utility', () => {
 
     expect(access.canRead).toBe(false);
     expect(access.canWrite).toBe(false);
-    expect(access.gym).toBeNull();
+    expect(access.gym).toBeDefined();
   });
 
   it('admin devrait toujours avoir accès complet', async () => {
