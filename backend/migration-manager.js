@@ -5,7 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 
 class MigrationManager {
   constructor(dbPath, migrationsDir) {
@@ -18,32 +18,22 @@ class MigrationManager {
    * Initialise la connexion à la base de données
    */
   async connect() {
-    return new Promise((resolve, reject) => {
-      this.db = new sqlite3.Database(this.dbPath, (err) => {
-        if (err) {
-          reject(new Error(`Erreur de connexion à la DB: ${err.message}`));
-        } else {
-          console.log('✓ Connecté à la base de données');
-          resolve();
-        }
-      });
-    });
+    try {
+      this.db = new Database(this.dbPath);
+      this.db.pragma('foreign_keys = ON');
+      console.log('✓ Connecté à la base de données');
+    } catch (err) {
+      throw new Error(`Erreur de connexion à la DB: ${err.message}`);
+    }
   }
 
   /**
    * Ferme la connexion à la base de données
    */
   async close() {
-    return new Promise((resolve, reject) => {
-      if (this.db) {
-        this.db.close((err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      } else {
-        resolve();
-      }
-    });
+    if (this.db) {
+      this.db.close();
+    }
   }
 
   /**
@@ -61,16 +51,12 @@ class MigrationManager {
       )
     `;
 
-    return new Promise((resolve, reject) => {
-      this.db.run(sql, (err) => {
-        if (err) {
-          reject(new Error(`Erreur création table schema_version: ${err.message}`));
-        } else {
-          console.log('✓ Table schema_version prête');
-          resolve();
-        }
-      });
-    });
+    try {
+      this.db.exec(sql);
+      console.log('✓ Table schema_version prête');
+    } catch (err) {
+      throw new Error(`Erreur création table schema_version: ${err.message}`);
+    }
   }
 
   /**
@@ -78,16 +64,13 @@ class MigrationManager {
    */
   async getAppliedMigrations() {
     const sql = 'SELECT version FROM schema_version ORDER BY version ASC';
-    
-    return new Promise((resolve, reject) => {
-      this.db.all(sql, [], (err, rows) => {
-        if (err) {
-          reject(new Error(`Erreur lecture migrations: ${err.message}`));
-        } else {
-          resolve(rows.map(row => row.version));
-        }
-      });
-    });
+
+    try {
+      const rows = this.db.prepare(sql).all();
+      return rows.map(row => row.version);
+    } catch (err) {
+      throw new Error(`Erreur lecture migrations: ${err.message}`);
+    }
   }
 
   /**
@@ -132,49 +115,23 @@ class MigrationManager {
     const nameParts = migration.version.split('_');
     const name = nameParts.slice(1).join('_');
 
-    return new Promise((resolve, reject) => {
-      // Commencer une transaction
-      this.db.serialize(() => {
-        this.db.run('BEGIN TRANSACTION', (err) => {
-          if (err) {
-            return reject(new Error(`Erreur début transaction: ${err.message}`));
-          }
+    const insertSql = `
+      INSERT INTO schema_version (version, name, execution_time_ms, checksum)
+      VALUES (?, ?, ?, ?)
+    `;
 
-          // Exécuter le SQL de la migration
-          this.db.exec(content, (err) => {
-            if (err) {
-              this.db.run('ROLLBACK');
-              return reject(new Error(`Erreur dans migration ${migration.version}: ${err.message}`));
-            }
-
-            const executionTime = Date.now() - startTime;
-
-            // Enregistrer la migration dans schema_version
-            const insertSql = `
-              INSERT INTO schema_version (version, name, execution_time_ms, checksum)
-              VALUES (?, ?, ?, ?)
-            `;
-
-            this.db.run(insertSql, [migration.version, name, executionTime, checksum], (err) => {
-              if (err) {
-                this.db.run('ROLLBACK');
-                return reject(new Error(`Erreur enregistrement migration: ${err.message}`));
-              }
-
-              // Commit la transaction
-              this.db.run('COMMIT', (err) => {
-                if (err) {
-                  return reject(new Error(`Erreur commit: ${err.message}`));
-                }
-                
-                console.log(`  ✓ Migration appliquée en ${executionTime}ms`);
-                resolve();
-              });
-            });
-          });
-        });
+    try {
+      const transaction = this.db.transaction(() => {
+        this.db.exec(content);
+        const executionTime = Date.now() - startTime;
+        this.db.prepare(insertSql).run(migration.version, name, executionTime, checksum);
+        console.log(`  ✓ Migration appliquée en ${executionTime}ms`);
       });
-    });
+
+      transaction();
+    } catch (err) {
+      throw new Error(`Erreur dans migration ${migration.version}: ${err.message}`);
+    }
   }
 
   /**
