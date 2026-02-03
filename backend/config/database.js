@@ -1,4 +1,4 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
@@ -21,50 +21,52 @@ if (!fs.existsSync(dbDir)) {
 }
 
 // Connexion à la base de données
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('❌ Erreur de connexion à la base de données:', err.message);
-    process.exit(1);
-  } else {
-    console.log('✅ Connecté à la base de données SQLite');
-    
-    // Activer les clés étrangères
-    db.run('PRAGMA foreign_keys = ON', (err) => {
-      if (err) {
-        console.error('❌ Erreur activation foreign keys:', err.message);
-      } else {
-        console.log('✅ Foreign keys activées');
-      }
-    });
+let db;
+try {
+  db = new Database(dbPath);
+  console.log('✅ Connecté à la base de données SQLite');
+
+  db.pragma('foreign_keys = ON');
+  console.log('✅ Foreign keys activées');
+} catch (err) {
+  console.error('❌ Erreur de connexion à la base de données:', err.message);
+  process.exit(1);
+}
+
+const normalizeParams = (params) => {
+  if (params === undefined || params === null) {
+    return [];
   }
-});
+
+  return Array.isArray(params) ? params : [params];
+};
 
 // Wrapper pour promisifier les requêtes
 const dbAll = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
+  try {
+    const rows = db.prepare(sql).all(...normalizeParams(params));
+    return Promise.resolve(rows);
+  } catch (err) {
+    return Promise.reject(err);
+  }
 };
 
 const dbGet = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) reject(err);
-      else resolve(row);
-    });
-  });
+  try {
+    const row = db.prepare(sql).get(...normalizeParams(params));
+    return Promise.resolve(row ?? null);
+  } catch (err) {
+    return Promise.reject(err);
+  }
 };
 
 const dbRun = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function(err) {
-      if (err) reject(err);
-      else resolve({ id: this.lastID, changes: this.changes });
-    });
-  });
+  try {
+    const info = db.prepare(sql).run(...normalizeParams(params));
+    return Promise.resolve({ id: info.lastInsertRowid, changes: info.changes });
+  } catch (err) {
+    return Promise.reject(err);
+  }
 };
 
 module.exports = {

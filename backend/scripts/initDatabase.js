@@ -288,69 +288,49 @@ CREATE INDEX IF NOT EXISTS idx_gym_user_access_user_id ON gym_user_access(user_i
 
 async function initDatabase() {
   console.log('🚀 Initialisation de la base de données...');
-  
-  return new Promise((resolve, reject) => {
-    db.exec(schema, (err) => {
-      if (err) {
-        console.error('❌ Erreur lors de la création des tables:', err.message);
-        reject(err);
-      } else {
-        const now = new Date().toISOString();
-        const insertSql = `
-          INSERT OR IGNORE INTO market_benchmarks (
-            id, benchmark_code, name, value, unit, description, category, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        `;
 
-        const insertStatements = defaultBenchmarks.map((benchmark) => {
-          return new Promise((insertResolve, insertReject) => {
-            db.run(
-              insertSql,
-              [
-                uuidv4(),
-                benchmark.benchmark_code,
-                benchmark.name,
-                benchmark.value,
-                benchmark.unit,
-                benchmark.description,
-                benchmark.category,
-                now
-              ],
-              (insertErr) => {
-                if (insertErr) {
-                  insertReject(insertErr);
-                } else {
-                  insertResolve();
-                }
-              }
-            );
-          });
-        });
+  try {
+    db.exec(schema);
 
-        Promise.all(insertStatements)
-          .then(() => {
-            console.log('✅ Base de données initialisée avec succès !');
-            console.log('📊 Tables créées:');
-            console.log('   - users');
-            console.log('   - gyms');
-            console.log('   - audits');
-            console.log('   - answers');
-            console.log('   - kpis');
-            console.log('   - scores');
-            console.log('   - recommendations');
-            console.log('   - market_benchmarks');
-            console.log('   - market_zones');
-            console.log('   - competitors');
-            console.log('   - gym_offers');
-            resolve();
-          })
-          .catch((seedError) => {
-            console.error('❌ Erreur lors du seed des benchmarks:', seedError.message);
-            reject(seedError);
-          });
-      }
+    const now = new Date().toISOString();
+    const insertSql = `
+      INSERT OR IGNORE INTO market_benchmarks (
+        id, benchmark_code, name, value, unit, description, category, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    const insertStatement = db.prepare(insertSql);
+
+    defaultBenchmarks.forEach((benchmark) => {
+      insertStatement.run(
+        uuidv4(),
+        benchmark.benchmark_code,
+        benchmark.name,
+        benchmark.value,
+        benchmark.unit,
+        benchmark.description,
+        benchmark.category,
+        now
+      );
     });
-  });
+
+    console.log('✅ Base de données initialisée avec succès !');
+    console.log('📊 Tables créées:');
+    console.log('   - users');
+    console.log('   - gyms');
+    console.log('   - audits');
+    console.log('   - answers');
+    console.log('   - kpis');
+    console.log('   - scores');
+    console.log('   - recommendations');
+    console.log('   - market_benchmarks');
+    console.log('   - market_zones');
+    console.log('   - competitors');
+    console.log('   - gym_offers');
+    return;
+  } catch (err) {
+    console.error('❌ Erreur lors de l\'initialisation:', err.message);
+    throw err;
+  }
 }
 
 // Exécuter si lancé directement

@@ -6,7 +6,10 @@ const auth = (req, res, next) => {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return next();
+      return res.status(401).json({
+        error: 'Non autorisé',
+        message: 'Token manquant'
+      });
     }
 
     const token = authHeader.substring(7); // Enlever "Bearer "
@@ -21,15 +24,18 @@ const auth = (req, res, next) => {
       role: decoded.role
     };
 
-    next();
-  } catch (error) {
     return next();
+  } catch (error) {
+    return res.status(401).json({
+      error: 'Non autorisé',
+      message: 'Token invalide'
+    });
   }
 };
 
 // Middleware pour vérifier le rôle admin
 const isAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
+  if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({ 
       error: 'Accès interdit',
       message: 'Vous n\'avez pas les droits nécessaires' 
