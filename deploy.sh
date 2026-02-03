@@ -89,6 +89,9 @@ cd $APP_DIR
 # Installer les nouvelles dépendances
 npm install
 
+# Lancer les tests avant le build
+npm test -- --config jest.config.js
+
 # Rebuild du frontend
 npm run build
 
