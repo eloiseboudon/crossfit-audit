@@ -11,6 +11,7 @@ describe('Gym Controller', () => {
   beforeEach(async () => {
     await dbRun('DELETE FROM users');
     await dbRun('DELETE FROM gyms');
+    await dbRun('DELETE FROM gym_user_access');
 
     // Créer user et récupérer token
     const user = await User.create({
@@ -29,12 +30,24 @@ describe('Gym Controller', () => {
 
   describe('GET /api/gyms', () => {
     it('devrait retourner toutes les salles pour admin', async () => {
+      const admin = await User.create({
+        email: 'admin@test.com',
+        password: 'password123',
+        name: 'Admin User',
+        role: 'admin'
+      });
+      const adminLogin = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@test.com', password: 'password123' });
+
+      const adminToken = adminLogin.body.token;
+
       await Gym.create({ name: 'Gym 1' }, userId);
-      await Gym.create({ name: 'Gym 2' }, 'other-user');
+      await Gym.create({ name: 'Gym 2' }, admin.id);
 
       const res = await request(app)
         .get('/api/gyms')
-        .set('Authorization', `Bearer ${authToken}`);
+        .set('Authorization', `Bearer ${adminToken}`);
 
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBeGreaterThanOrEqual(2);
@@ -48,8 +61,7 @@ describe('Gym Controller', () => {
         .get('/api/gyms')
         .set('Authorization', `Bearer ${authToken}`);
 
-      const myGyms = res.body.data.filter(g => g.user_id === userId);
-      expect(myGyms.length).toBeGreaterThan(0);
+      expect(res.body.data.every(g => g.user_id === userId)).toBe(true);
     });
   });
 

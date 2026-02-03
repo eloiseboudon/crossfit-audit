@@ -54,7 +54,7 @@ const dbAll = (sql, params = []) => {
 const dbGet = (sql, params = []) => {
   try {
     const row = db.prepare(sql).get(...normalizeParams(params));
-    return Promise.resolve(row);
+    return Promise.resolve(row ?? null);
   } catch (err) {
     return Promise.reject(err);
   }

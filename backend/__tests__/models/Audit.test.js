@@ -51,9 +51,9 @@ describe('Audit Model', () => {
       const complete = await Audit.getComplete(audit.id);
 
       expect(complete).toBeDefined();
-      expect(complete.gym).toBeDefined();
-      expect(complete.answers).toBeDefined();
-      expect(complete.kpis).toBeDefined();
+      expect(complete.gym_name).toBe('Test Gym');
+      expect(Array.isArray(complete.answers)).toBe(true);
+      expect(Array.isArray(complete.kpis)).toBe(true);
     });
   });
 });

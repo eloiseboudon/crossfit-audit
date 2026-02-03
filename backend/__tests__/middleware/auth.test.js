@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { protect, authorize } = require('../../middleware/auth');
+const { auth, isAdmin } = require('../../middleware/auth');
 
 describe('Auth Middleware', () => {
   let req, res, next;
@@ -25,7 +25,7 @@ describe('Auth Middleware', () => {
 
       req.headers.authorization = `Bearer ${token}`;
 
-      await protect(req, res, next);
+      await auth(req, res, next);
 
       expect(req.user).toBeDefined();
       expect(req.user.id).toBe('user123');
@@ -33,7 +33,7 @@ describe('Auth Middleware', () => {
     });
 
     it('devrait rejeter sans token', async () => {
-      await protect(req, res, next);
+      await auth(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
       expect(next).not.toHaveBeenCalled();
@@ -42,7 +42,7 @@ describe('Auth Middleware', () => {
     it('devrait rejeter avec token invalide', async () => {
       req.headers.authorization = 'Bearer invalid-token';
 
-      await protect(req, res, next);
+      await auth(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
     });
@@ -51,18 +51,16 @@ describe('Auth Middleware', () => {
   describe('authorize middleware', () => {
     it('devrait autoriser rôle admin', () => {
       req.user = { role: 'admin' };
-
-      const middleware = authorize('admin');
-      middleware(req, res, next);
+      
+      isAdmin(req, res, next);
 
       expect(next).toHaveBeenCalled();
     });
 
     it('devrait rejeter utilisateur non autorisé', () => {
       req.user = { role: 'user' };
-
-      const middleware = authorize('admin');
-      middleware(req, res, next);
+      
+      isAdmin(req, res, next);
 
       expect(res.status).toHaveBeenCalledWith(403);
       expect(next).not.toHaveBeenCalled();

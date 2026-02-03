@@ -1,6 +1,7 @@
 const { resolveGymAccess } = require('../../utils/gymAccess');
 const Gym = require('../../models/Gym');
 const GymAccess = require('../../models/GymAccess');
+const User = require('../../models/User');
 const { dbRun } = require('../../config/database');
 
 describe('gymAccess Utility', () => {
@@ -9,23 +10,40 @@ describe('gymAccess Utility', () => {
   beforeEach(async () => {
     await dbRun('DELETE FROM gym_user_access');
     await dbRun('DELETE FROM gyms');
+    await dbRun('DELETE FROM users');
 
     // Setup data
-    ownerUser = { id: 'owner-123', role: 'user' };
-    readUser = { id: 'read-456', role: 'user' };
-    writeUser = { id: 'write-789', role: 'user' };
-    otherUser = { id: 'other-999', role: 'user' };
+    ownerUser = await User.create({
+      email: 'owner@gymaccess.test',
+      password: 'password123',
+      name: 'Owner User'
+    });
+    readUser = await User.create({
+      email: 'read@gymaccess.test',
+      password: 'password123',
+      name: 'Read User'
+    });
+    writeUser = await User.create({
+      email: 'write@gymaccess.test',
+      password: 'password123',
+      name: 'Write User'
+    });
+    otherUser = await User.create({
+      email: 'other@gymaccess.test',
+      password: 'password123',
+      name: 'Other User'
+    });
 
     testGym = await Gym.create({ name: 'Test Gym' }, ownerUser.id);
 
-    await GymAccess.grant(testGym.id, readUser.id, 'read');
-    await GymAccess.grant(testGym.id, writeUser.id, 'write');
+    await GymAccess.upsert(testGym.id, readUser.id, 'read');
+    await GymAccess.upsert(testGym.id, writeUser.id, 'write');
   });
 
   it('owner devrait avoir canWrite = true', async () => {
-    const access = await resolveGymAccess({
-      gymId: testGym.id,
-      user: ownerUser
+    const access = await resolveGymAccess({ 
+      gymId: testGym.id, 
+      user: { id: ownerUser.id, role: 'user' }
     });
 
     expect(access.canRead).toBe(true);
@@ -35,9 +53,9 @@ describe('gymAccess Utility', () => {
   });
 
   it('user avec read access devrait avoir canWrite = false', async () => {
-    const access = await resolveGymAccess({
-      gymId: testGym.id,
-      user: readUser
+    const access = await resolveGymAccess({ 
+      gymId: testGym.id, 
+      user: { id: readUser.id, role: 'user' }
     });
 
     expect(access.canRead).toBe(true);
@@ -47,9 +65,9 @@ describe('gymAccess Utility', () => {
   });
 
   it('user avec write access devrait avoir canWrite = true', async () => {
-    const access = await resolveGymAccess({
-      gymId: testGym.id,
-      user: writeUser
+    const access = await resolveGymAccess({ 
+      gymId: testGym.id, 
+      user: { id: writeUser.id, role: 'user' }
     });
 
     expect(access.canRead).toBe(true);
@@ -58,9 +76,9 @@ describe('gymAccess Utility', () => {
   });
 
   it('user sans accès devrait avoir canRead/Write = false', async () => {
-    const access = await resolveGymAccess({
-      gymId: testGym.id,
-      user: otherUser
+    const access = await resolveGymAccess({ 
+      gymId: testGym.id, 
+      user: { id: otherUser.id, role: 'user' }
     });
 
     expect(access.canRead).toBe(false);
@@ -70,14 +88,14 @@ describe('gymAccess Utility', () => {
 
   it('admin devrait toujours avoir accès complet', async () => {
     const adminUser = { id: 'admin-000', role: 'admin' };
-
-    const access = await resolveGymAccess({
-      gymId: testGym.id,
-      user: adminUser
+    
+    const access = await resolveGymAccess({ 
+      gymId: testGym.id, 
+      user: adminUser 
     });
 
     expect(access.canRead).toBe(true);
     expect(access.canWrite).toBe(true);
-    expect(access.accessLevel).toBe('owner');
+    expect(access.accessLevel).toBe('admin');
   });
 });

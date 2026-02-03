@@ -1,10 +1,13 @@
 const Gym = require('../../models/Gym');
+const User = require('../../models/User');
 const { dbRun } = require('../../config/database');
 
 describe('Gym Model', () => {
   beforeEach(async () => {
     // Nettoyer la base de test
+    await dbRun('DELETE FROM gym_user_access');
     await dbRun('DELETE FROM gyms');
+    await dbRun('DELETE FROM users');
   });
 
   describe('create()', () => {
@@ -75,7 +78,12 @@ describe('Gym Model', () => {
 
   describe('findAllForUser()', () => {
     it('devrait retourner les salles owned + accès partagé', async () => {
-      const userId = 'user456';
+      const owner = await User.create({
+        email: 'owner@test.com',
+        password: 'password123',
+        name: 'Owner User'
+      });
+      const userId = owner.id;
 
       // Salle owned
       await Gym.create({ name: 'My Gym' }, userId);
@@ -84,7 +92,7 @@ describe('Gym Model', () => {
       const otherGym = await Gym.create({ name: 'Shared Gym' }, 'other-user');
       await dbRun(
         'INSERT INTO gym_user_access (id, gym_id, user_id, access_level, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-        ['access1', otherGym.id, userId, 'read', new Date().toISOString(), new Date().toISOString()]
+        ['access1', otherGym.id, owner.id, 'read', new Date().toISOString(), new Date().toISOString()]
       );
 
       const gyms = await Gym.findAllForUser(userId);
