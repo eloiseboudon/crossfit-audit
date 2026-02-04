@@ -286,8 +286,10 @@ CREATE INDEX IF NOT EXISTS idx_gym_user_access_gym_id ON gym_user_access(gym_id)
 CREATE INDEX IF NOT EXISTS idx_gym_user_access_user_id ON gym_user_access(user_id);
 `;
 
+const logger = require('../utils/logger');
+
 async function initDatabase() {
-  console.log('🚀 Initialisation de la base de données...');
+  logger.info('🚀 Initialisation de la base de données...');
 
   try {
     db.exec(schema);
@@ -313,22 +315,22 @@ async function initDatabase() {
       );
     });
 
-    console.log('✅ Base de données initialisée avec succès !');
-    console.log('📊 Tables créées:');
-    console.log('   - users');
-    console.log('   - gyms');
-    console.log('   - audits');
-    console.log('   - answers');
-    console.log('   - kpis');
-    console.log('   - scores');
-    console.log('   - recommendations');
-    console.log('   - market_benchmarks');
-    console.log('   - market_zones');
-    console.log('   - competitors');
-    console.log('   - gym_offers');
+    logger.info('✅ Base de données initialisée avec succès !');
+    logger.info('📊 Tables créées:');
+    logger.info('   - users');
+    logger.info('   - gyms');
+    logger.info('   - audits');
+    logger.info('   - answers');
+    logger.info('   - kpis');
+    logger.info('   - scores');
+    logger.info('   - recommendations');
+    logger.info('   - market_benchmarks');
+    logger.info('   - market_zones');
+    logger.info('   - competitors');
+    logger.info('   - gym_offers');
     return;
   } catch (err) {
-    console.error('❌ Erreur lors de l\'initialisation:', err.message);
+    logger.error('❌ Erreur lors de l\'initialisation:', err.message);
     throw err;
   }
 }
@@ -337,11 +339,11 @@ async function initDatabase() {
 if (require.main === module) {
   initDatabase()
     .then(() => {
-      console.log('\n✅ Initialisation terminée');
+      logger.info('\n✅ Initialisation terminée');
       process.exit(0);
     })
     .catch((err) => {
-      console.error('\n❌ Échec de l\'initialisation:', err);
+      logger.error('\n❌ Échec de l\'initialisation:', err);
       process.exit(1);
     });
 }
