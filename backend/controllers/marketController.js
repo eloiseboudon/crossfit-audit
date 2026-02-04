@@ -3,6 +3,16 @@ const Gym = require('../models/Gym');
 const Audit = require('../models/Audit');
 const { resolveGymAccess } = require('../utils/gymAccess');
 
+/**
+ * Valide l'accès à une salle pour les routes marché.
+ *
+ * @async
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {string} gymId - Identifiant de la salle.
+ * @param {{ write?: boolean }} [options] - Options d'accès.
+ * @returns {Promise<object | null>} Contexte d'accès ou null si refus.
+ */
 const ensureGymAccess = async (req, res, gymId, { write = false } = {}) => {
   if (!req.user) {
     const gym = await Gym.findById(gymId);
@@ -57,9 +67,14 @@ const ensureGymAccess = async (req, res, gymId, { write = false } = {}) => {
 // COMPETITORS
 // ============================================
 
-// @desc    Get competitors by gym
-// @route   GET /api/competitors?gym_id=xxx
-// @access  Private
+/**
+ * @desc Récupère les concurrents d'une salle.
+ * @route GET /api/competitors?gym_id=xxx
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getCompetitors = async (req, res, next) => {
   try {
     const { gym_id } = req.query;
@@ -86,9 +101,14 @@ const getCompetitors = async (req, res, next) => {
   }
 };
 
-// @desc    Get single competitor
-// @route   GET /api/competitors/:id
-// @access  Private
+/**
+ * @desc Récupère un concurrent par identifiant.
+ * @route GET /api/competitors/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getCompetitor = async (req, res, next) => {
   try {
     const competitor = await Competitor.findById(req.params.id);
@@ -112,9 +132,14 @@ const getCompetitor = async (req, res, next) => {
   }
 };
 
-// @desc    Create competitor
-// @route   POST /api/competitors
-// @access  Private
+/**
+ * @desc Crée un concurrent.
+ * @route POST /api/competitors
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const createCompetitor = async (req, res, next) => {
   try {
     const { gym_id, name } = req.body;
@@ -141,9 +166,14 @@ const createCompetitor = async (req, res, next) => {
   }
 };
 
-// @desc    Update competitor
-// @route   PUT /api/competitors/:id
-// @access  Private
+/**
+ * @desc Met à jour un concurrent.
+ * @route PUT /api/competitors/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const updateCompetitor = async (req, res, next) => {
   try {
     const competitor = await Competitor.findById(req.params.id);
@@ -170,9 +200,14 @@ const updateCompetitor = async (req, res, next) => {
   }
 };
 
-// @desc    Delete competitor
-// @route   DELETE /api/competitors/:id
-// @access  Private
+/**
+ * @desc Supprime un concurrent (désactivation).
+ * @route DELETE /api/competitors/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const deleteCompetitor = async (req, res, next) => {
   try {
     const competitor = await Competitor.findById(req.params.id);
@@ -202,9 +237,14 @@ const deleteCompetitor = async (req, res, next) => {
 // MARKET ZONES
 // ============================================
 
-// @desc    Get all market zones
-// @route   GET /api/market-zones
-// @access  Private
+/**
+ * @desc Liste les zones de marché.
+ * @route GET /api/market-zones
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getMarketZones = async (req, res, next) => {
   try {
     const zones = await MarketZone.findAll();
@@ -219,9 +259,14 @@ const getMarketZones = async (req, res, next) => {
   }
 };
 
-// @desc    Get single market zone
-// @route   GET /api/market-zones/:id
-// @access  Private
+/**
+ * @desc Récupère une zone de marché.
+ * @route GET /api/market-zones/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getMarketZone = async (req, res, next) => {
   try {
     const zone = await MarketZone.findById(req.params.id);
@@ -242,9 +287,14 @@ const getMarketZone = async (req, res, next) => {
   }
 };
 
-// @desc    Create market zone
-// @route   POST /api/market-zones
-// @access  Private
+/**
+ * @desc Crée une zone de marché.
+ * @route POST /api/market-zones
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const createMarketZone = async (req, res, next) => {
   try {
     const { name, price_level, avg_subscription_min, avg_subscription_max } = req.body;
@@ -268,9 +318,14 @@ const createMarketZone = async (req, res, next) => {
   }
 };
 
-// @desc    Update market zone
-// @route   PUT /api/market-zones/:id
-// @access  Private
+/**
+ * @desc Met à jour une zone de marché.
+ * @route PUT /api/market-zones/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const updateMarketZone = async (req, res, next) => {
   try {
     const zone = await MarketZone.findById(req.params.id);
@@ -294,9 +349,14 @@ const updateMarketZone = async (req, res, next) => {
   }
 };
 
-// @desc    Delete market zone
-// @route   DELETE /api/market-zones/:id
-// @access  Private
+/**
+ * @desc Supprime une zone de marché (désactivation).
+ * @route DELETE /api/market-zones/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const deleteMarketZone = async (req, res, next) => {
   try {
     const zone = await MarketZone.findById(req.params.id);
@@ -323,9 +383,14 @@ const deleteMarketZone = async (req, res, next) => {
 // GYM OFFERS
 // ============================================
 
-// @desc    Get gym offers
-// @route   GET /api/gym-offers?gym_id=xxx&audit_id=xxx
-// @access  Private
+/**
+ * @desc Récupère les offres d'une salle ou d'un audit.
+ * @route GET /api/gym-offers?gym_id=xxx&audit_id=xxx
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getGymOffers = async (req, res, next) => {
   try {
     const { gym_id, audit_id, include_inactive } = req.query;
@@ -364,9 +429,14 @@ const getGymOffers = async (req, res, next) => {
   }
 };
 
-// @desc    Get single gym offer
-// @route   GET /api/gym-offers/:id
-// @access  Private
+/**
+ * @desc Récupère une offre commerciale.
+ * @route GET /api/gym-offers/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getGymOffer = async (req, res, next) => {
   try {
     const offer = await GymOffer.findById(req.params.id);
@@ -390,9 +460,14 @@ const getGymOffer = async (req, res, next) => {
   }
 };
 
-// @desc    Create gym offer
-// @route   POST /api/gym-offers
-// @access  Private
+/**
+ * @desc Crée une offre commerciale.
+ * @route POST /api/gym-offers
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const createGymOffer = async (req, res, next) => {
   try {
     const { gym_id, offer_type, offer_name, price, currency, duration_months, commitment_months } = req.body;
@@ -419,9 +494,14 @@ const createGymOffer = async (req, res, next) => {
   }
 };
 
-// @desc    Update gym offer
-// @route   PUT /api/gym-offers/:id
-// @access  Private
+/**
+ * @desc Met à jour une offre commerciale.
+ * @route PUT /api/gym-offers/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const updateGymOffer = async (req, res, next) => {
   try {
     const offer = await GymOffer.findById(req.params.id);
@@ -448,9 +528,14 @@ const updateGymOffer = async (req, res, next) => {
   }
 };
 
-// @desc    Delete gym offer
-// @route   DELETE /api/gym-offers/:id
-// @access  Private
+/**
+ * @desc Supprime une offre commerciale (désactivation).
+ * @route DELETE /api/gym-offers/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const deleteGymOffer = async (req, res, next) => {
   try {
     const offer = await GymOffer.findById(req.params.id);

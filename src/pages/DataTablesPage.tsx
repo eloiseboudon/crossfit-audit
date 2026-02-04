@@ -21,6 +21,7 @@ export default function DataTablesPage() {
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
+  // Charge la liste des tables et sélectionne la première disponible si nécessaire.
   const loadTables = useCallback(async () => {
     setLoadingTables(true);
     setError(null);
@@ -41,6 +42,7 @@ export default function DataTablesPage() {
     }
   }, []);
 
+  // Charge les lignes pour la table sélectionnée.
   const loadTableData = useCallback(async (tableName: string) => {
     setLoadingData(true);
     setError(null);

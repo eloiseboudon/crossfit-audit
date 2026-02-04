@@ -1,6 +1,30 @@
 const Gym = require('../models/Gym');
 const GymAccess = require('../models/GymAccess');
 
+/**
+ * Résout les permissions d'accès à une salle selon l'utilisateur.
+ *
+ * Logique:
+ * - Si la salle n'existe pas, aucun accès.
+ * - Si l'utilisateur n'est pas authentifié, accès complet (mode demo/public).
+ * - Les admins ont tous les droits.
+ * - Le propriétaire (gym.user_id) a lecture/écriture.
+ * - Sinon, on cherche un accès explicite (read/write) dans gym_user_access.
+ *
+ * @async
+ * @param {object} params - Paramètres d'accès.
+ * @param {string} params.gymId - Identifiant de la salle.
+ * @param {{ id?: string, role?: string } | null} params.user - Utilisateur courant.
+ * @returns {Promise<{gym: object | null, canRead: boolean, canWrite: boolean, accessLevel: string | null, isOwner: boolean}>}
+ * Résultat d'accès avec niveau de permission.
+ * @throws {Error} Si les requêtes DB échouent.
+ *
+ * @example
+ * const access = await resolveGymAccess({ gymId: 'gym-123', user: { id: 'user-1' } });
+ * if (access.canWrite) {
+ *   // L'utilisateur peut modifier la salle.
+ * }
+ */
 const resolveGymAccess = async ({ gymId, user }) => {
   const gym = await Gym.findById(gymId);
   if (!gym) {

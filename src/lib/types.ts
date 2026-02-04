@@ -1,3 +1,67 @@
+/**
+ * Statuts possibles d'un audit.
+ */
+export enum AuditStatus {
+  /** Audit en brouillon. */
+  DRAFT = 'brouillon',
+  /** Audit en cours. */
+  IN_PROGRESS = 'en_cours',
+  /** Audit finalisé. */
+  COMPLETED = 'finalise',
+  /** Audit archivé. */
+  ARCHIVED = 'archive',
+}
+
+/**
+ * Rôles applicatifs pour les utilisateurs.
+ */
+export enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user',
+}
+
+/**
+ * Niveaux d'accès possibles à une salle.
+ */
+export enum AccessLevel {
+  READ = 'read',
+  WRITE = 'write',
+  OWNER = 'owner',
+  ADMIN = 'admin',
+  PUBLIC = 'public',
+  GUEST = 'guest',
+}
+
+/**
+ * Priorités possibles pour une recommandation.
+ */
+export enum RecommendationPriority {
+  P1 = 'P1',
+  P2 = 'P2',
+  P3 = 'P3',
+}
+
+/**
+ * Niveaux d'effort pour une recommandation.
+ */
+export enum EffortLevel {
+  SMALL = 'S',
+  MEDIUM = 'M',
+  LARGE = 'L',
+}
+
+/**
+ * Niveau de confiance d'une recommandation.
+ */
+export enum ConfidenceLevel {
+  LOW = 'faible',
+  MEDIUM = 'moyen',
+  HIGH = 'fort',
+}
+
+/**
+ * Représente une salle de CrossFit dans le système.
+ */
 export interface Gym {
   id: string;
   user_id?: string;
@@ -18,12 +82,18 @@ export interface Gym {
   updated_at: string;
 }
 
-export type AuditStatus = 'brouillon' | 'en_cours' | 'finalise' | 'archive';
+/**
+ * Valeurs possibles pour le statut d'un audit.
+ */
+export type AuditStatusValue = (typeof AuditStatus)[keyof typeof AuditStatus];
 
+/**
+ * Représente un audit réalisé pour une salle.
+ */
 export interface Audit {
   id: string;
   gym_id: string;
-  status: AuditStatus;
+  status: AuditStatusValue;
   audit_date_start?: string;
   audit_date_end?: string;
   baseline_period: string;
@@ -35,6 +105,9 @@ export interface Audit {
   gym?: Gym;
 }
 
+/**
+ * Réponse d'audit à une question précise.
+ */
 export interface Answer {
   id: string;
   audit_id: string;
@@ -45,6 +118,9 @@ export interface Answer {
   updated_at: string;
 }
 
+/**
+ * KPI calculé pour un audit.
+ */
 export interface KPI {
   id: string;
   audit_id: string;
@@ -55,6 +131,9 @@ export interface KPI {
   inputs_snapshot?: any;
 }
 
+/**
+ * Score de pilier calculé pour un audit.
+ */
 export interface Score {
   id: string;
   audit_id: string;
@@ -66,20 +145,26 @@ export interface Score {
   details?: any;
 }
 
+/**
+ * Recommandation générée pour un audit.
+ */
 export interface Recommendation {
   id: string;
   audit_id: string;
   rec_code: string;
   title: string;
   description?: string;
-  priority: 'P1' | 'P2' | 'P3';
+  priority: RecommendationPriority;
   expected_impact_eur?: number;
-  effort_level: 'S' | 'M' | 'L';
-  confidence: 'faible' | 'moyen' | 'fort';
+  effort_level: EffortLevel;
+  confidence: ConfidenceLevel;
   category?: string;
   computed_at: string;
 }
 
+/**
+ * Benchmark de marché utilisé pour les comparaisons.
+ */
 export interface MarketBenchmark {
   id: string;
   benchmark_code: string;
@@ -91,8 +176,14 @@ export interface MarketBenchmark {
   updated_at: string;
 }
 
+/**
+ * Types de questions disponibles dans le questionnaire.
+ */
 export type QuestionType = 'number' | 'text' | 'select' | 'multiselect' | 'date' | 'boolean' | 'table';
 
+/**
+ * Décrit une question du questionnaire d'audit.
+ */
 export interface Question {
   code: string;
   label: string;
@@ -107,12 +198,29 @@ export interface Question {
   };
 }
 
+/**
+ * Bloc thématique de questions.
+ */
 export interface QuestionBlock {
   code: string;
   title: string;
   description?: string;
   questions: Question[];
 }
+
+// ============================================================================
+// TYPES UTILITAIRES
+// ============================================================================
+
+/**
+ * Type utilitaire pour les payloads de création.
+ */
+export type CreateInput<T> = Omit<T, 'id' | 'created_at' | 'updated_at'>;
+
+/**
+ * Type utilitaire pour les payloads de mise à jour.
+ */
+export type UpdateInput<T> = Partial<Omit<T, 'id' | 'created_at' | 'updated_at'>>;
 
 // ============================================================================
 // ZONE DE CHALANDISE & CONCURRENCE
@@ -710,11 +818,17 @@ export interface AdvancedHRKPIs {
   periode_analyse: string;
 }
 
+/**
+ * Résumé d'une table de données.
+ */
 export interface DataTableSummary {
   name: string;
   rowCount: number;
 }
 
+/**
+ * Contenu détaillé d'une table de données.
+ */
 export interface DataTableData {
   name: string;
   columns: string[];

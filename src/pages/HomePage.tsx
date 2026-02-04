@@ -35,6 +35,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
     }
   };
 
+  // KPIs d'accueil basés sur l'état des audits.
   const stats = {
     totalGyms: gyms.length,
     totalAudits: audits.length,
@@ -42,6 +43,7 @@ export default function HomePage({ onNavigate }: HomePageProps) {
     auditsCompleted: audits.filter(a => a.status === 'finalise').length,
   };
 
+  // Filtre métier pour afficher les audits selon leur statut.
   const filteredAudits = filterStatus === 'all'
     ? audits
     : audits.filter(a => a.status === filterStatus);

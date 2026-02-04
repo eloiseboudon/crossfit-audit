@@ -1,8 +1,13 @@
 const MarketBenchmark = require('../models/MarketBenchmark');
 
-// @desc    Get all market benchmarks
-// @route   GET /api/market-benchmarks
-// @access  Private
+/**
+ * @desc Récupère les benchmarks de marché.
+ * @route GET /api/market-benchmarks
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getMarketBenchmarks = async (req, res, next) => {
   try {
     const benchmarks = await MarketBenchmark.findAll();
@@ -17,9 +22,14 @@ const getMarketBenchmarks = async (req, res, next) => {
   }
 };
 
-// @desc    Create market benchmark
-// @route   POST /api/market-benchmarks
-// @access  Private
+/**
+ * @desc Crée un benchmark de marché.
+ * @route POST /api/market-benchmarks
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const createMarketBenchmark = async (req, res, next) => {
   try {
     const { benchmark_code, name, value } = req.body;
@@ -51,9 +61,14 @@ const createMarketBenchmark = async (req, res, next) => {
   }
 };
 
-// @desc    Update market benchmark
-// @route   PUT /api/market-benchmarks/:id
-// @access  Private
+/**
+ * @desc Met à jour un benchmark de marché.
+ * @route PUT /api/market-benchmarks/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const updateMarketBenchmark = async (req, res, next) => {
   try {
     const benchmark = await MarketBenchmark.findById(req.params.id);

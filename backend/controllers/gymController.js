@@ -3,9 +3,14 @@ const GymAccess = require('../models/GymAccess');
 const User = require('../models/User');
 const { resolveGymAccess } = require('../utils/gymAccess');
 
-// @desc    Get all gyms
-// @route   GET /api/gyms
-// @access  Private
+/**
+ * @desc Récupère toutes les salles accessibles.
+ * @route GET /api/gyms
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getGyms = async (req, res, next) => {
   try {
     if (!req.user) {
@@ -38,9 +43,14 @@ const getGyms = async (req, res, next) => {
   }
 };
 
-// @desc    Get single gym
-// @route   GET /api/gyms/:id
-// @access  Private
+/**
+ * @desc Récupère une salle avec statistiques.
+ * @route GET /api/gyms/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getGym = async (req, res, next) => {
   try {
     if (!req.user) {
@@ -84,9 +94,14 @@ const getGym = async (req, res, next) => {
   }
 };
 
-// @desc    Create new gym
-// @route   POST /api/gyms
-// @access  Private
+/**
+ * @desc Crée une nouvelle salle.
+ * @route POST /api/gyms
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const createGym = async (req, res, next) => {
   try {
     const gymData = req.body;
@@ -111,9 +126,14 @@ const createGym = async (req, res, next) => {
   }
 };
 
-// @desc    Update gym
-// @route   PUT /api/gyms/:id
-// @access  Private
+/**
+ * @desc Met à jour une salle.
+ * @route PUT /api/gyms/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const updateGym = async (req, res, next) => {
   try {
     const access = await resolveGymAccess({ gymId: req.params.id, user: req.user });
@@ -143,9 +163,14 @@ const updateGym = async (req, res, next) => {
   }
 };
 
-// @desc    Delete gym
-// @route   DELETE /api/gyms/:id
-// @access  Private
+/**
+ * @desc Supprime une salle.
+ * @route DELETE /api/gyms/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const deleteGym = async (req, res, next) => {
   try {
     const access = await resolveGymAccess({ gymId: req.params.id, user: req.user });
@@ -174,9 +199,14 @@ const deleteGym = async (req, res, next) => {
   }
 };
 
-// @desc    Add or update gym access for a user
-// @route   POST /api/gyms/:id/access
-// @access  Private (owner/admin)
+/**
+ * @desc Ajoute ou met à jour l'accès d'un utilisateur à une salle.
+ * @route POST /api/gyms/:id/access
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const addGymAccess = async (req, res, next) => {
   try {
     const access = await resolveGymAccess({ gymId: req.params.id, user: req.user });
@@ -240,9 +270,14 @@ const addGymAccess = async (req, res, next) => {
   }
 };
 
-// @desc    Remove gym access for a user
-// @route   DELETE /api/gyms/:id/access/:userId
-// @access  Private (owner/admin)
+/**
+ * @desc Supprime l'accès d'un utilisateur à une salle.
+ * @route DELETE /api/gyms/:id/access/:userId
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const removeGymAccess = async (req, res, next) => {
   try {
     const access = await resolveGymAccess({ gymId: req.params.id, user: req.user });

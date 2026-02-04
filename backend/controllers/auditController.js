@@ -3,6 +3,15 @@ const Answer = require('../models/Answer');
 const { KPI, Score, Recommendation } = require('../models/AuditData');
 const { resolveGymAccess } = require('../utils/gymAccess');
 
+/**
+ * Valide l'accès à un audit et retourne le contexte d'accès.
+ *
+ * @async
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {{ write?: boolean }} [options] - Options d'accès.
+ * @returns {Promise<{audit: object, access: object} | null>} Audit et droits si autorisé.
+ */
 const ensureAuditAccess = async (req, res, { write = false } = {}) => {
   const audit = await Audit.findById(req.params.id);
   if (!audit) {
@@ -37,9 +46,14 @@ const ensureAuditAccess = async (req, res, { write = false } = {}) => {
   return { audit, access };
 };
 
-// @desc    Get all audits
-// @route   GET /api/audits
-// @access  Private
+/**
+ * @desc Récupère la liste des audits accessibles.
+ * @route GET /api/audits
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getAudits = async (req, res, next) => {
   try {
     const { gym_id } = req.query;
@@ -63,9 +77,14 @@ const getAudits = async (req, res, next) => {
   }
 };
 
-// @desc    Get single audit
-// @route   GET /api/audits/:id
-// @access  Private
+/**
+ * @desc Récupère un audit par identifiant.
+ * @route GET /api/audits/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getAudit = async (req, res, next) => {
   try {
     const result = await ensureAuditAccess(req, res);
@@ -81,9 +100,14 @@ const getAudit = async (req, res, next) => {
   }
 };
 
-// @desc    Get complete audit with all data
-// @route   GET /api/audits/:id/complete
-// @access  Private
+/**
+ * @desc Récupère un audit complet avec réponses, KPIs, scores et recommandations.
+ * @route GET /api/audits/:id/complete
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getCompleteAudit = async (req, res, next) => {
   try {
     const accessResult = await ensureAuditAccess(req, res);
@@ -99,9 +123,14 @@ const getCompleteAudit = async (req, res, next) => {
   }
 };
 
-// @desc    Create new audit
-// @route   POST /api/audits
-// @access  Private
+/**
+ * @desc Crée un nouvel audit pour une salle.
+ * @route POST /api/audits
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const createAudit = async (req, res, next) => {
   try {
     const { gym_id } = req.body;
@@ -140,9 +169,14 @@ const createAudit = async (req, res, next) => {
   }
 };
 
-// @desc    Update audit
-// @route   PUT /api/audits/:id
-// @access  Private
+/**
+ * @desc Met à jour un audit existant.
+ * @route PUT /api/audits/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const updateAudit = async (req, res, next) => {
   try {
     const result = await ensureAuditAccess(req, res, { write: true });
@@ -160,9 +194,14 @@ const updateAudit = async (req, res, next) => {
   }
 };
 
-// @desc    Delete audit
-// @route   DELETE /api/audits/:id
-// @access  Private
+/**
+ * @desc Supprime un audit.
+ * @route DELETE /api/audits/:id
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const deleteAudit = async (req, res, next) => {
   try {
     const result = await ensureAuditAccess(req, res, { write: true });
@@ -179,9 +218,14 @@ const deleteAudit = async (req, res, next) => {
   }
 };
 
-// @desc    Save audit answers
-// @route   POST /api/audits/:id/answers
-// @access  Private
+/**
+ * @desc Enregistre les réponses d'un audit.
+ * @route POST /api/audits/:id/answers
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const saveAnswers = async (req, res, next) => {
   try {
     const result = await ensureAuditAccess(req, res, { write: true });
@@ -210,9 +254,14 @@ const saveAnswers = async (req, res, next) => {
   }
 };
 
-// @desc    Get audit answers
-// @route   GET /api/audits/:id/answers
-// @access  Private
+/**
+ * @desc Récupère les réponses d'un audit.
+ * @route GET /api/audits/:id/answers
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getAnswers = async (req, res, next) => {
   try {
     const result = await ensureAuditAccess(req, res);
@@ -229,9 +278,14 @@ const getAnswers = async (req, res, next) => {
   }
 };
 
-// @desc    Save audit KPIs
-// @route   POST /api/audits/:id/kpis
-// @access  Private
+/**
+ * @desc Enregistre les KPIs d'un audit.
+ * @route POST /api/audits/:id/kpis
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const saveKPIs = async (req, res, next) => {
   try {
     const result = await ensureAuditAccess(req, res, { write: true });
@@ -257,9 +311,14 @@ const saveKPIs = async (req, res, next) => {
   }
 };
 
-// @desc    Save audit scores
-// @route   POST /api/audits/:id/scores
-// @access  Private
+/**
+ * @desc Enregistre les scores d'un audit.
+ * @route POST /api/audits/:id/scores
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const saveScores = async (req, res, next) => {
   try {
     const result = await ensureAuditAccess(req, res, { write: true });
@@ -285,9 +344,14 @@ const saveScores = async (req, res, next) => {
   }
 };
 
-// @desc    Get audit global score
-// @route   GET /api/audits/:id/global-score
-// @access  Private
+/**
+ * @desc Récupère le score global d'un audit.
+ * @route GET /api/audits/:id/global-score
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getGlobalScore = async (req, res, next) => {
   try {
     const result = await ensureAuditAccess(req, res);
@@ -310,9 +374,14 @@ const getGlobalScore = async (req, res, next) => {
   }
 };
 
-// @desc    Save audit recommendations
-// @route   POST /api/audits/:id/recommendations
-// @access  Private
+/**
+ * @desc Enregistre les recommandations d'un audit.
+ * @route POST /api/audits/:id/recommendations
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const saveRecommendations = async (req, res, next) => {
   try {
     const result = await ensureAuditAccess(req, res, { write: true });
@@ -338,9 +407,14 @@ const saveRecommendations = async (req, res, next) => {
   }
 };
 
-// @desc    Get audit recommendations
-// @route   GET /api/audits/:id/recommendations
-// @access  Private
+/**
+ * @desc Récupère les recommandations d'un audit.
+ * @route GET /api/audits/:id/recommendations
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getRecommendations = async (req, res, next) => {
   try {
     const result = await ensureAuditAccess(req, res);
