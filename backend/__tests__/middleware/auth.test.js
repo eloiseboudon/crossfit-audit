@@ -10,10 +10,10 @@ describe('Auth Middleware', () => {
       user: null
     };
     res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn()
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn()
     };
-    next = jest.fn();
+    next = vi.fn();
   });
 
   describe('protect middleware', () => {
