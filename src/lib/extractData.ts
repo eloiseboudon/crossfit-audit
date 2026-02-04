@@ -1,11 +1,13 @@
 import { Answer } from './types';
 
+type AnswerValue = Answer['value'];
+
 export function getAnswerValue(
   answers: Answer[],
   blockCode: string,
   questionCode: string,
-  defaultValue: any = 0
-): any {
+  defaultValue: AnswerValue = 0
+): AnswerValue {
   const answer = answers.find(
     (a) => a.block_code === blockCode && a.question_code === questionCode
   );

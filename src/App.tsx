@@ -41,6 +41,17 @@ interface NavigationState {
   auditId?: string;
 }
 
+const baseNavButtonClasses =
+  'rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2';
+const activeNavButtonClasses = 'bg-[#4F7A7E] text-[#F4F3EE] glow-teal';
+const inactiveNavButtonClasses =
+  'text-[#D6C7A1] hover:text-[#F4F3EE] hover:bg-[#4F7A7E]/20 border border-transparent hover:border-[#4F7A7E]/30';
+
+const navButtonClasses = (isActive: boolean, isIconOnly = false) =>
+  `${isIconOnly ? 'p-2' : 'px-4 py-2'} ${baseNavButtonClasses} ${
+    isActive ? activeNavButtonClasses : inactiveNavButtonClasses
+  }`;
+
 export default function App() {
   const { user, loading, signOut } = useAuth();
   const [nav, setNav] = useState<NavigationState>({ view: 'home' });
@@ -66,6 +77,15 @@ export default function App() {
   if (isAuthEnabled && !user) {
     return <AuthPage />;
   }
+
+  const requireGymId = (render: (gymId: string) => JSX.Element) => {
+    if (!nav.gymId) {
+      console.error('[App] Page requires gymId');
+      return <HomePage onNavigate={navigate} />;
+    }
+
+    return render(nav.gymId);
+  };
 
   const renderView = () => {
     switch (nav.view) {
@@ -107,28 +127,14 @@ export default function App() {
         return <MarketZonesPage onBack={() => navigate('settings')} />;
 
       case 'competitors':
-        if (!nav.gymId) {
-          console.error('[App] Competitors page requires gymId');
-          return <HomePage onNavigate={navigate} />;
-        }
-        return (
-          <CompetitorsPage
-            gymId={nav.gymId}
-            onBack={() => navigate('home')}
-          />
-        );
+        return requireGymId((gymId) => (
+          <CompetitorsPage gymId={gymId} onBack={() => navigate('home')} />
+        ));
 
       case 'offers':
-        if (!nav.gymId) {
-          console.error('[App] Offers page requires gymId');
-          return <HomePage onNavigate={navigate} />;
-        }
-        return (
-          <OffersPage
-            gymId={nav.gymId}
-            onBack={() => navigate('home')}
-          />
-        );
+        return requireGymId((gymId) => (
+          <OffersPage gymId={gymId} onBack={() => navigate('home')} />
+        ));
 
       default:
         return <HomePage onNavigate={navigate} />;
@@ -162,30 +168,21 @@ export default function App() {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => navigate('home')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${nav.view === 'home'
-                  ? 'bg-[#4F7A7E] text-[#F4F3EE] glow-teal'
-                  : 'text-[#D6C7A1] hover:text-[#F4F3EE] hover:bg-[#4F7A7E]/20 border border-transparent hover:border-[#4F7A7E]/30'
-                  }`}
+                className={navButtonClasses(nav.view === 'home')}
               >
                 <Home className="w-4 h-4" />
                 <span className="hidden sm:inline">Accueil</span>
               </button>
               <button
                 onClick={() => navigate('data-tables')}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${nav.view === 'data-tables'
-                  ? 'bg-[#4F7A7E] text-[#F4F3EE] glow-teal'
-                  : 'text-[#D6C7A1] hover:text-[#F4F3EE] hover:bg-[#4F7A7E]/20 border border-transparent hover:border-[#4F7A7E]/30'
-                  }`}
+                className={navButtonClasses(nav.view === 'data-tables')}
               >
                 <Database className="w-4 h-4" />
                 <span className="hidden sm:inline">Données</span>
               </button>
               <button
                 onClick={() => navigate('settings')}
-                className={`p-2 rounded-lg text-sm font-semibold transition-all duration-300 ${nav.view === 'settings'
-                  ? 'bg-[#4F7A7E] text-[#F4F3EE] glow-teal'
-                  : 'text-[#D6C7A1] hover:text-[#F4F3EE] hover:bg-[#4F7A7E]/20 border border-transparent hover:border-[#4F7A7E]/30'
-                  }`}
+                className={navButtonClasses(nav.view === 'settings', true)}
               >
                 <Settings className="w-5 h-5" />
               </button>
