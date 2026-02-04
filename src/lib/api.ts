@@ -23,6 +23,11 @@ type ApiResponse<T> = {
   count?: number;
 };
 
+/**
+ * Lit le token d'authentification depuis le localStorage.
+ *
+ * @returns Le token JWT ou null si indisponible.
+ */
 const readAuthToken = (): string | null => {
   const raw = localStorage.getItem(AUTH_STORAGE_KEY);
   if (!raw) return null;
@@ -34,8 +39,19 @@ const readAuthToken = (): string | null => {
   }
 };
 
+/**
+ * Expose le token d'authentification actuellement stocké.
+ *
+ * @returns Le token JWT ou null.
+ */
 export const getAuthToken = (): string | null => readAuthToken();
 
+/**
+ * Normalise une valeur hétérogène en booléen.
+ *
+ * @param value - Valeur potentiellement booléenne/numérique/chaîne.
+ * @returns True si la valeur représente un vrai.
+ */
 const toBoolean = (value: unknown): boolean => {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'number') return value === 1;
@@ -43,6 +59,14 @@ const toBoolean = (value: unknown): boolean => {
   return false;
 };
 
+/**
+ * Effectue une requête HTTP vers l'API backend.
+ *
+ * @param path - Chemin d'API relatif.
+ * @param options - Options fetch (méthode, body, headers).
+ * @returns Promesse résolue avec le payload typé.
+ * @throws {Error} Si la réponse HTTP est en erreur.
+ */
 const request = async <T>(path: string, options: RequestInit = {}): Promise<T> => {
   const headers = new Headers(options.headers);
   if (!headers.has('Content-Type') && options.body) {
@@ -70,11 +94,29 @@ const request = async <T>(path: string, options: RequestInit = {}): Promise<T> =
   return payload as T;
 };
 
+/**
+ * Récupère toutes les salles accessibles.
+ *
+ * @returns Promesse résolue avec la liste des salles.
+ * @throws {Error} Si l'API retourne une erreur.
+ *
+ * @example
+ * ```ts
+ * const gyms = await listGyms();
+ * ```
+ */
 export async function listGyms(): Promise<Gym[]> {
   const payload = await request<ApiResponse<Gym[]>>('/gyms');
   return payload.data ?? [];
 }
 
+/**
+ * Récupère une salle par identifiant.
+ *
+ * @param gymId - Identifiant de la salle.
+ * @returns Promesse résolue avec la salle.
+ * @throws {Error} Si la salle est introuvable ou l'API échoue.
+ */
 export async function getGym(gymId: string): Promise<Gym> {
   const payload = await request<ApiResponse<Gym>>(`/gyms/${gymId}`);
   if (!payload.data) {
@@ -83,6 +125,13 @@ export async function getGym(gymId: string): Promise<Gym> {
   return payload.data;
 }
 
+/**
+ * Crée une nouvelle salle.
+ *
+ * @param payload - Données de la salle.
+ * @returns Promesse résolue avec la salle créée.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function createGym(payload: Partial<Gym>): Promise<Gym> {
   const response = await request<ApiResponse<Gym>>('/gyms', {
     method: 'POST',
@@ -94,6 +143,14 @@ export async function createGym(payload: Partial<Gym>): Promise<Gym> {
   return response.data;
 }
 
+/**
+ * Met à jour une salle existante.
+ *
+ * @param gymId - Identifiant de la salle.
+ * @param payload - Données à mettre à jour.
+ * @returns Promesse résolue avec la salle mise à jour.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function updateGym(gymId: string, payload: Partial<Gym>): Promise<Gym> {
   const response = await request<ApiResponse<Gym>>(`/gyms/${gymId}`, {
     method: 'PUT',
@@ -105,10 +162,24 @@ export async function updateGym(gymId: string, payload: Partial<Gym>): Promise<G
   return response.data;
 }
 
+/**
+ * Supprime une salle.
+ *
+ * @param gymId - Identifiant de la salle.
+ * @returns Promesse résolue une fois la suppression effectuée.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function deleteGym(gymId: string): Promise<void> {
   await request(`/gyms/${gymId}`, { method: 'DELETE' });
 }
 
+/**
+ * Liste les audits et, optionnellement, hydrate la salle associée.
+ *
+ * @param includeGym - True pour enrichir chaque audit avec la salle.
+ * @returns Promesse résolue avec la liste des audits.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function listAudits(includeGym = false): Promise<Audit[]> {
   const payload = await request<ApiResponse<Audit[]>>('/audits');
   const audits = payload.data ?? [];
@@ -124,6 +195,14 @@ export async function listAudits(includeGym = false): Promise<Audit[]> {
   }));
 }
 
+/**
+ * Récupère un audit par identifiant.
+ *
+ * @param auditId - Identifiant de l'audit.
+ * @param includeGym - True pour enrichir avec les détails de la salle.
+ * @returns Promesse résolue avec l'audit.
+ * @throws {Error} Si l'audit est introuvable ou l'API échoue.
+ */
 export async function getAudit(auditId: string, includeGym = false): Promise<Audit> {
   const payload = await request<ApiResponse<Audit>>(`/audits/${auditId}`);
   if (!payload.data) {
@@ -141,6 +220,13 @@ export async function getAudit(auditId: string, includeGym = false): Promise<Aud
   };
 }
 
+/**
+ * Crée un nouvel audit pour une salle.
+ *
+ * @param payload - Données de l'audit.
+ * @returns Promesse résolue avec l'audit créé.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function createAudit(payload: Partial<Audit>): Promise<Audit> {
   const response = await request<ApiResponse<Audit>>('/audits', {
     method: 'POST',
@@ -152,6 +238,14 @@ export async function createAudit(payload: Partial<Audit>): Promise<Audit> {
   return response.data;
 }
 
+/**
+ * Met à jour un audit existant.
+ *
+ * @param auditId - Identifiant de l'audit.
+ * @param payload - Données à mettre à jour.
+ * @returns Promesse résolue avec l'audit mis à jour.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function updateAudit(auditId: string, payload: Partial<Audit>): Promise<Audit> {
   const response = await request<ApiResponse<Audit>>(`/audits/${auditId}`, {
     method: 'PUT',
@@ -163,19 +257,47 @@ export async function updateAudit(auditId: string, payload: Partial<Audit>): Pro
   return response.data;
 }
 
+/**
+ * Supprime un audit.
+ *
+ * @param auditId - Identifiant de l'audit.
+ * @returns Promesse résolue une fois la suppression effectuée.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function deleteAudit(auditId: string): Promise<void> {
   await request(`/audits/${auditId}`, { method: 'DELETE' });
 }
 
+/**
+ * Récupère les réponses d'un audit.
+ *
+ * @param auditId - Identifiant de l'audit.
+ * @returns Promesse résolue avec la liste des réponses.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function listAnswers(auditId: string): Promise<Answer[]> {
   const payload = await request<ApiResponse<Answer[]>>(`/audits/${auditId}/answers`);
   return payload.data ?? [];
 }
 
+/**
+ * Enregistre une réponse unique (upsert).
+ *
+ * @param record - Réponse à sauvegarder.
+ * @returns Promesse résolue une fois l'enregistrement effectué.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function upsertAnswer(record: Partial<Answer>): Promise<void> {
   await upsertAnswers([record]);
 }
 
+/**
+ * Enregistre un lot de réponses (upsert).
+ *
+ * @param records - Tableau de réponses.
+ * @returns Promesse résolue une fois l'enregistrement effectué.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function upsertAnswers(records: Partial<Answer>[]): Promise<void> {
   const answers = records.filter((record) => record.audit_id && record.block_code && record.question_code);
   if (answers.length === 0) return;
@@ -187,11 +309,25 @@ export async function upsertAnswers(records: Partial<Answer>[]): Promise<void> {
   });
 }
 
+/**
+ * Récupère les benchmarks de marché.
+ *
+ * @returns Promesse résolue avec la liste des benchmarks.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function listMarketBenchmarks(): Promise<MarketBenchmark[]> {
   const payload = await request<ApiResponse<MarketBenchmark[]>>('/market-benchmarks');
   return payload.data ?? [];
 }
 
+/**
+ * Met à jour un benchmark de marché.
+ *
+ * @param benchmarkId - Identifiant du benchmark.
+ * @param payload - Données à mettre à jour.
+ * @returns Promesse résolue avec le benchmark mis à jour.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function updateMarketBenchmark(
   benchmarkId: string,
   payload: Partial<MarketBenchmark>,
@@ -206,6 +342,12 @@ export async function updateMarketBenchmark(
   return response.data;
 }
 
+/**
+ * Liste les zones de marché actives.
+ *
+ * @returns Promesse résolue avec la liste des zones.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function listMarketZones(): Promise<MarketZone[]> {
   const payload = await request<ApiResponse<MarketZone[]>>('/market-zones');
   return (payload.data ?? []).map((zone) => ({
@@ -214,6 +356,13 @@ export async function listMarketZones(): Promise<MarketZone[]> {
   }));
 }
 
+/**
+ * Crée une zone de marché.
+ *
+ * @param payload - Données de la zone.
+ * @returns Promesse résolue avec la zone créée.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function createMarketZone(payload: Partial<MarketZone>): Promise<MarketZone> {
   const response = await request<ApiResponse<MarketZone>>('/market-zones', {
     method: 'POST',
@@ -228,6 +377,14 @@ export async function createMarketZone(payload: Partial<MarketZone>): Promise<Ma
   };
 }
 
+/**
+ * Met à jour une zone de marché.
+ *
+ * @param zoneId - Identifiant de la zone.
+ * @param payload - Données à mettre à jour.
+ * @returns Promesse résolue avec la zone mise à jour.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function updateMarketZone(zoneId: string, payload: Partial<MarketZone>): Promise<MarketZone> {
   const response = await request<ApiResponse<MarketZone>>(`/market-zones/${zoneId}`, {
     method: 'PUT',
@@ -242,10 +399,24 @@ export async function updateMarketZone(zoneId: string, payload: Partial<MarketZo
   };
 }
 
+/**
+ * Supprime une zone de marché.
+ *
+ * @param zoneId - Identifiant de la zone.
+ * @returns Promesse résolue une fois la suppression effectuée.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function deleteMarketZone(zoneId: string): Promise<void> {
   await request(`/market-zones/${zoneId}`, { method: 'DELETE' });
 }
 
+/**
+ * Récupère les concurrents d'une salle.
+ *
+ * @param gymId - Identifiant de la salle.
+ * @returns Promesse résolue avec la liste des concurrents.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function listCompetitors(gymId: string): Promise<Competitor[]> {
   const payload = await request<ApiResponse<Competitor[]>>(`/competitors?gym_id=${gymId}`);
   return (payload.data ?? []).map((competitor) => ({
@@ -259,6 +430,13 @@ export async function listCompetitors(gymId: string): Promise<Competitor[]> {
   }));
 }
 
+/**
+ * Crée un concurrent.
+ *
+ * @param payload - Données du concurrent.
+ * @returns Promesse résolue avec le concurrent créé.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function createCompetitor(payload: Partial<Competitor>): Promise<Competitor> {
   const response = await request<ApiResponse<Competitor>>('/competitors', {
     method: 'POST',
@@ -278,6 +456,14 @@ export async function createCompetitor(payload: Partial<Competitor>): Promise<Co
   };
 }
 
+/**
+ * Met à jour un concurrent.
+ *
+ * @param competitorId - Identifiant du concurrent.
+ * @param payload - Données à mettre à jour.
+ * @returns Promesse résolue avec le concurrent mis à jour.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function updateCompetitor(competitorId: string, payload: Partial<Competitor>): Promise<Competitor> {
   const response = await request<ApiResponse<Competitor>>(`/competitors/${competitorId}`, {
     method: 'PUT',
@@ -297,10 +483,24 @@ export async function updateCompetitor(competitorId: string, payload: Partial<Co
   };
 }
 
+/**
+ * Supprime un concurrent.
+ *
+ * @param competitorId - Identifiant du concurrent.
+ * @returns Promesse résolue une fois la suppression effectuée.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function deleteCompetitor(competitorId: string): Promise<void> {
   await request(`/competitors/${competitorId}`, { method: 'DELETE' });
 }
 
+/**
+ * Récupère les offres commerciales d'une salle.
+ *
+ * @param gymId - Identifiant de la salle.
+ * @returns Promesse résolue avec la liste des offres.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function listGymOffers(gymId: string): Promise<GymOffer[]> {
   const payload = await request<ApiResponse<GymOffer[]>>(`/gym-offers?gym_id=${gymId}&include_inactive=1`);
   return (payload.data ?? []).map((offer) => ({
@@ -310,6 +510,13 @@ export async function listGymOffers(gymId: string): Promise<GymOffer[]> {
   }));
 }
 
+/**
+ * Crée une offre commerciale.
+ *
+ * @param payload - Données de l'offre.
+ * @returns Promesse résolue avec l'offre créée.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function createGymOffer(payload: Partial<GymOffer>): Promise<GymOffer> {
   const response = await request<ApiResponse<GymOffer>>('/gym-offers', {
     method: 'POST',
@@ -325,6 +532,14 @@ export async function createGymOffer(payload: Partial<GymOffer>): Promise<GymOff
   };
 }
 
+/**
+ * Met à jour une offre commerciale.
+ *
+ * @param offerId - Identifiant de l'offre.
+ * @param payload - Données à mettre à jour.
+ * @returns Promesse résolue avec l'offre mise à jour.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function updateGymOffer(offerId: string, payload: Partial<GymOffer>): Promise<GymOffer> {
   const response = await request<ApiResponse<GymOffer>>(`/gym-offers/${offerId}`, {
     method: 'PUT',
@@ -340,10 +555,24 @@ export async function updateGymOffer(offerId: string, payload: Partial<GymOffer>
   };
 }
 
+/**
+ * Supprime une offre commerciale.
+ *
+ * @param offerId - Identifiant de l'offre.
+ * @returns Promesse résolue une fois la suppression effectuée.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function deleteGymOffer(offerId: string): Promise<void> {
   await request(`/gym-offers/${offerId}`, { method: 'DELETE' });
 }
 
+/**
+ * Enregistre un lot de KPIs regroupés par audit.
+ *
+ * @param records - Tableau de KPIs.
+ * @returns Promesse résolue une fois l'enregistrement effectué.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function upsertKpis(records: Partial<KPI>[]): Promise<void> {
   const grouped = records.reduce<Record<string, Partial<KPI>[]>>((acc, record) => {
     if (!record.audit_id || !record.kpi_code) return acc;
@@ -362,6 +591,13 @@ export async function upsertKpis(records: Partial<KPI>[]): Promise<void> {
   );
 }
 
+/**
+ * Enregistre un lot de scores regroupés par audit.
+ *
+ * @param records - Tableau de scores.
+ * @returns Promesse résolue une fois l'enregistrement effectué.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function upsertScores(records: Partial<Score>[]): Promise<void> {
   const grouped = records.reduce<Record<string, Partial<Score>[]>>((acc, record) => {
     if (!record.audit_id || !record.pillar_code) return acc;
@@ -380,6 +616,14 @@ export async function upsertScores(records: Partial<Score>[]): Promise<void> {
   );
 }
 
+/**
+ * Remplace les recommandations d'un audit.
+ *
+ * @param auditId - Identifiant de l'audit.
+ * @param records - Tableau de recommandations.
+ * @returns Promesse résolue une fois l'enregistrement effectué.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function replaceRecommendations(auditId: string, records: Partial<Recommendation>[]): Promise<void> {
   const recommendations = records.map((record) => ({
     ...record,
@@ -392,11 +636,24 @@ export async function replaceRecommendations(auditId: string, records: Partial<R
   });
 }
 
+/**
+ * Liste les tables de données disponibles.
+ *
+ * @returns Promesse résolue avec la liste des tables.
+ * @throws {Error} Si l'API retourne une erreur.
+ */
 export async function listDataTables(): Promise<DataTableSummary[]> {
   const payload = await request<ApiResponse<DataTableSummary[]>>('/data-tables');
   return payload.data ?? [];
 }
 
+/**
+ * Récupère les données d'une table.
+ *
+ * @param name - Nom de la table.
+ * @returns Promesse résolue avec les données de la table.
+ * @throws {Error} Si la table est introuvable ou l'API échoue.
+ */
 export async function getDataTable(name: string): Promise<DataTableData> {
   const payload = await request<ApiResponse<DataTableData>>(`/data-tables/${encodeURIComponent(name)}`);
   if (!payload.data) {

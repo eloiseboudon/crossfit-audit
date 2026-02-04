@@ -1,7 +1,21 @@
 const { dbAll, dbGet } = require('../config/database');
 
+/**
+ * Vérifie si un nom de table est sûr (caractères alphanumériques/underscore).
+ *
+ * @param {string} name - Nom de table.
+ * @returns {boolean} True si le nom est sûr.
+ */
 const isSafeTableName = (name) => /^[A-Za-z0-9_]+$/.test(name);
 
+/**
+ * @desc Liste les tables de données disponibles.
+ * @route GET /api/data-tables
+ * @access Public
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const listDataTables = async (req, res, next) => {
   try {
     const tables = await dbAll(
@@ -28,6 +42,14 @@ const listDataTables = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc Récupère le contenu d'une table spécifique.
+ * @route GET /api/data-tables/:name
+ * @access Public
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getDataTable = async (req, res, next) => {
   try {
     const tableName = req.params.name;

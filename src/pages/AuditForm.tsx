@@ -54,6 +54,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
     }
   };
 
+  // Sauvegarde différée pour éviter d'appeler l'API à chaque frappe.
   const debouncedSave = (blockCode: string, questionCode: string, value: any) => {
     const key = `${blockCode}_${questionCode}`;
 
@@ -107,6 +108,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
     }
   };
 
+  // Calcule le taux de complétion en tenant compte des questions conditionnelles.
   const updateCompletionPercentage = async (currentAnswers: Record<string, any>) => {
     if (!auditId) return;
 
@@ -144,6 +146,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
     }
   };
 
+  // Finalise l'audit (statut + date de fin) avant d'afficher le dashboard.
   const calculateAndFinalize = async () => {
     if (!auditId) return;
     setSaving(true);

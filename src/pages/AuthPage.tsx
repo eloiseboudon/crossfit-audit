@@ -12,6 +12,7 @@ export default function AuthPage() {
   const [error, setError] = useState('');
   const { signIn, signUp } = useAuth();
 
+  // Flux métier: validation locale puis appel signIn/signUp selon le mode.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');

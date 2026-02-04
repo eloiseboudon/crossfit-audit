@@ -29,6 +29,7 @@ export default function SettingsPage({ onBack, onNavigateToZones }: SettingsPage
     }
   };
 
+  // Persist les benchmarks dans l'API pour recalibrer les analyses.
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -72,6 +73,7 @@ export default function SettingsPage({ onBack, onNavigateToZones }: SettingsPage
     );
   }
 
+  // Regroupe les benchmarks par catégorie pour l'affichage.
   const groupedBenchmarks = benchmarks.reduce((acc, benchmark) => {
     const category = benchmark.category || 'autres';
     if (!acc[category]) {

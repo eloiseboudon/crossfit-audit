@@ -1,7 +1,21 @@
 const { dbAll, dbGet, dbRun } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
 
+/**
+ * Modèle d'accès aux salles (gyms).
+ */
 class Gym {
+  /**
+   * Liste toutes les salles, ou celles d'un utilisateur.
+   *
+   * @async
+   * @param {string | null} [userId=null] - Identifiant de l'utilisateur.
+   * @returns {Promise<object[]>} Liste de salles triées par date.
+   * @throws {Error} Si la requête SQL échoue.
+   *
+   * @example
+   * const gyms = await Gym.findAll('user-123');
+   */
   static async findAll(userId = null) {
     let sql = `SELECT * FROM gyms ORDER BY created_at DESC`;
     let params = [];
@@ -14,6 +28,17 @@ class Gym {
     return await dbAll(sql, params);
   }
 
+  /**
+   * Liste les salles accessibles à un utilisateur.
+   *
+   * @async
+   * @param {string} userId - Identifiant de l'utilisateur.
+   * @returns {Promise<object[]>} Salles avec niveau d'accès calculé.
+   * @throws {Error} Si la requête SQL échoue.
+   *
+   * @example
+   * const gyms = await Gym.findAllForUser('user-123');
+   */
   static async findAllForUser(userId) {
     const sql = `
       SELECT g.*, 
@@ -31,11 +56,34 @@ class Gym {
     return await dbAll(sql, [userId, userId, userId, userId]);
   }
 
+  /**
+   * Récupère une salle par identifiant.
+   *
+   * @async
+   * @param {string} id - Identifiant de la salle.
+   * @returns {Promise<object | undefined>} Salle trouvée ou undefined.
+   * @throws {Error} Si la requête SQL échoue.
+   *
+   * @example
+   * const gym = await Gym.findById('gym-123');
+   */
   static async findById(id) {
     const sql = `SELECT * FROM gyms WHERE id = ?`;
     return await dbGet(sql, [id]);
   }
 
+  /**
+   * Crée une nouvelle salle.
+   *
+   * @async
+   * @param {object} gymData - Données de la salle.
+   * @param {string | null} [userId=null] - Propriétaire de la salle.
+   * @returns {Promise<object>} Salle créée.
+   * @throws {Error} Si l'insert échoue.
+   *
+   * @example
+   * const gym = await Gym.create({ name: 'CrossFit Box' }, 'user-123');
+   */
   static async create(gymData, userId = null) {
     const {
       name, address, city, postal_code, contact_name, phone, email,
@@ -62,6 +110,18 @@ class Gym {
     return await this.findById(id);
   }
 
+  /**
+   * Met à jour une salle existante.
+   *
+   * @async
+   * @param {string} id - Identifiant de la salle.
+   * @param {object} gymData - Données à mettre à jour.
+   * @returns {Promise<object>} Salle mise à jour.
+   * @throws {Error} Si la mise à jour échoue.
+   *
+   * @example
+   * const gym = await Gym.update('gym-123', { city: 'Paris' });
+   */
   static async update(id, gymData) {
     const {
       name, address, city, postal_code, contact_name, phone, email,
@@ -98,12 +158,34 @@ class Gym {
     return await this.findById(id);
   }
 
+  /**
+   * Supprime une salle.
+   *
+   * @async
+   * @param {string} id - Identifiant de la salle.
+   * @returns {Promise<boolean>} True si la suppression est effectuée.
+   * @throws {Error} Si la suppression échoue.
+   *
+   * @example
+   * await Gym.delete('gym-123');
+   */
   static async delete(id) {
     const sql = `DELETE FROM gyms WHERE id = ?`;
     await dbRun(sql, [id]);
     return true;
   }
 
+  /**
+   * Récupère une salle avec ses statistiques (audits, concurrents, offres).
+   *
+   * @async
+   * @param {string} id - Identifiant de la salle.
+   * @returns {Promise<object | null>} Salle enrichie ou null si inexistante.
+   * @throws {Error} Si une requête SQL échoue.
+   *
+   * @example
+   * const gym = await Gym.getWithStats('gym-123');
+   */
   static async getWithStats(id) {
     const gym = await this.findById(id);
     if (!gym) return null;

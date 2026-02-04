@@ -1,7 +1,15 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// Générer un token JWT
+/**
+ * Génère un token JWT pour un utilisateur.
+ *
+ * @param {object} user - Utilisateur authentifié.
+ * @param {string} user.id - Identifiant utilisateur.
+ * @param {string} user.email - Email utilisateur.
+ * @param {string} user.role - Rôle utilisateur.
+ * @returns {string} Token JWT signé.
+ */
 const generateToken = (user) => {
   return jwt.sign(
     { 
@@ -14,9 +22,14 @@ const generateToken = (user) => {
   );
 };
 
-// @desc    Register new user
-// @route   POST /api/auth/register
-// @access  Public
+/**
+ * @desc Inscrit un nouvel utilisateur.
+ * @route POST /api/auth/register
+ * @access Public
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const register = async (req, res, next) => {
   try {
     const { email, password, name } = req.body;
@@ -64,9 +77,14 @@ const register = async (req, res, next) => {
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
+/**
+ * @desc Authentifie un utilisateur existant.
+ * @route POST /api/auth/login
+ * @access Public
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -124,9 +142,14 @@ const login = async (req, res, next) => {
   }
 };
 
-// @desc    Get current user
-// @route   GET /api/auth/me
-// @access  Private
+/**
+ * @desc Récupère le profil de l'utilisateur connecté.
+ * @route GET /api/auth/me
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
@@ -153,9 +176,14 @@ const getMe = async (req, res, next) => {
   }
 };
 
-// @desc    Update password
-// @route   PUT /api/auth/password
-// @access  Private
+/**
+ * @desc Met à jour le mot de passe de l'utilisateur.
+ * @route PUT /api/auth/password
+ * @access Private
+ * @param {Request} req - Requête Express.
+ * @param {Response} res - Réponse Express.
+ * @param {NextFunction} next - Middleware d'erreurs.
+ */
 const updatePassword = async (req, res, next) => {
   try {
     const { currentPassword, newPassword } = req.body;

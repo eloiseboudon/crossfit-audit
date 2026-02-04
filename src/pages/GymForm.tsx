@@ -49,6 +49,7 @@ export default function GymForm({ gymId, onBack }: GymFormProps) {
     }
   };
 
+  // Logique métier: création ou mise à jour selon la présence d'un gymId.
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
