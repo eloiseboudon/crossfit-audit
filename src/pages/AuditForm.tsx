@@ -1,6 +1,6 @@
 import { ArrowLeft, Calculator, Check, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getAudit, listAnswers, updateAudit, upsertAnswer } from '../lib/api';
+import { getAudit, getAuthToken, listAnswers, updateAudit, upsertAnswer } from '../lib/api';
 import { essentialQuestionItems, essentialQuestionSections } from '../lib/essentialQuestions';
 import { questionnaireBlocks } from '../lib/questionnaire';
 import { Audit, Question } from '../lib/types';
@@ -139,10 +139,21 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
 
     const percentage = totalQuestions > 0 ? Math.min(100, Math.round((answeredQuestions / totalQuestions) * 100)) : 0;
 
-    await updateAudit(auditId, { completion_percentage: percentage });
+    if (!getAuthToken()) {
+      if (audit) {
+        setAudit({ ...audit, completion_percentage: percentage });
+      }
+      return;
+    }
 
-    if (audit) {
-      setAudit({ ...audit, completion_percentage: percentage });
+    try {
+      await updateAudit(auditId, { completion_percentage: percentage });
+
+      if (audit) {
+        setAudit({ ...audit, completion_percentage: percentage });
+      }
+    } catch (error) {
+      console.error('Error updating completion percentage:', error);
     }
   };
 
