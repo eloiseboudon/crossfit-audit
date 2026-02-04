@@ -9,7 +9,12 @@
     "init-db": "node scripts/initDatabase.js",
     "migrate": "node migrations.js migrate",
     "migrate:status": "node migrations.js status",
-    "migrate:create": "node migrations.js create"
+    "migrate:create": "node migrations.js create",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:business": "jest __tests__/business --verbose",
+    "test:coverage": "jest --coverage",
+    "test:calculations": "jest calculations.test.js --verbose"
   },
   "keywords": [
     "crossfit",
@@ -33,6 +38,7 @@
     "express-validator": "^7.0.1"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.0.2"
   }
 }

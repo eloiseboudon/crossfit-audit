@@ -89,9 +89,6 @@ cd $APP_DIR
 # Installer les nouvelles dépendances
 npm install
 
-# Lancer les tests avant le build
-npm test -- --config jest.config.js
-
 # Rebuild du frontend
 npm run build
 
@@ -127,6 +124,10 @@ else
     echo -e "${YELLOW}ℹ${NC}  Rollback possible avec: ./db-manage.sh restore"
     exit 1
 fi
+
+# Executer les tests unitaires 
+echo -e "${YELLOW}→${NC} Tests unitaires..."
+npm test
 
 # 6. Redémarrage des services
 echo -e "\n${YELLOW}[6/7]${NC} Redémarrage des services..."
