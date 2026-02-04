@@ -1,21 +1,20 @@
 const jwt = require('jsonwebtoken');
-const ApiError = require('../utils/ApiError');
 const { ROLES } = require('../constants');
 
 const auth = (req, res, next) => {
   try {
     // Récupérer le token du header Authorization
     const authHeader = req.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw ApiError.unauthorized('Token manquant');
+      return res.status(401).json({ error: 'Token manquant' });
     }
 
     const token = authHeader.substring(7); // Enlever "Bearer "
 
     // Vérifier le token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     // Ajouter les infos user à la requête
     req.user = {
       id: decoded.id,
@@ -25,14 +24,14 @@ const auth = (req, res, next) => {
 
     return next();
   } catch (error) {
-    return next(ApiError.unauthorized('Token invalide'));
+    return res.status(401).json({ error: 'Token invalide' });
   }
 };
 
 // Middleware pour vérifier le rôle admin
 const isAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== ROLES.ADMIN) {
-    return next(ApiError.forbidden('Vous n\'avez pas les droits nécessaires'));
+    return res.status(403).json({ error: 'Vous n\'avez pas les droits nécessaires' });
   }
   next();
 };

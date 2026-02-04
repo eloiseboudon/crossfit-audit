@@ -41,7 +41,7 @@ const register = async (req, res, next) => {
     }
 
     if (password.length < 6) {
-      throw ApiError.badRequest('Le mot de passe doit contenir au moins 6 caractères');
+      return res.status(400).json({ error: 'Mot de passe trop court' });
     }
 
     // Créer l'utilisateur
@@ -63,7 +63,7 @@ const register = async (req, res, next) => {
     });
   } catch (error) {
     if (error.message === 'Cet email est déjà utilisé') {
-      return next(new ApiError(409, error.message));
+      return res.status(409).json({ error: 'Email déjà utilisé' });
     }
     next(error);
   }
