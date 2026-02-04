@@ -1,4 +1,5 @@
 const { dbAll, dbGet } = require('../config/database');
+const ApiError = require('../utils/ApiError');
 
 /**
  * Vérifie si un nom de table est sûr (caractères alphanumériques/underscore).
@@ -55,10 +56,7 @@ const getDataTable = async (req, res, next) => {
     const tableName = req.params.name;
 
     if (!tableName || !isSafeTableName(tableName)) {
-      return res.status(400).json({
-        error: 'Nom de table invalide',
-        message: 'Le nom de table fourni est invalide',
-      });
+      throw ApiError.badRequest('Le nom de table fourni est invalide');
     }
 
     const table = await dbGet(
@@ -67,10 +65,7 @@ const getDataTable = async (req, res, next) => {
     );
 
     if (!table) {
-      return res.status(404).json({
-        error: 'Table non trouvée',
-        message: 'Cette table n\'existe pas',
-      });
+      throw ApiError.notFound('Cette table n\'existe pas');
     }
 
     const columnsInfo = await dbAll(`PRAGMA table_info("${tableName}")`);

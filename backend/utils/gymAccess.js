@@ -1,5 +1,6 @@
 const Gym = require('../models/Gym');
 const GymAccess = require('../models/GymAccess');
+const { ACCESS_LEVELS, ROLES } = require('../constants');
 
 /**
  * Résout les permissions d'accès à une salle selon l'utilisateur.
@@ -35,12 +36,12 @@ const resolveGymAccess = async ({ gymId, user }) => {
     return { gym, canRead: true, canWrite: true, accessLevel: 'public', isOwner: false };
   }
 
-  if (user?.role === 'admin') {
-    return { gym, canRead: true, canWrite: true, accessLevel: 'admin', isOwner: false };
+  if (user?.role === ROLES.ADMIN) {
+    return { gym, canRead: true, canWrite: true, accessLevel: ROLES.ADMIN, isOwner: false };
   }
 
   if (gym.user_id === user.id) {
-    return { gym, canRead: true, canWrite: true, accessLevel: 'owner', isOwner: true };
+    return { gym, canRead: true, canWrite: true, accessLevel: ACCESS_LEVELS.OWNER, isOwner: true };
   }
 
   const access = await GymAccess.findByGymAndUser(gymId, user.id);
@@ -48,7 +49,7 @@ const resolveGymAccess = async ({ gymId, user }) => {
     return { gym, canRead: false, canWrite: false, accessLevel: null, isOwner: false };
   }
 
-  const canWrite = access.access_level === 'write';
+  const canWrite = access.access_level === ACCESS_LEVELS.WRITE;
   return { gym, canRead: true, canWrite, accessLevel: access.access_level, isOwner: false };
 };
 
