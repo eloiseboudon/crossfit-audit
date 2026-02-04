@@ -45,12 +45,12 @@ describe('🧮 Algorithmes de Calcul - Business Logic', () => {
       { block_code: 'retention_churn', question_code: 'anciennes_moyens_mois', value: 24 }
     ];
 
-    it('devrait calculer correctement l\'ARPM (100€)', () => {
+    it('devrait calculer correctement l\'ARPM (~99.3€)', () => {
       const kpis = calculateKPIs(answersPerformante);
 
-      // CA mensuel = 12000 + (1500/3) + (1200/12) + 800 + 1000 + 500 = 15 000€
-      // ARPM = 15000 / 150 membres = 100€
-      expect(kpis.arpm).toBeCloseTo(100, 0);
+      // CA mensuel = 12000 + (1500/3) + (1200/12) + 800 + 1000 + 500 = 14 900€
+      // ARPM = 14900 / 150 membres ≈ 99.3€
+      expect(kpis.arpm).toBeCloseTo(99.33, 2);
     });
 
     it('devrait calculer correctement le CA total annuel (180k€)', () => {
