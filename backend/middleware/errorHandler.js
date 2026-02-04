@@ -1,8 +1,9 @@
 const ApiError = require('../utils/ApiError');
+const logger = require('../utils/logger');
 
 // Middleware de gestion des erreurs
 const errorHandler = (err, req, res, next) => {
-  console.error('❌ Erreur:', err);
+  logger.error('❌ Erreur:', err);
 
   if (err.name === 'ApiError') {
     return res.status(err.statusCode).json({

@@ -14,7 +14,9 @@
     "test:watch": "jest --watch",
     "test:business": "jest __tests__/business --verbose",
     "test:coverage": "jest --coverage",
-    "test:calculations": "jest calculations.test.js --verbose"
+    "test:calculations": "jest calculations.test.js --verbose",
+    "test:applicatif": "jest __tests__/business __tests__/controllers --verbose",
+    "test:crud": "jest __tests__/models __tests__/middleware __tests__/utils --verbose"
   },
   "keywords": [
     "crossfit",

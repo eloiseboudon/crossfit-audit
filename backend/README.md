@@ -24,6 +24,39 @@ Vérifier l'API :
 curl http://localhost:5176/health
 ```
 
+## ✅ Tests
+
+### Tests applicatifs (priorité)
+
+Les tests applicatifs couvrent la logique métier et les contrôleurs HTTP :
+- `__tests__/business` : calculs métier et règles applicatives
+- `__tests__/controllers` : endpoints API (auth, gyms, audits, marché)
+
+Lancer uniquement ces tests :
+
+```bash
+npm run test:applicatif
+```
+
+### Tests CRUD (modèles & middleware)
+
+Les tests CRUD valident les accès base de données et les helpers :
+- `__tests__/models` : CRUD sur les entités (User, Gym, Audit, etc.)
+- `__tests__/middleware` : auth, accès, etc.
+- `__tests__/utils` : helpers utilitaires
+
+Lancer uniquement ces tests :
+
+```bash
+npm run test:crud
+```
+
+### Suite complète
+
+```bash
+npm test
+```
+
 ## 🚀 Installation
 
 ### 1. Installation des dépendances

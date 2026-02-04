@@ -1,6 +1,7 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
+const logger = require('../utils/logger');
 
 const resolveDbPath = () => {
   if (!process.env.DB_PATH) {
@@ -24,12 +25,12 @@ if (!fs.existsSync(dbDir)) {
 let db;
 try {
   db = new Database(dbPath);
-  console.log('✅ Connecté à la base de données SQLite');
+  logger.info('✅ Connecté à la base de données SQLite');
 
   db.pragma('foreign_keys = ON');
-  console.log('✅ Foreign keys activées');
+  logger.info('✅ Foreign keys activées');
 } catch (err) {
-  console.error('❌ Erreur de connexion à la base de données:', err.message);
+  logger.error('❌ Erreur de connexion à la base de données:', err.message);
   process.exit(1);
 }
 
