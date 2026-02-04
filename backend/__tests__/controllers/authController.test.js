@@ -56,6 +56,18 @@ describe('Auth Controller', () => {
       expect(res.status).toBe(400);
       expect(res.body.error).toBe('Mot de passe trop court');
     });
+
+    it('devrait rejeter si un champ requis manque', async () => {
+      const res = await request(app)
+        .post('/api/auth/register')
+        .send({
+          email: 'test@example.com',
+          password: 'password123'
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('Email, mot de passe et nom sont requis');
+    });
   });
 
   describe('POST /api/auth/login', () => {
@@ -100,6 +112,130 @@ describe('Auth Controller', () => {
         });
 
       expect(res.status).toBe(401);
+    });
+
+    it('devrait rejeter un compte désactivé', async () => {
+      const user = await User.create({
+        email: 'inactive@test.com',
+        password: 'password123',
+        name: 'Inactive User'
+      });
+
+      await User.delete(user.id);
+
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({
+          email: 'inactive@test.com',
+          password: 'password123'
+        });
+
+      expect(res.status).toBe(403);
+      expect(res.body.message).toBe('Votre compte a été désactivé');
+    });
+  });
+
+  describe('GET /api/auth/me', () => {
+    it('devrait retourner le profil utilisateur', async () => {
+      await User.create({
+        email: 'profile@test.com',
+        password: 'password123',
+        name: 'Profile User'
+      });
+
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'profile@test.com', password: 'password123' });
+
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${loginRes.body.token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.user.email).toBe('profile@test.com');
+    });
+
+    it('devrait retourner 404 si utilisateur introuvable', async () => {
+      const user = await User.create({
+        email: 'removed@test.com',
+        password: 'password123',
+        name: 'Removed User'
+      });
+
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'removed@test.com', password: 'password123' });
+
+      await dbRun('DELETE FROM users WHERE id = ?', [user.id]);
+
+      const res = await request(app)
+        .get('/api/auth/me')
+        .set('Authorization', `Bearer ${loginRes.body.token}`);
+
+      expect(res.status).toBe(404);
+      expect(res.body.message).toBe('Votre compte n\'existe plus');
+    });
+  });
+
+  describe('PUT /api/auth/password', () => {
+    it('devrait mettre à jour le mot de passe', async () => {
+      await User.create({
+        email: 'password@test.com',
+        password: 'password123',
+        name: 'Password User'
+      });
+
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'password@test.com', password: 'password123' });
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${loginRes.body.token}`)
+        .send({ currentPassword: 'password123', newPassword: 'newpass456' });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe('Mot de passe mis à jour avec succès');
+    });
+
+    it('devrait rejeter si mot de passe actuel incorrect', async () => {
+      await User.create({
+        email: 'wrongpass@test.com',
+        password: 'password123',
+        name: 'Wrong Pass'
+      });
+
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'wrongpass@test.com', password: 'password123' });
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${loginRes.body.token}`)
+        .send({ currentPassword: 'badpass', newPassword: 'newpass456' });
+
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe('Le mot de passe actuel est incorrect');
+    });
+
+    it('devrait rejeter un nouveau mot de passe trop court', async () => {
+      await User.create({
+        email: 'shortpass@test.com',
+        password: 'password123',
+        name: 'Short Pass'
+      });
+
+      const loginRes = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'shortpass@test.com', password: 'password123' });
+
+      const res = await request(app)
+        .put('/api/auth/password')
+        .set('Authorization', `Bearer ${loginRes.body.token}`)
+        .send({ currentPassword: 'password123', newPassword: '123' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.message).toBe('Le nouveau mot de passe doit contenir au moins 6 caractères');
     });
   });
 });
