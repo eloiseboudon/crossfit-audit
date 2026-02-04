@@ -112,7 +112,9 @@ describe('Audit Data Models', () => {
         audit_id: testAudit.id,
         rec_code: 'R1',
         title: 'Optimiser',
-        priority: 'high'
+        priority: 'high',
+        effort_level: 'moyen',
+        confidence: 'high'
       });
 
       expect(rec.title).toBe('Optimiser');
@@ -123,9 +125,9 @@ describe('Audit Data Models', () => {
 
     it('devrait trier les recommandations par priorité et impact', async () => {
       await Recommendation.bulkCreate(testAudit.id, [
-        { rec_code: 'R1', title: 'Low', priority: 'low', expected_impact_eur: 1000 },
-        { rec_code: 'R2', title: 'Critical', priority: 'critical', expected_impact_eur: 500 },
-        { rec_code: 'R3', title: 'High', priority: 'high', expected_impact_eur: 2000 }
+        { rec_code: 'R1', title: 'Low', priority: 'low', expected_impact_eur: 1000, effort_level: 'low', confidence: 'medium' },
+        { rec_code: 'R2', title: 'Critical', priority: 'critical', expected_impact_eur: 500, effort_level: 'high', confidence: 'high' },
+        { rec_code: 'R3', title: 'High', priority: 'high', expected_impact_eur: 2000, effort_level: 'moyen', confidence: 'high' }
       ]);
 
       const recs = await Recommendation.findByAuditId(testAudit.id);
@@ -137,11 +139,11 @@ describe('Audit Data Models', () => {
 
     it('devrait remplacer les recommandations via bulkCreate', async () => {
       await Recommendation.bulkCreate(testAudit.id, [
-        { rec_code: 'R1', title: 'Old', priority: 'low' }
+        { rec_code: 'R1', title: 'Old', priority: 'low', effort_level: 'low', confidence: 'medium' }
       ]);
 
       const results = await Recommendation.bulkCreate(testAudit.id, [
-        { rec_code: 'R2', title: 'New', priority: 'high' }
+        { rec_code: 'R2', title: 'New', priority: 'high', effort_level: 'moyen', confidence: 'high' }
       ]);
 
       expect(results).toHaveLength(1);
@@ -154,7 +156,9 @@ describe('Audit Data Models', () => {
         audit_id: testAudit.id,
         rec_code: 'R3',
         title: 'Delete',
-        priority: 'medium'
+        priority: 'medium',
+        effort_level: 'moyen',
+        confidence: 'medium'
       });
 
       await Recommendation.delete(rec.id);

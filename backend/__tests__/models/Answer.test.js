@@ -27,7 +27,7 @@ describe('Answer Model', () => {
       value: 10
     });
 
-    expect(created.value).toBe(10);
+    expect(Number(created.value)).toBe(10);
 
     const updated = await Answer.upsert({
       audit_id: testAudit.id,
@@ -36,7 +36,7 @@ describe('Answer Model', () => {
       value: 20
     });
 
-    expect(updated.value).toBe(20);
+    expect(Number(updated.value)).toBe(20);
   });
 
   it('devrait retrouver les réponses par audit et par bloc', async () => {
