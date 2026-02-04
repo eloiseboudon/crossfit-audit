@@ -89,6 +89,10 @@ cd $APP_DIR
 # Installer les nouvelles dépendances
 npm install
 
+# Executer les tests unitaires 
+echo -e "${YELLOW}→${NC} Tests unitaires frontend..."
+npm test
+
 # Rebuild du frontend
 npm run build
 
@@ -126,7 +130,7 @@ else
 fi
 
 # Executer les tests unitaires 
-echo -e "${YELLOW}→${NC} Tests unitaires..."
+echo -e "${YELLOW}→${NC} Tests unitaires backend..."
 npm test
 
 # 6. Redémarrage des services
