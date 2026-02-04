@@ -114,7 +114,9 @@ const createAudit = async (req, res, next) => {
       throw ApiError.badRequest('L\'ID de la salle est requis');
     }
 
-    await getGymAccess({ gymId: gym_id, user: req.user, write: true });
+    if (req.user) {
+      await getGymAccess({ gymId: gym_id, user: req.user, write: true });
+    }
 
     const audit = await Audit.create(req.body);
     

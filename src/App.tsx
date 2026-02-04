@@ -1,8 +1,6 @@
-import { Database, Dumbbell, Home, LogOut, Settings, Zap } from 'lucide-react';
+import { Database, Home, Settings, Zap } from 'lucide-react';
 import { useState } from 'react';
-import { useAuth } from './lib/auth';
 import AuditForm from './pages/AuditForm';
-import AuthPage from './pages/AuthPage';
 import CompetitorsPage from './pages/CompetitorsPage';
 import Dashboard from './pages/Dashboard';
 import DataTablesPage from './pages/DataTablesPage';
@@ -53,30 +51,11 @@ const navButtonClasses = (isActive: boolean, isIconOnly = false) =>
   }`;
 
 export default function App() {
-  const { user, loading, signOut } = useAuth();
   const [nav, setNav] = useState<NavigationState>({ view: 'home' });
-  const isAuthEnabled = false;
 
   const navigate = (view: View, gymId?: string, auditId?: string) => {
     setNav({ view, gymId, auditId });
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-tulip-beige-light via-white to-tulip-beige/20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-tulip-blue to-tulip-green rounded-2xl mb-4 shadow-lg animate-pulse">
-            <Dumbbell className="w-8 h-8 text-white" />
-          </div>
-          <p className="text-tulip-blue font-semibold">Chargement...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (isAuthEnabled && !user) {
-    return <AuthPage />;
-  }
 
   const requireGymId = (render: (gymId: string) => JSX.Element) => {
     if (!nav.gymId) {
@@ -186,15 +165,6 @@ export default function App() {
               >
                 <Settings className="w-5 h-5" />
               </button>
-              {isAuthEnabled && (
-                <button
-                  onClick={signOut}
-                  className="p-2 rounded-lg text-sm font-semibold transition-all duration-300 text-tulip-red hover:text-white hover:bg-tulip-red/90 border border-transparent hover:border-tulip-red/50"
-                  title="Déconnexion"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              )}
             </div>
           </div>
         </div>

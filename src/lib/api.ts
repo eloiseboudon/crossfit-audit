@@ -14,37 +14,12 @@ import {
 } from './types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? '/api';
-const AUTH_STORAGE_KEY = 'crossfit_audit_auth';
-
 type ApiResponse<T> = {
   success?: boolean;
   message?: string;
   data?: T;
   count?: number;
 };
-
-/**
- * Lit le token d'authentification depuis le localStorage.
- *
- * @returns Le token JWT ou null si indisponible.
- */
-const readAuthToken = (): string | null => {
-  const raw = localStorage.getItem(AUTH_STORAGE_KEY);
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw) as { token?: string };
-    return parsed.token ?? null;
-  } catch {
-    return null;
-  }
-};
-
-/**
- * Expose le token d'authentification actuellement stocké.
- *
- * @returns Le token JWT ou null.
- */
-export const getAuthToken = (): string | null => readAuthToken();
 
 /**
  * Normalise une valeur hétérogène en booléen.
@@ -71,11 +46,6 @@ const request = async <T>(path: string, options: RequestInit = {}): Promise<T> =
   const headers = new Headers(options.headers);
   if (!headers.has('Content-Type') && options.body) {
     headers.set('Content-Type', 'application/json');
-  }
-
-  const token = readAuthToken();
-  if (token && !headers.has('Authorization')) {
-    headers.set('Authorization', `Bearer ${token}`);
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {

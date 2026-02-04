@@ -1,7 +1,6 @@
 import { ArrowLeft, Building2, Globe, MapPin, Phone, Save, Scale } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createGym, getGym, updateGym } from '../lib/api';
-import { useAuth } from '../lib/auth';
 import { Gym } from '../lib/types';
 
 interface GymFormProps {
@@ -10,7 +9,6 @@ interface GymFormProps {
 }
 
 export default function GymForm({ gymId, onBack }: GymFormProps) {
-  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [gym, setGym] = useState<Partial<Gym>>({
     name: '',
@@ -60,7 +58,6 @@ export default function GymForm({ gymId, onBack }: GymFormProps) {
       } else {
         await createGym({
           ...gym,
-          user_id: user?.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
