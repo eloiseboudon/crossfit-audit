@@ -21,6 +21,17 @@ type ApiResponse<T> = {
   count?: number;
 };
 
+const getStoredToken = (): string | null => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const token = window.localStorage.getItem('authToken') ?? window.localStorage.getItem('token');
+  return token?.trim() || null;
+};
+
+export const getAuthToken = (): string | null => getStoredToken();
+
 /**
  * Normalise une valeur hétérogène en booléen.
  *
@@ -46,6 +57,12 @@ const request = async <T>(path: string, options: RequestInit = {}): Promise<T> =
   const headers = new Headers(options.headers);
   if (!headers.has('Content-Type') && options.body) {
     headers.set('Content-Type', 'application/json');
+  }
+  if (!headers.has('Authorization')) {
+    const token = getStoredToken();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
+    }
   }
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
