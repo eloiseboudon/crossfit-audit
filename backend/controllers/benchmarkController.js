@@ -1,4 +1,5 @@
 const MarketBenchmark = require('../models/MarketBenchmark');
+const ApiError = require('../utils/ApiError');
 
 /**
  * @desc Récupère les benchmarks de marché.
@@ -35,18 +36,12 @@ const createMarketBenchmark = async (req, res, next) => {
     const { benchmark_code, name, value } = req.body;
 
     if (!benchmark_code || !name || value === undefined) {
-      return res.status(400).json({
-        error: 'Données manquantes',
-        message: 'Le code, le nom et la valeur sont requis'
-      });
+      throw ApiError.badRequest('Le code, le nom et la valeur sont requis');
     }
 
     const existing = await MarketBenchmark.findByCode(benchmark_code);
     if (existing) {
-      return res.status(409).json({
-        error: 'Benchmark déjà existant',
-        message: 'Un benchmark avec ce code existe déjà'
-      });
+      throw new ApiError(409, 'Un benchmark avec ce code existe déjà');
     }
 
     const created = await MarketBenchmark.create(req.body);
@@ -74,10 +69,7 @@ const updateMarketBenchmark = async (req, res, next) => {
     const benchmark = await MarketBenchmark.findById(req.params.id);
 
     if (!benchmark) {
-      return res.status(404).json({
-        error: 'Benchmark non trouvé',
-        message: 'Ce benchmark n\'existe pas'
-      });
+      throw ApiError.notFound('Ce benchmark n\'existe pas');
     }
 
     const updated = await MarketBenchmark.update(req.params.id, req.body);

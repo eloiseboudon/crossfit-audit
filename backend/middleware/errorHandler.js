@@ -1,6 +1,16 @@
+const ApiError = require('../utils/ApiError');
+
 // Middleware de gestion des erreurs
 const errorHandler = (err, req, res, next) => {
   console.error('❌ Erreur:', err);
+
+  if (err.name === 'ApiError') {
+    return res.status(err.statusCode).json({
+      error: err.name,
+      message: err.message,
+      ...(err.details ? { details: err.details } : {})
+    });
+  }
 
   // Erreur de validation
   if (err.name === 'ValidationError') {
@@ -40,10 +50,7 @@ const errorHandler = (err, req, res, next) => {
 
 // Middleware pour les routes non trouvées
 const notFound = (req, res, next) => {
-  res.status(404).json({
-    error: 'Route non trouvée',
-    message: `La route ${req.originalUrl} n'existe pas`
-  });
+  next(ApiError.notFound(`La route ${req.originalUrl} n'existe pas`));
 };
 
 module.exports = { errorHandler, notFound };

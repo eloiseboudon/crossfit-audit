@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const ApiError = require('../utils/ApiError');
+const { ROLES } = require('../constants');
 
 const auth = (req, res, next) => {
   try {
@@ -6,10 +8,7 @@ const auth = (req, res, next) => {
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        error: 'Non autorisé',
-        message: 'Token manquant'
-      });
+      throw ApiError.unauthorized('Token manquant');
     }
 
     const token = authHeader.substring(7); // Enlever "Bearer "
@@ -26,20 +25,14 @@ const auth = (req, res, next) => {
 
     return next();
   } catch (error) {
-    return res.status(401).json({
-      error: 'Non autorisé',
-      message: 'Token invalide'
-    });
+    return next(ApiError.unauthorized('Token invalide'));
   }
 };
 
 // Middleware pour vérifier le rôle admin
 const isAdmin = (req, res, next) => {
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ 
-      error: 'Accès interdit',
-      message: 'Vous n\'avez pas les droits nécessaires' 
-    });
+  if (!req.user || req.user.role !== ROLES.ADMIN) {
+    return next(ApiError.forbidden('Vous n\'avez pas les droits nécessaires'));
   }
   next();
 };

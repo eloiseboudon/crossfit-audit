@@ -1,47 +1,24 @@
 const Audit = require('../models/Audit');
 const Answer = require('../models/Answer');
 const { KPI, Score, Recommendation } = require('../models/AuditData');
-const { resolveGymAccess } = require('../utils/gymAccess');
+const ApiError = require('../utils/ApiError');
+const { getGymAccess } = require('../middleware/gymAccessMiddleware');
+const { ROLES } = require('../constants');
 
 /**
  * Valide l'accès à un audit et retourne le contexte d'accès.
  *
  * @async
- * @param {Request} req - Requête Express.
- * @param {Response} res - Réponse Express.
  * @param {{ write?: boolean }} [options] - Options d'accès.
  * @returns {Promise<{audit: object, access: object} | null>} Audit et droits si autorisé.
  */
-const ensureAuditAccess = async (req, res, { write = false } = {}) => {
+const ensureAuditAccess = async (req, { write = false } = {}) => {
   const audit = await Audit.findById(req.params.id);
   if (!audit) {
-    res.status(404).json({ 
-      error: 'Audit non trouvé',
-      message: 'Cet audit n\'existe pas' 
-    });
-    return null;
+    throw ApiError.notFound('Cet audit n\'existe pas');
   }
 
-  if (!req.user) {
-    return { audit, access: { canRead: true, canWrite: true } };
-  }
-
-  const access = await resolveGymAccess({ gymId: audit.gym_id, user: req.user });
-  if (!access.canRead) {
-    res.status(403).json({ 
-      error: 'Accès interdit',
-      message: 'Vous n\'avez pas accès à cet audit' 
-    });
-    return null;
-  }
-
-  if (write && !access.canWrite) {
-    res.status(403).json({ 
-      error: 'Accès interdit',
-      message: 'Vous ne pouvez pas modifier cet audit' 
-    });
-    return null;
-  }
+  const access = await getGymAccess({ gymId: audit.gym_id, user: req.user, write });
 
   return { audit, access };
 };
@@ -61,7 +38,7 @@ const getAudits = async (req, res, next) => {
 
     if (!req.user) {
       audits = await Audit.findAll(gym_id);
-    } else if (req.user.role === 'admin') {
+    } else if (req.user.role === ROLES.ADMIN) {
       audits = await Audit.findAll(gym_id);
     } else {
       audits = await Audit.findAllForUser(req.user.id, gym_id);
@@ -87,8 +64,7 @@ const getAudits = async (req, res, next) => {
  */
 const getAudit = async (req, res, next) => {
   try {
-    const result = await ensureAuditAccess(req, res);
-    if (!result) return;
+    const result = await ensureAuditAccess(req);
     const { audit } = result;
 
     res.json({
@@ -110,8 +86,7 @@ const getAudit = async (req, res, next) => {
  */
 const getCompleteAudit = async (req, res, next) => {
   try {
-    const accessResult = await ensureAuditAccess(req, res);
-    if (!accessResult) return;
+    await ensureAuditAccess(req);
     const audit = await Audit.getComplete(req.params.id);
 
     res.json({
@@ -136,26 +111,10 @@ const createAudit = async (req, res, next) => {
     const { gym_id } = req.body;
     
     if (!gym_id) {
-      return res.status(400).json({ 
-        error: 'Données manquantes',
-        message: 'L\'ID de la salle est requis' 
-      });
+      throw ApiError.badRequest('L\'ID de la salle est requis');
     }
 
-    const access = await resolveGymAccess({ gymId: gym_id, user: req.user });
-    if (!access.gym) {
-      return res.status(404).json({ 
-        error: 'Gym non trouvée',
-        message: 'Cette salle n\'existe pas' 
-      });
-    }
-
-    if (!access.canWrite) {
-      return res.status(403).json({ 
-        error: 'Accès interdit',
-        message: 'Vous ne pouvez pas créer un audit pour cette salle' 
-      });
-    }
+    await getGymAccess({ gymId: gym_id, user: req.user, write: true });
 
     const audit = await Audit.create(req.body);
     
@@ -179,8 +138,7 @@ const createAudit = async (req, res, next) => {
  */
 const updateAudit = async (req, res, next) => {
   try {
-    const result = await ensureAuditAccess(req, res, { write: true });
-    if (!result) return;
+    await ensureAuditAccess(req, { write: true });
 
     const updatedAudit = await Audit.update(req.params.id, req.body);
     
@@ -204,8 +162,7 @@ const updateAudit = async (req, res, next) => {
  */
 const deleteAudit = async (req, res, next) => {
   try {
-    const result = await ensureAuditAccess(req, res, { write: true });
-    if (!result) return;
+    await ensureAuditAccess(req, { write: true });
 
     await Audit.delete(req.params.id);
     
@@ -228,15 +185,11 @@ const deleteAudit = async (req, res, next) => {
  */
 const saveAnswers = async (req, res, next) => {
   try {
-    const result = await ensureAuditAccess(req, res, { write: true });
-    if (!result) return;
+    await ensureAuditAccess(req, { write: true });
     const { answers } = req.body;
     
     if (!Array.isArray(answers)) {
-      return res.status(400).json({ 
-        error: 'Format invalide',
-        message: 'Les réponses doivent être un tableau' 
-      });
+      throw ApiError.badRequest('Les réponses doivent être un tableau');
     }
 
     const savedAnswers = await Answer.bulkUpsert(req.params.id, answers);
@@ -264,8 +217,7 @@ const saveAnswers = async (req, res, next) => {
  */
 const getAnswers = async (req, res, next) => {
   try {
-    const result = await ensureAuditAccess(req, res);
-    if (!result) return;
+    await ensureAuditAccess(req);
     const answers = await Answer.findByAuditId(req.params.id);
     
     res.json({
@@ -288,15 +240,11 @@ const getAnswers = async (req, res, next) => {
  */
 const saveKPIs = async (req, res, next) => {
   try {
-    const result = await ensureAuditAccess(req, res, { write: true });
-    if (!result) return;
+    await ensureAuditAccess(req, { write: true });
     const { kpis } = req.body;
     
     if (!Array.isArray(kpis)) {
-      return res.status(400).json({ 
-        error: 'Format invalide',
-        message: 'Les KPIs doivent être un tableau' 
-      });
+      throw ApiError.badRequest('Les KPIs doivent être un tableau');
     }
 
     const savedKPIs = await KPI.bulkUpsert(req.params.id, kpis);
@@ -321,15 +269,11 @@ const saveKPIs = async (req, res, next) => {
  */
 const saveScores = async (req, res, next) => {
   try {
-    const result = await ensureAuditAccess(req, res, { write: true });
-    if (!result) return;
+    await ensureAuditAccess(req, { write: true });
     const { scores } = req.body;
     
     if (!Array.isArray(scores)) {
-      return res.status(400).json({ 
-        error: 'Format invalide',
-        message: 'Les scores doivent être un tableau' 
-      });
+      throw ApiError.badRequest('Les scores doivent être un tableau');
     }
 
     const savedScores = await Score.bulkUpsert(req.params.id, scores);
@@ -354,15 +298,11 @@ const saveScores = async (req, res, next) => {
  */
 const getGlobalScore = async (req, res, next) => {
   try {
-    const result = await ensureAuditAccess(req, res);
-    if (!result) return;
+    await ensureAuditAccess(req);
     const globalScore = await Score.getGlobalScore(req.params.id);
     
     if (!globalScore) {
-      return res.status(404).json({ 
-        error: 'Scores non trouvés',
-        message: 'Aucun score n\'a été calculé pour cet audit' 
-      });
+      throw ApiError.notFound('Aucun score n\'a été calculé pour cet audit');
     }
 
     res.json({
@@ -384,15 +324,11 @@ const getGlobalScore = async (req, res, next) => {
  */
 const saveRecommendations = async (req, res, next) => {
   try {
-    const result = await ensureAuditAccess(req, res, { write: true });
-    if (!result) return;
+    await ensureAuditAccess(req, { write: true });
     const { recommendations } = req.body;
     
     if (!Array.isArray(recommendations)) {
-      return res.status(400).json({ 
-        error: 'Format invalide',
-        message: 'Les recommandations doivent être un tableau' 
-      });
+      throw ApiError.badRequest('Les recommandations doivent être un tableau');
     }
 
     const savedRecs = await Recommendation.bulkCreate(req.params.id, recommendations);
@@ -417,8 +353,7 @@ const saveRecommendations = async (req, res, next) => {
  */
 const getRecommendations = async (req, res, next) => {
   try {
-    const result = await ensureAuditAccess(req, res);
-    if (!result) return;
+    await ensureAuditAccess(req);
     const recommendations = await Recommendation.findByAuditId(req.params.id);
     
     res.json({

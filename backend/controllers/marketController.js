@@ -1,67 +1,7 @@
 const { Competitor, MarketZone, GymOffer } = require('../models/Market');
-const Gym = require('../models/Gym');
 const Audit = require('../models/Audit');
-const { resolveGymAccess } = require('../utils/gymAccess');
-
-/**
- * Valide l'accès à une salle pour les routes marché.
- *
- * @async
- * @param {Request} req - Requête Express.
- * @param {Response} res - Réponse Express.
- * @param {string} gymId - Identifiant de la salle.
- * @param {{ write?: boolean }} [options] - Options d'accès.
- * @returns {Promise<object | null>} Contexte d'accès ou null si refus.
- */
-const ensureGymAccess = async (req, res, gymId, { write = false } = {}) => {
-  if (!req.user) {
-    const gym = await Gym.findById(gymId);
-    if (!gym) {
-      res.status(404).json({ 
-        error: 'Gym non trouvée',
-        message: 'Cette salle n\'existe pas' 
-      });
-      return null;
-    }
-
-    if (write) {
-      res.status(401).json({ 
-        error: 'Accès non autorisé',
-        message: 'Token manquant' 
-      });
-      return null;
-    }
-
-    return { gym, canRead: true, canWrite: false, accessLevel: 'guest', isOwner: false };
-  }
-
-  const access = await resolveGymAccess({ gymId, user: req.user });
-  if (!access.gym) {
-    res.status(404).json({ 
-      error: 'Gym non trouvée',
-      message: 'Cette salle n\'existe pas' 
-    });
-    return null;
-  }
-
-  if (!access.canRead) {
-    res.status(403).json({ 
-      error: 'Accès interdit',
-      message: 'Vous n\'avez pas accès à cette salle' 
-    });
-    return null;
-  }
-
-  if (write && !access.canWrite) {
-    res.status(403).json({ 
-      error: 'Accès interdit',
-      message: 'Vous ne pouvez pas modifier cette salle' 
-    });
-    return null;
-  }
-
-  return access;
-};
+const ApiError = require('../utils/ApiError');
+const { getGymAccess } = require('../middleware/gymAccessMiddleware');
 
 // ============================================
 // COMPETITORS
@@ -80,14 +20,10 @@ const getCompetitors = async (req, res, next) => {
     const { gym_id } = req.query;
     
     if (!gym_id) {
-      return res.status(400).json({ 
-        error: 'Paramètre manquant',
-        message: 'L\'ID de la salle est requis' 
-      });
+      throw ApiError.badRequest('L\'ID de la salle est requis');
     }
 
-    const access = await ensureGymAccess(req, res, gym_id);
-    if (!access) return;
+    await getGymAccess({ gymId: gym_id, user: req.user });
 
     const competitors = await Competitor.findByGymId(gym_id);
     
@@ -114,14 +50,10 @@ const getCompetitor = async (req, res, next) => {
     const competitor = await Competitor.findById(req.params.id);
     
     if (!competitor) {
-      return res.status(404).json({ 
-        error: 'Concurrent non trouvé',
-        message: 'Ce concurrent n\'existe pas' 
-      });
+      throw ApiError.notFound('Ce concurrent n\'existe pas');
     }
 
-    const access = await ensureGymAccess(req, res, competitor.gym_id);
-    if (!access) return;
+    await getGymAccess({ gymId: competitor.gym_id, user: req.user });
 
     res.json({
       success: true,
@@ -145,14 +77,10 @@ const createCompetitor = async (req, res, next) => {
     const { gym_id, name } = req.body;
     
     if (!gym_id || !name) {
-      return res.status(400).json({ 
-        error: 'Données manquantes',
-        message: 'L\'ID de la salle et le nom sont requis' 
-      });
+      throw ApiError.badRequest('L\'ID de la salle et le nom sont requis');
     }
 
-    const access = await ensureGymAccess(req, res, gym_id, { write: true });
-    if (!access) return;
+    await getGymAccess({ gymId: gym_id, user: req.user, write: true });
 
     const competitor = await Competitor.create(req.body);
     
@@ -179,14 +107,10 @@ const updateCompetitor = async (req, res, next) => {
     const competitor = await Competitor.findById(req.params.id);
     
     if (!competitor) {
-      return res.status(404).json({ 
-        error: 'Concurrent non trouvé',
-        message: 'Ce concurrent n\'existe pas' 
-      });
+      throw ApiError.notFound('Ce concurrent n\'existe pas');
     }
 
-    const access = await ensureGymAccess(req, res, competitor.gym_id, { write: true });
-    if (!access) return;
+    await getGymAccess({ gymId: competitor.gym_id, user: req.user, write: true });
 
     const updated = await Competitor.update(req.params.id, req.body);
     
@@ -213,14 +137,10 @@ const deleteCompetitor = async (req, res, next) => {
     const competitor = await Competitor.findById(req.params.id);
     
     if (!competitor) {
-      return res.status(404).json({ 
-        error: 'Concurrent non trouvé',
-        message: 'Ce concurrent n\'existe pas' 
-      });
+      throw ApiError.notFound('Ce concurrent n\'existe pas');
     }
 
-    const access = await ensureGymAccess(req, res, competitor.gym_id, { write: true });
-    if (!access) return;
+    await getGymAccess({ gymId: competitor.gym_id, user: req.user, write: true });
 
     await Competitor.delete(req.params.id);
     
@@ -272,10 +192,7 @@ const getMarketZone = async (req, res, next) => {
     const zone = await MarketZone.findById(req.params.id);
     
     if (!zone) {
-      return res.status(404).json({ 
-        error: 'Zone non trouvée',
-        message: 'Cette zone marché n\'existe pas' 
-      });
+      throw ApiError.notFound('Cette zone marché n\'existe pas');
     }
 
     res.json({
@@ -300,10 +217,7 @@ const createMarketZone = async (req, res, next) => {
     const { name, price_level, avg_subscription_min, avg_subscription_max } = req.body;
     
     if (!name || !price_level || !avg_subscription_min || !avg_subscription_max) {
-      return res.status(400).json({ 
-        error: 'Données manquantes',
-        message: 'Nom, niveau de prix et fourchettes sont requis' 
-      });
+      throw ApiError.badRequest('Nom, niveau de prix et fourchettes sont requis');
     }
 
     const zone = await MarketZone.create(req.body);
@@ -331,10 +245,7 @@ const updateMarketZone = async (req, res, next) => {
     const zone = await MarketZone.findById(req.params.id);
     
     if (!zone) {
-      return res.status(404).json({ 
-        error: 'Zone non trouvée',
-        message: 'Cette zone marché n\'existe pas' 
-      });
+      throw ApiError.notFound('Cette zone marché n\'existe pas');
     }
 
     const updated = await MarketZone.update(req.params.id, req.body);
@@ -362,10 +273,7 @@ const deleteMarketZone = async (req, res, next) => {
     const zone = await MarketZone.findById(req.params.id);
     
     if (!zone) {
-      return res.status(404).json({ 
-        error: 'Zone non trouvée',
-        message: 'Cette zone marché n\'existe pas' 
-      });
+      throw ApiError.notFound('Cette zone marché n\'existe pas');
     }
 
     await MarketZone.delete(req.params.id);
@@ -398,25 +306,17 @@ const getGymOffers = async (req, res, next) => {
     let offers;
     
     if (gym_id) {
-      const access = await ensureGymAccess(req, res, gym_id);
-      if (!access) return;
+      await getGymAccess({ gymId: gym_id, user: req.user });
       offers = await GymOffer.findByGymId(gym_id, includeInactive);
     } else if (audit_id) {
       const audit = await Audit.findById(audit_id);
       if (!audit) {
-        return res.status(404).json({ 
-          error: 'Audit non trouvé',
-          message: 'Cet audit n\'existe pas' 
-        });
+        throw ApiError.notFound('Cet audit n\'existe pas');
       }
-      const access = await ensureGymAccess(req, res, audit.gym_id);
-      if (!access) return;
+      await getGymAccess({ gymId: audit.gym_id, user: req.user });
       offers = await GymOffer.findByAuditId(audit_id, includeInactive);
     } else {
-      return res.status(400).json({ 
-        error: 'Paramètre manquant',
-        message: 'L\'ID de la salle ou de l\'audit est requis' 
-      });
+      throw ApiError.badRequest('L\'ID de la salle ou de l\'audit est requis');
     }
     
     res.json({
@@ -442,14 +342,10 @@ const getGymOffer = async (req, res, next) => {
     const offer = await GymOffer.findById(req.params.id);
     
     if (!offer) {
-      return res.status(404).json({ 
-        error: 'Offre non trouvée',
-        message: 'Cette offre n\'existe pas' 
-      });
+      throw ApiError.notFound('Cette offre n\'existe pas');
     }
 
-    const access = await ensureGymAccess(req, res, offer.gym_id);
-    if (!access) return;
+    await getGymAccess({ gymId: offer.gym_id, user: req.user });
 
     res.json({
       success: true,
@@ -473,14 +369,10 @@ const createGymOffer = async (req, res, next) => {
     const { gym_id, offer_type, offer_name, price, currency, duration_months, commitment_months } = req.body;
     
     if (!gym_id || !offer_type || !offer_name || !price || !currency || !duration_months || !commitment_months) {
-      return res.status(400).json({ 
-        error: 'Données manquantes',
-        message: 'Tous les champs requis doivent être fournis' 
-      });
+      throw ApiError.badRequest('Tous les champs requis doivent être fournis');
     }
 
-    const access = await ensureGymAccess(req, res, gym_id, { write: true });
-    if (!access) return;
+    await getGymAccess({ gymId: gym_id, user: req.user, write: true });
 
     const offer = await GymOffer.create(req.body);
     
@@ -507,14 +399,10 @@ const updateGymOffer = async (req, res, next) => {
     const offer = await GymOffer.findById(req.params.id);
     
     if (!offer) {
-      return res.status(404).json({ 
-        error: 'Offre non trouvée',
-        message: 'Cette offre n\'existe pas' 
-      });
+      throw ApiError.notFound('Cette offre n\'existe pas');
     }
 
-    const access = await ensureGymAccess(req, res, offer.gym_id, { write: true });
-    if (!access) return;
+    await getGymAccess({ gymId: offer.gym_id, user: req.user, write: true });
 
     const updated = await GymOffer.update(req.params.id, req.body);
     
@@ -541,14 +429,10 @@ const deleteGymOffer = async (req, res, next) => {
     const offer = await GymOffer.findById(req.params.id);
     
     if (!offer) {
-      return res.status(404).json({ 
-        error: 'Offre non trouvée',
-        message: 'Cette offre n\'existe pas' 
-      });
+      throw ApiError.notFound('Cette offre n\'existe pas');
     }
 
-    const access = await ensureGymAccess(req, res, offer.gym_id, { write: true });
-    if (!access) return;
+    await getGymAccess({ gymId: offer.gym_id, user: req.user, write: true });
 
     await GymOffer.delete(req.params.id);
     
