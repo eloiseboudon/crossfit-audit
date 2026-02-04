@@ -89,6 +89,10 @@ class Gym {
       name, address, city, postal_code, contact_name, phone, email,
       website, instagram, legal_status, founded_year, partners_count, notes
     } = gymData;
+
+    if (!name) {
+      throw new Error('Le nom de la salle est requis');
+    }
     
     const id = uuidv4();
     const now = new Date().toISOString();
