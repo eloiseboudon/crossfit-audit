@@ -23,7 +23,7 @@ router.use(optionalAuth);
 // Routes principales
 router.route('/')
   .get(getAudits)
-  .post(auth, createAudit);
+  .post(createAudit);
 
 router.route('/:id')
   .get(getAudit)
