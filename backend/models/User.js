@@ -77,7 +77,7 @@ class User {
     const { email, password, name, role = 'user' } = userData;
     
     // Vérifier si l'email existe déjà
-    const existing = this.findByEmail(email);
+    const existing = await this.findByEmail(email);
     if (existing) {
       throw new Error('Cet email est déjà utilisé');
     }
@@ -95,7 +95,7 @@ class User {
     
     dbRun(sql, [id, email, hashedPassword, name, role, now, now]);
     
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**
@@ -122,7 +122,7 @@ class User {
     `;
     
     dbRun(sql, [name, role, now, id]);
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**

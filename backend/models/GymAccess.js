@@ -58,7 +58,7 @@ class GymAccess {
    * const access = GymAccess.upsert('gym-123', 'user-123', 'write');
    */
   static async upsert(gymId, userId, accessLevel) {
-    const existing = this.findByGymAndUser(gymId, userId);
+    const existing = await this.findByGymAndUser(gymId, userId);
     const now = new Date().toISOString();
 
     if (existing) {
@@ -68,7 +68,7 @@ class GymAccess {
         WHERE id = ?
       `;
       dbRun(sql, [accessLevel, now, existing.id]);
-      return this.findByGymAndUser(gymId, userId);
+      return await this.findByGymAndUser(gymId, userId);
     }
 
     const id = uuidv4();
@@ -77,7 +77,7 @@ class GymAccess {
       VALUES (?, ?, ?, ?, ?, ?)
     `;
     dbRun(sql, [id, gymId, userId, accessLevel, now, now]);
-    return this.findByGymAndUser(gymId, userId);
+    return await this.findByGymAndUser(gymId, userId);
   }
 
   /**

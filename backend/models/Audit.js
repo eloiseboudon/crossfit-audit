@@ -135,7 +135,7 @@ class Audit {
       baseline_period, currency, notes, now, now
     ]);
     
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**
@@ -175,7 +175,7 @@ class Audit {
       currency, notes, completion_percentage, now, id
     ]);
     
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**
@@ -205,7 +205,7 @@ class Audit {
    * const audit = Audit.getComplete('audit-123');
    */
   static async getComplete(id) {
-    const audit = this.findById(id);
+    const audit = await this.findById(id);
     if (!audit) return null;
 
     // Récupérer toutes les réponses
@@ -253,7 +253,7 @@ class Audit {
     
     const completion = (result.count / totalQuestions) * 100;
     
-    this.update(auditId, { completion_percentage: Math.round(completion) });
+    await this.update(auditId, { completion_percentage: Math.round(completion) });
     
     return completion;
   }

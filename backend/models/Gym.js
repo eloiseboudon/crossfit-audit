@@ -107,7 +107,7 @@ class Gym {
       partners_count, notes, now, now
     ]);
     
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**
@@ -154,7 +154,7 @@ class Gym {
       notes, now, id
     ]);
     
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**

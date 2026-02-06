@@ -54,7 +54,7 @@ class KPI {
    * @example
    * const saved = KPI.upsert({ audit_id: 'audit-123', kpi_code: 'rev', value: 12 });
    */
-  static async upsert(kpiData) {
+  static upsertSync(kpiData) {
     const { audit_id, kpi_code, value, unit, inputs_snapshot } = kpiData;
     
     const now = new Date().toISOString();
@@ -69,7 +69,12 @@ class KPI {
         inputs_snapshot = excluded.inputs_snapshot
     `;
     dbRun(sql, [id, audit_id, kpi_code, value, unit, now, inputs_snapshot]);
-    return this.findOne(audit_id, kpi_code);
+    const selectSql = `SELECT * FROM kpis WHERE audit_id = ? AND kpi_code = ?`;
+    return dbGet(selectSql, [audit_id, kpi_code]);
+  }
+
+  static async upsert(kpiData) {
+    return this.upsertSync(kpiData);
   }
 
   /**
@@ -87,7 +92,7 @@ class KPI {
     return dbTransaction(() => {
       const results = [];
       for (const kpi of kpisArray) {
-        const result = this.upsert({
+        const result = this.upsertSync({
           audit_id: auditId,
           ...kpi
         });
@@ -168,7 +173,7 @@ class Score {
    * @example
    * const saved = Score.upsert({ audit_id: 'audit-123', pillar_code: 'growth', score: 80, weight: 1 });
    */
-  static async upsert(scoreData) {
+  static upsertSync(scoreData) {
     const { audit_id, pillar_code, pillar_name, score, weight, details } = scoreData;
     
     const now = new Date().toISOString();
@@ -184,7 +189,12 @@ class Score {
         details = excluded.details
     `;
     dbRun(sql, [id, audit_id, pillar_code, pillar_name, score, weight, now, details]);
-    return this.findOne(audit_id, pillar_code);
+    const selectSql = `SELECT * FROM scores WHERE audit_id = ? AND pillar_code = ?`;
+    return dbGet(selectSql, [audit_id, pillar_code]);
+  }
+
+  static async upsert(scoreData) {
+    return this.upsertSync(scoreData);
   }
 
   /**
@@ -202,7 +212,7 @@ class Score {
     return dbTransaction(() => {
       const results = [];
       for (const score of scoresArray) {
-        const result = this.upsert({
+        const result = this.upsertSync({
           audit_id: auditId,
           ...score
         });
@@ -239,7 +249,7 @@ class Score {
    * const global = Score.getGlobalScore('audit-123');
    */
   static async getGlobalScore(auditId) {
-    const scores = this.findByAuditId(auditId);
+    const scores = await this.findByAuditId(auditId);
     if (scores.length === 0) return null;
 
     const totalWeight = scores.reduce((sum, s) => sum + s.weight, 0);
@@ -319,7 +329,7 @@ class Recommendation {
    * @example
    * const rec = Recommendation.create({ audit_id: 'audit-123', rec_code: 'R1', title: 'Optimiser' });
    */
-  static async create(recData) {
+  static createSync(recData) {
     const {
       audit_id, rec_code, title, description, priority,
       expected_impact_eur, effort_level, confidence, category
@@ -340,7 +350,12 @@ class Recommendation {
       expected_impact_eur, effort_level, confidence, category, now
     ]);
     
-    return this.findById(id);
+    const selectSql = `SELECT * FROM recommendations WHERE id = ?`;
+    return dbGet(selectSql, [id]);
+  }
+
+  static async create(recData) {
+    return this.createSync(recData);
   }
 
   /**
@@ -357,12 +372,12 @@ class Recommendation {
   static async bulkCreate(auditId, recsArray) {
     return dbTransaction(() => {
       // Supprimer les anciennes recommandations
-      this.deleteByAudit(auditId);
+      dbRun(`DELETE FROM recommendations WHERE audit_id = ?`, [auditId]);
       
       // Créer les nouvelles
       const results = [];
       for (const rec of recsArray) {
-        const result = this.create({
+        const result = this.createSync({
           audit_id: auditId,
           ...rec
         });

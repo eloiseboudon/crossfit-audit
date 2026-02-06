@@ -90,7 +90,7 @@ class MarketBenchmark {
       now
     ]);
 
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**
@@ -111,7 +111,7 @@ class MarketBenchmark {
     });
 
     if (entries.length === 0) {
-      return this.findById(id);
+      return await this.findById(id);
     }
 
     const now = new Date().toISOString();
@@ -121,7 +121,7 @@ class MarketBenchmark {
     const sql = `UPDATE market_benchmarks SET ${setClause}, updated_at = ? WHERE id = ?`;
 
     dbRun(sql, [...values, now, id]);
-    return this.findById(id);
+    return await this.findById(id);
   }
 }
 

@@ -126,7 +126,7 @@ class Competitor {
       now, now
     ]);
     
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**
@@ -149,7 +149,7 @@ class Competitor {
     const sql = `UPDATE competitors SET ${setClause}, updated_at = ?, last_updated = ? WHERE id = ?`;
     
     dbRun(sql, [...values, now, now, id]);
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**
@@ -238,7 +238,7 @@ class MarketZone {
       now, now
     ]);
     
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**
@@ -261,7 +261,7 @@ class MarketZone {
     const sql = `UPDATE market_zones SET ${setClause}, updated_at = ? WHERE id = ?`;
     
     dbRun(sql, [...values, now, id]);
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**
@@ -384,7 +384,7 @@ class GymOffer {
       now, now
     ]);
     
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**
@@ -407,7 +407,7 @@ class GymOffer {
     const sql = `UPDATE gym_offers SET ${setClause}, updated_at = ? WHERE id = ?`;
     
     dbRun(sql, [...values, now, id]);
-    return this.findById(id);
+    return await this.findById(id);
   }
 
   /**

@@ -84,7 +84,7 @@ class Answer {
    *   value: 42
    * });
    */
-  static async upsert(answerData) {
+  static upsertSync(answerData) {
     const { audit_id, block_code, question_code, value } = answerData;
     
     const now = new Date().toISOString();
@@ -96,7 +96,15 @@ class Answer {
       DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
     `;
     dbRun(sql, [id, audit_id, block_code, question_code, value, now, now]);
-    return this.findOne(audit_id, block_code, question_code);
+    const selectSql = `
+      SELECT * FROM answers 
+      WHERE audit_id = ? AND block_code = ? AND question_code = ?
+    `;
+    return dbGet(selectSql, [audit_id, block_code, question_code]);
+  }
+
+  static async upsert(answerData) {
+    return this.upsertSync(answerData);
   }
 
   /**
@@ -116,7 +124,7 @@ class Answer {
     return dbTransaction(() => {
       const results = [];
       for (const answer of answersArray) {
-        const result = this.upsert({
+        const result = this.upsertSync({
           audit_id: auditId,
           ...answer
         });
