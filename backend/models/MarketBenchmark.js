@@ -14,7 +14,7 @@ class MarketBenchmark {
    * @example
    * const benchmarks = MarketBenchmark.findAll();
    */
-  static findAll() {
+  static async findAll() {
     const sql = `
       SELECT * FROM market_benchmarks
       ORDER BY category, name
@@ -32,7 +32,7 @@ class MarketBenchmark {
    * @example
    * const benchmark = MarketBenchmark.findById('benchmark-123');
    */
-  static findById(id) {
+  static async findById(id) {
     const sql = `SELECT * FROM market_benchmarks WHERE id = ?`;
     return dbGet(sql, [id]);
   }
@@ -47,7 +47,7 @@ class MarketBenchmark {
    * @example
    * const benchmark = MarketBenchmark.findByCode('CA_AVG');
    */
-  static findByCode(code) {
+  static async findByCode(code) {
     const sql = `SELECT * FROM market_benchmarks WHERE benchmark_code = ?`;
     return dbGet(sql, [code]);
   }
@@ -68,7 +68,7 @@ class MarketBenchmark {
    * @example
    * const benchmark = MarketBenchmark.create({ benchmark_code: 'CA_AVG', name: 'CA moyen', value: 200 });
    */
-  static create(data) {
+  static async create(data) {
     const { benchmark_code, name, value, unit, description, category } = data;
     const id = uuidv4();
     const now = new Date().toISOString();
@@ -104,7 +104,7 @@ class MarketBenchmark {
    * @example
    * const benchmark = MarketBenchmark.update('benchmark-123', { value: 180 });
    */
-  static update(id, updates) {
+  static async update(id, updates) {
     const allowedFields = ['name', 'value', 'unit', 'description', 'category'];
     const entries = Object.entries(updates).filter(([key, value]) => {
       return allowedFields.includes(key) && value !== undefined;

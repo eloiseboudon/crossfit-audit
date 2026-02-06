@@ -18,7 +18,7 @@ class Competitor {
    * @example
    * const competitors = Competitor.findByGymId('gym-123');
    */
-  static findByGymId(gymId) {
+  static async findByGymId(gymId) {
     const sql = `
       SELECT c.*, mz.name as zone_name
       FROM competitors c
@@ -39,7 +39,7 @@ class Competitor {
    * @example
    * const competitor = Competitor.findById('competitor-123');
    */
-  static findById(id) {
+  static async findById(id) {
     const sql = `
       SELECT c.*, mz.name as zone_name
       FROM competitors c
@@ -59,7 +59,7 @@ class Competitor {
    * @example
    * const competitor = Competitor.create({ gym_id: 'gym-123', name: 'Box X' });
    */
-  static create(competitorData) {
+  static async create(competitorData) {
     const {
       gym_id, name, address, city, postal_code, latitude, longitude,
       distance_km, travel_time_minutes, market_zone_id,
@@ -140,7 +140,7 @@ class Competitor {
    * @example
    * const competitor = Competitor.update('competitor-123', { city: 'Lyon' });
    */
-  static update(id, competitorData) {
+  static async update(id, competitorData) {
     const fields = Object.keys(competitorData);
     const values = Object.values(competitorData);
     const now = new Date().toISOString();
@@ -162,7 +162,7 @@ class Competitor {
    * @example
    * Competitor.delete('competitor-123');
    */
-  static delete(id) {
+  static async delete(id) {
     const sql = `UPDATE competitors SET is_active = 0 WHERE id = ?`;
     dbRun(sql, [id]);
     return true;
@@ -185,7 +185,7 @@ class MarketZone {
    * @example
    * const zones = MarketZone.findAll();
    */
-  static findAll() {
+  static async findAll() {
     const sql = `SELECT * FROM market_zones WHERE is_active = 1 ORDER BY price_level`;
     return dbAll(sql);
   }
@@ -200,7 +200,7 @@ class MarketZone {
    * @example
    * const zone = MarketZone.findById('zone-123');
    */
-  static findById(id) {
+  static async findById(id) {
     const sql = `SELECT * FROM market_zones WHERE id = ?`;
     return dbGet(sql, [id]);
   }
@@ -215,7 +215,7 @@ class MarketZone {
    * @example
    * const zone = MarketZone.create({ name: 'Centre', price_level: 'premium' });
    */
-  static create(zoneData) {
+  static async create(zoneData) {
     const {
       name, description, price_level, avg_subscription_min, avg_subscription_max,
       geographic_scope, population_density, avg_household_income_range
@@ -252,7 +252,7 @@ class MarketZone {
    * @example
    * const zone = MarketZone.update('zone-123', { description: 'Zone premium' });
    */
-  static update(id, zoneData) {
+  static async update(id, zoneData) {
     const fields = Object.keys(zoneData);
     const values = Object.values(zoneData);
     const now = new Date().toISOString();
@@ -274,7 +274,7 @@ class MarketZone {
    * @example
    * MarketZone.delete('zone-123');
    */
-  static delete(id) {
+  static async delete(id) {
     const sql = `UPDATE market_zones SET is_active = 0 WHERE id = ?`;
     dbRun(sql, [id]);
     return true;
@@ -299,7 +299,7 @@ class GymOffer {
    * @example
    * const offers = GymOffer.findByGymId('gym-123', true);
    */
-  static findByGymId(gymId, includeInactive = false) {
+  static async findByGymId(gymId, includeInactive = false) {
     const sql = `
       SELECT * FROM gym_offers 
       WHERE gym_id = ? ${includeInactive ? '' : 'AND is_active = 1'}
@@ -319,7 +319,7 @@ class GymOffer {
    * @example
    * const offers = GymOffer.findByAuditId('audit-123');
    */
-  static findByAuditId(auditId, includeInactive = false) {
+  static async findByAuditId(auditId, includeInactive = false) {
     const sql = `
       SELECT * FROM gym_offers 
       WHERE audit_id = ? ${includeInactive ? '' : 'AND is_active = 1'}
@@ -338,7 +338,7 @@ class GymOffer {
    * @example
    * const offer = GymOffer.findById('offer-123');
    */
-  static findById(id) {
+  static async findById(id) {
     const sql = `SELECT * FROM gym_offers WHERE id = ?`;
     return dbGet(sql, [id]);
   }
@@ -353,7 +353,7 @@ class GymOffer {
    * @example
    * const offer = GymOffer.create({ gym_id: 'gym-123', offer_name: 'Unlimited', price: 180 });
    */
-  static create(offerData) {
+  static async create(offerData) {
     const {
       gym_id, audit_id, offer_type, offer_name, offer_description,
       price, currency, session_count, duration_months, commitment_months,
@@ -398,7 +398,7 @@ class GymOffer {
    * @example
    * const offer = GymOffer.update('offer-123', { price: 200 });
    */
-  static update(id, offerData) {
+  static async update(id, offerData) {
     const fields = Object.keys(offerData);
     const values = Object.values(offerData);
     const now = new Date().toISOString();
@@ -420,7 +420,7 @@ class GymOffer {
    * @example
    * GymOffer.delete('offer-123');
    */
-  static delete(id) {
+  static async delete(id) {
     const sql = `UPDATE gym_offers SET is_active = 0 WHERE id = ?`;
     dbRun(sql, [id]);
     return true;

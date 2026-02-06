@@ -16,7 +16,7 @@ class Audit {
    * @example
    * const audits = Audit.findAll('gym-123');
    */
-  static findAll(gymId = null) {
+  static async findAll(gymId = null) {
     let sql = `
       SELECT a.*, g.name as gym_name
       FROM audits a
@@ -50,7 +50,7 @@ class Audit {
    * @example
    * const audits = Audit.findAllForUser('user-123');
    */
-  static findAllForUser(userId, gymId = null) {
+  static async findAllForUser(userId, gymId = null) {
     let sql = `
       SELECT a.*, g.name as gym_name
       FROM audits a
@@ -86,7 +86,7 @@ class Audit {
    * @example
    * const audit = Audit.findById('audit-123');
    */
-  static findById(id) {
+  static async findById(id) {
     const sql = `
       SELECT a.*, g.name as gym_name
       FROM audits a
@@ -113,7 +113,7 @@ class Audit {
    * @example
    * const audit = Audit.create({ gym_id: 'gym-123', baseline_period: '2024-Q1' });
    */
-  static create(auditData) {
+  static async create(auditData) {
     const {
       gym_id, status = 'draft', audit_date_start, audit_date_end,
       baseline_period, currency = 'EUR', notes
@@ -149,7 +149,7 @@ class Audit {
    * @example
    * const audit = Audit.update('audit-123', { status: 'in_progress' });
    */
-  static update(id, auditData) {
+  static async update(id, auditData) {
     const {
       status, audit_date_start, audit_date_end, baseline_period,
       currency, notes, completion_percentage
@@ -188,7 +188,7 @@ class Audit {
    * @example
    * Audit.delete('audit-123');
    */
-  static delete(id) {
+  static async delete(id) {
     const sql = `DELETE FROM audits WHERE id = ?`;
     dbRun(sql, [id]);
     return true;
@@ -204,7 +204,7 @@ class Audit {
    * @example
    * const audit = Audit.getComplete('audit-123');
    */
-  static getComplete(id) {
+  static async getComplete(id) {
     const audit = this.findById(id);
     if (!audit) return null;
 
@@ -243,7 +243,7 @@ class Audit {
    * @example
    * const completion = Audit.updateCompletionPercentage('audit-123');
    */
-  static updateCompletionPercentage(auditId) {
+  static async updateCompletionPercentage(auditId) {
     // Compter le nombre total de questions attendues (à adapter selon ta logique)
     const totalQuestions = 250;
     

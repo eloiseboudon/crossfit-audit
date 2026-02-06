@@ -15,7 +15,7 @@ class Gym {
    * @example
    * const gyms = Gym.findAll('user-123');
    */
-  static findAll(userId = null) {
+  static async findAll(userId = null) {
     let sql = `SELECT * FROM gyms ORDER BY created_at DESC`;
     let params = [];
     
@@ -37,7 +37,7 @@ class Gym {
    * @example
    * const gyms = Gym.findAllForUser('user-123');
    */
-  static findAllForUser(userId) {
+  static async findAllForUser(userId) {
     const sql = `
       SELECT g.*, 
         CASE 
@@ -64,7 +64,7 @@ class Gym {
    * @example
    * const gym = Gym.findById('gym-123');
    */
-  static findById(id) {
+  static async findById(id) {
     const sql = `SELECT * FROM gyms WHERE id = ?`;
     return dbGet(sql, [id]);
   }
@@ -80,7 +80,7 @@ class Gym {
    * @example
    * const gym = Gym.create({ name: 'CrossFit Box' }, 'user-123');
    */
-  static create(gymData, userId = null) {
+  static async create(gymData, userId = null) {
     const {
       name, address, city, postal_code, contact_name, phone, email,
       website, instagram, legal_status, founded_year, partners_count, notes
@@ -121,7 +121,7 @@ class Gym {
    * @example
    * const gym = Gym.update('gym-123', { city: 'Paris' });
    */
-  static update(id, gymData) {
+  static async update(id, gymData) {
     const {
       name, address, city, postal_code, contact_name, phone, email,
       website, instagram, legal_status, founded_year, partners_count, notes
@@ -167,7 +167,7 @@ class Gym {
    * @example
    * Gym.delete('gym-123');
    */
-  static delete(id) {
+  static async delete(id) {
     const sql = `DELETE FROM gyms WHERE id = ?`;
     dbRun(sql, [id]);
     return true;
@@ -183,7 +183,7 @@ class Gym {
    * @example
    * const gym = Gym.getWithStats('gym-123');
    */
-  static getWithStats(id) {
+  static async getWithStats(id) {
     const sql = `
       SELECT g.*,
         (SELECT COUNT(*) FROM audits WHERE gym_id = g.id) AS audits_count,

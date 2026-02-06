@@ -16,7 +16,7 @@ class GymAccess {
    * @example
    * const access = GymAccess.findByGymAndUser('gym-123', 'user-123');
    */
-  static findByGymAndUser(gymId, userId) {
+  static async findByGymAndUser(gymId, userId) {
     const sql = `
       SELECT id, gym_id, user_id, access_level, created_at, updated_at
       FROM gym_user_access
@@ -35,7 +35,7 @@ class GymAccess {
    * @example
    * const accesses = GymAccess.findByGymId('gym-123');
    */
-  static findByGymId(gymId) {
+  static async findByGymId(gymId) {
     const sql = `
       SELECT id, gym_id, user_id, access_level, created_at, updated_at
       FROM gym_user_access
@@ -57,7 +57,7 @@ class GymAccess {
    * @example
    * const access = GymAccess.upsert('gym-123', 'user-123', 'write');
    */
-  static upsert(gymId, userId, accessLevel) {
+  static async upsert(gymId, userId, accessLevel) {
     const existing = this.findByGymAndUser(gymId, userId);
     const now = new Date().toISOString();
 
@@ -91,7 +91,7 @@ class GymAccess {
    * @example
    * GymAccess.remove('gym-123', 'user-123');
    */
-  static remove(gymId, userId) {
+  static async remove(gymId, userId) {
     const sql = `DELETE FROM gym_user_access WHERE gym_id = ? AND user_id = ?`;
     dbRun(sql, [gymId, userId]);
     return true;

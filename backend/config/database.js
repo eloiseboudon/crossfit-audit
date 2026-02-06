@@ -34,12 +34,23 @@ try {
   process.exit(1);
 }
 
+const normalizeValue = (value) => {
+  if (value === undefined) {
+    return null;
+  }
+  return value;
+};
+
 const normalizeParams = (params) => {
   if (params === undefined || params === null) {
     return [];
   }
 
-  return Array.isArray(params) ? params : [params];
+  if (Array.isArray(params)) {
+    return params.map(normalizeValue);
+  }
+
+  return [normalizeValue(params)];
 };
 
 // Wrapper synchrones pour les requêtes

@@ -18,7 +18,7 @@ class KPI {
    * @example
    * const kpis = KPI.findByAuditId('audit-123');
    */
-  static findByAuditId(auditId) {
+  static async findByAuditId(auditId) {
     const sql = `SELECT * FROM kpis WHERE audit_id = ? ORDER BY kpi_code`;
     return dbAll(sql, [auditId]);
   }
@@ -34,7 +34,7 @@ class KPI {
    * @example
    * const kpi = KPI.findOne('audit-123', 'revenue');
    */
-  static findOne(auditId, kpiCode) {
+  static async findOne(auditId, kpiCode) {
     const sql = `SELECT * FROM kpis WHERE audit_id = ? AND kpi_code = ?`;
     return dbGet(sql, [auditId, kpiCode]);
   }
@@ -54,7 +54,7 @@ class KPI {
    * @example
    * const saved = KPI.upsert({ audit_id: 'audit-123', kpi_code: 'rev', value: 12 });
    */
-  static upsert(kpiData) {
+  static async upsert(kpiData) {
     const { audit_id, kpi_code, value, unit, inputs_snapshot } = kpiData;
     
     const now = new Date().toISOString();
@@ -83,7 +83,7 @@ class KPI {
    * @example
    * const saved = KPI.bulkUpsert('audit-123', [{ kpi_code: 'rev', value: 10 }]);
    */
-  static bulkUpsert(auditId, kpisArray) {
+  static async bulkUpsert(auditId, kpisArray) {
     return dbTransaction(() => {
       const results = [];
       for (const kpi of kpisArray) {
@@ -107,7 +107,7 @@ class KPI {
    * @example
    * KPI.deleteByAudit('audit-123');
    */
-  static deleteByAudit(auditId) {
+  static async deleteByAudit(auditId) {
     const sql = `DELETE FROM kpis WHERE audit_id = ?`;
     dbRun(sql, [auditId]);
     return true;
@@ -131,7 +131,7 @@ class Score {
    * @example
    * const scores = Score.findByAuditId('audit-123');
    */
-  static findByAuditId(auditId) {
+  static async findByAuditId(auditId) {
     const sql = `SELECT * FROM scores WHERE audit_id = ? ORDER BY pillar_code`;
     return dbAll(sql, [auditId]);
   }
@@ -147,7 +147,7 @@ class Score {
    * @example
    * const score = Score.findOne('audit-123', 'growth');
    */
-  static findOne(auditId, pillarCode) {
+  static async findOne(auditId, pillarCode) {
     const sql = `SELECT * FROM scores WHERE audit_id = ? AND pillar_code = ?`;
     return dbGet(sql, [auditId, pillarCode]);
   }
@@ -168,7 +168,7 @@ class Score {
    * @example
    * const saved = Score.upsert({ audit_id: 'audit-123', pillar_code: 'growth', score: 80, weight: 1 });
    */
-  static upsert(scoreData) {
+  static async upsert(scoreData) {
     const { audit_id, pillar_code, pillar_name, score, weight, details } = scoreData;
     
     const now = new Date().toISOString();
@@ -198,7 +198,7 @@ class Score {
    * @example
    * const saved = Score.bulkUpsert('audit-123', [{ pillar_code: 'growth', score: 80, weight: 1 }]);
    */
-  static bulkUpsert(auditId, scoresArray) {
+  static async bulkUpsert(auditId, scoresArray) {
     return dbTransaction(() => {
       const results = [];
       for (const score of scoresArray) {
@@ -222,7 +222,7 @@ class Score {
    * @example
    * Score.deleteByAudit('audit-123');
    */
-  static deleteByAudit(auditId) {
+  static async deleteByAudit(auditId) {
     const sql = `DELETE FROM scores WHERE audit_id = ?`;
     dbRun(sql, [auditId]);
     return true;
@@ -238,7 +238,7 @@ class Score {
    * @example
    * const global = Score.getGlobalScore('audit-123');
    */
-  static getGlobalScore(auditId) {
+  static async getGlobalScore(auditId) {
     const scores = this.findByAuditId(auditId);
     if (scores.length === 0) return null;
 
@@ -269,7 +269,7 @@ class Recommendation {
    * @example
    * const recs = Recommendation.findByAuditId('audit-123');
    */
-  static findByAuditId(auditId) {
+  static async findByAuditId(auditId) {
     const sql = `
       SELECT * FROM recommendations 
       WHERE audit_id = ? 
@@ -295,7 +295,7 @@ class Recommendation {
    * @example
    * const rec = Recommendation.findById('rec-123');
    */
-  static findById(id) {
+  static async findById(id) {
     const sql = `SELECT * FROM recommendations WHERE id = ?`;
     return dbGet(sql, [id]);
   }
@@ -319,7 +319,7 @@ class Recommendation {
    * @example
    * const rec = Recommendation.create({ audit_id: 'audit-123', rec_code: 'R1', title: 'Optimiser' });
    */
-  static create(recData) {
+  static async create(recData) {
     const {
       audit_id, rec_code, title, description, priority,
       expected_impact_eur, effort_level, confidence, category
@@ -354,7 +354,7 @@ class Recommendation {
    * @example
    * const recs = Recommendation.bulkCreate('audit-123', [{ rec_code: 'R1', title: 'Optimiser' }]);
    */
-  static bulkCreate(auditId, recsArray) {
+  static async bulkCreate(auditId, recsArray) {
     return dbTransaction(() => {
       // Supprimer les anciennes recommandations
       this.deleteByAudit(auditId);
@@ -382,7 +382,7 @@ class Recommendation {
    * @example
    * Recommendation.deleteByAudit('audit-123');
    */
-  static deleteByAudit(auditId) {
+  static async deleteByAudit(auditId) {
     const sql = `DELETE FROM recommendations WHERE audit_id = ?`;
     dbRun(sql, [auditId]);
     return true;
@@ -398,7 +398,7 @@ class Recommendation {
    * @example
    * Recommendation.delete('rec-123');
    */
-  static delete(id) {
+  static async delete(id) {
     const sql = `DELETE FROM recommendations WHERE id = ?`;
     dbRun(sql, [id]);
     return true;

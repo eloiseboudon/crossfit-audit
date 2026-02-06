@@ -16,7 +16,7 @@ class Answer {
    * @example
    * const answers = Answer.findByAuditId('audit-123');
    */
-  static findByAuditId(auditId) {
+  static async findByAuditId(auditId) {
     const sql = `
       SELECT * FROM answers 
       WHERE audit_id = ? 
@@ -36,7 +36,7 @@ class Answer {
    * @example
    * const blockAnswers = Answer.findByAuditAndBlock('audit-123', 'financials');
    */
-  static findByAuditAndBlock(auditId, blockCode) {
+  static async findByAuditAndBlock(auditId, blockCode) {
     const sql = `
       SELECT * FROM answers 
       WHERE audit_id = ? AND block_code = ?
@@ -57,7 +57,7 @@ class Answer {
    * @example
    * const answer = Answer.findOne('audit-123', 'financials', 'q1');
    */
-  static findOne(auditId, blockCode, questionCode) {
+  static async findOne(auditId, blockCode, questionCode) {
     const sql = `
       SELECT * FROM answers 
       WHERE audit_id = ? AND block_code = ? AND question_code = ?
@@ -84,7 +84,7 @@ class Answer {
    *   value: 42
    * });
    */
-  static upsert(answerData) {
+  static async upsert(answerData) {
     const { audit_id, block_code, question_code, value } = answerData;
     
     const now = new Date().toISOString();
@@ -112,7 +112,7 @@ class Answer {
    *   { block_code: 'financials', question_code: 'q1', value: 10 }
    * ]);
    */
-  static bulkUpsert(auditId, answersArray) {
+  static async bulkUpsert(auditId, answersArray) {
     return dbTransaction(() => {
       const results = [];
       for (const answer of answersArray) {
@@ -138,7 +138,7 @@ class Answer {
    * @example
    * Answer.delete('audit-123', 'financials', 'q1');
    */
-  static delete(auditId, blockCode, questionCode) {
+  static async delete(auditId, blockCode, questionCode) {
     const sql = `
       DELETE FROM answers 
       WHERE audit_id = ? AND block_code = ? AND question_code = ?
@@ -157,7 +157,7 @@ class Answer {
    * @example
    * Answer.deleteByAudit('audit-123');
    */
-  static deleteByAudit(auditId) {
+  static async deleteByAudit(auditId) {
     const sql = `DELETE FROM answers WHERE audit_id = ?`;
     dbRun(sql, [auditId]);
     return true;

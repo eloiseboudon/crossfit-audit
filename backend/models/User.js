@@ -15,7 +15,7 @@ class User {
    * @example
    * const users = User.findAll();
    */
-  static findAll() {
+  static async findAll() {
     const sql = `
       SELECT id, email, name, role, is_active, created_at, updated_at 
       FROM users 
@@ -35,7 +35,7 @@ class User {
    * @example
    * const user = User.findById('user-123');
    */
-  static findById(id) {
+  static async findById(id) {
     const sql = `
       SELECT id, email, name, role, is_active, created_at, updated_at 
       FROM users 
@@ -54,7 +54,7 @@ class User {
    * @example
    * const user = User.findByEmail('demo@example.com');
    */
-  static findByEmail(email) {
+  static async findByEmail(email) {
     const sql = `SELECT * FROM users WHERE email = ?`;
     return dbGet(sql, [email]);
   }
@@ -73,7 +73,7 @@ class User {
    * @example
    * const user = User.create({ email: 'demo@example.com', password: 'Secret', name: 'Demo' });
    */
-  static create(userData) {
+  static async create(userData) {
     const { email, password, name, role = 'user' } = userData;
     
     // Vérifier si l'email existe déjà
@@ -83,7 +83,7 @@ class User {
     }
 
     // Hash du mot de passe
-    const hashedPassword = bcrypt.hash(password, 10);
+    const hashedPassword = bcrypt.hashSync(password, 10);
     
     const id = uuidv4();
     const now = new Date().toISOString();
@@ -109,7 +109,7 @@ class User {
    * @example
    * const user = User.update('user-123', { role: 'admin' });
    */
-  static update(id, userData) {
+  static async update(id, userData) {
     const { name, role } = userData;
     const now = new Date().toISOString();
     
@@ -136,8 +136,8 @@ class User {
    * @example
    * User.updatePassword('user-123', 'NewSecret');
    */
-  static updatePassword(id, newPassword) {
-    const hashedPassword = bcrypt.hash(newPassword, 10);
+  static async updatePassword(id, newPassword) {
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
     const now = new Date().toISOString();
     
     const sql = `
@@ -160,7 +160,7 @@ class User {
    * @example
    * User.delete('user-123');
    */
-  static delete(id) {
+  static async delete(id) {
     const sql = `UPDATE users SET is_active = 0, updated_at = ? WHERE id = ?`;
     const now = new Date().toISOString();
     dbRun(sql, [now, id]);
@@ -178,7 +178,7 @@ class User {
    * @example
    * const ok = User.verifyPassword('Secret', user.password);
    */
-  static verifyPassword(plainPassword, hashedPassword) {
+  static async verifyPassword(plainPassword, hashedPassword) {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 }
