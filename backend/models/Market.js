@@ -11,15 +11,14 @@ class Competitor {
   /**
    * Liste les concurrents actifs pour une salle.
    *
-   * @async
    * @param {string} gymId - Identifiant de la salle.
    * @returns {Promise<object[]>} Liste des concurrents avec zone associée.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const competitors = await Competitor.findByGymId('gym-123');
+   * const competitors = Competitor.findByGymId('gym-123');
    */
-  static async findByGymId(gymId) {
+  static findByGymId(gymId) {
     const sql = `
       SELECT c.*, mz.name as zone_name
       FROM competitors c
@@ -27,42 +26,40 @@ class Competitor {
       WHERE c.gym_id = ? AND c.is_active = 1
       ORDER BY c.distance_km ASC
     `;
-    return await dbAll(sql, [gymId]);
+    return dbAll(sql, [gymId]);
   }
 
   /**
    * Récupère un concurrent par identifiant.
    *
-   * @async
    * @param {string} id - Identifiant du concurrent.
    * @returns {Promise<object | undefined>} Concurrent trouvé ou undefined.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const competitor = await Competitor.findById('competitor-123');
+   * const competitor = Competitor.findById('competitor-123');
    */
-  static async findById(id) {
+  static findById(id) {
     const sql = `
       SELECT c.*, mz.name as zone_name
       FROM competitors c
       LEFT JOIN market_zones mz ON c.market_zone_id = mz.id
       WHERE c.id = ?
     `;
-    return await dbGet(sql, [id]);
+    return dbGet(sql, [id]);
   }
 
   /**
    * Crée un concurrent.
    *
-   * @async
    * @param {object} competitorData - Données du concurrent.
    * @returns {Promise<object>} Concurrent créé.
    * @throws {Error} Si l'insert échoue.
    *
    * @example
-   * const competitor = await Competitor.create({ gym_id: 'gym-123', name: 'Box X' });
+   * const competitor = Competitor.create({ gym_id: 'gym-123', name: 'Box X' });
    */
-  static async create(competitorData) {
+  static create(competitorData) {
     const {
       gym_id, name, address, city, postal_code, latitude, longitude,
       distance_km, travel_time_minutes, market_zone_id,
@@ -113,7 +110,7 @@ class Competitor {
       )
     `;
     
-    await dbRun(sql, [
+    dbRun(sql, [
       id, gym_id, name, address, city, postal_code, latitude, longitude,
       distance_km, travel_time_minutes, market_zone_id,
       base_subscription_price, base_subscription_name,
@@ -129,22 +126,21 @@ class Competitor {
       now, now
     ]);
     
-    return await this.findById(id);
+    return this.findById(id);
   }
 
   /**
    * Met à jour un concurrent.
    *
-   * @async
    * @param {string} id - Identifiant du concurrent.
    * @param {object} competitorData - Données à mettre à jour.
    * @returns {Promise<object>} Concurrent mis à jour.
    * @throws {Error} Si la mise à jour échoue.
    *
    * @example
-   * const competitor = await Competitor.update('competitor-123', { city: 'Lyon' });
+   * const competitor = Competitor.update('competitor-123', { city: 'Lyon' });
    */
-  static async update(id, competitorData) {
+  static update(id, competitorData) {
     const fields = Object.keys(competitorData);
     const values = Object.values(competitorData);
     const now = new Date().toISOString();
@@ -152,24 +148,23 @@ class Competitor {
     const setClause = fields.map(field => `${field} = ?`).join(', ');
     const sql = `UPDATE competitors SET ${setClause}, updated_at = ?, last_updated = ? WHERE id = ?`;
     
-    await dbRun(sql, [...values, now, now, id]);
-    return await this.findById(id);
+    dbRun(sql, [...values, now, now, id]);
+    return this.findById(id);
   }
 
   /**
    * Désactive un concurrent (suppression logique).
    *
-   * @async
    * @param {string} id - Identifiant du concurrent.
    * @returns {Promise<boolean>} True si la suppression est effectuée.
    * @throws {Error} Si la mise à jour échoue.
    *
    * @example
-   * await Competitor.delete('competitor-123');
+   * Competitor.delete('competitor-123');
    */
-  static async delete(id) {
+  static delete(id) {
     const sql = `UPDATE competitors SET is_active = 0 WHERE id = ?`;
-    await dbRun(sql, [id]);
+    dbRun(sql, [id]);
     return true;
   }
 }
@@ -184,46 +179,43 @@ class MarketZone {
   /**
    * Liste les zones actives.
    *
-   * @async
    * @returns {Promise<object[]>} Liste des zones de marché.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const zones = await MarketZone.findAll();
+   * const zones = MarketZone.findAll();
    */
-  static async findAll() {
+  static findAll() {
     const sql = `SELECT * FROM market_zones WHERE is_active = 1 ORDER BY price_level`;
-    return await dbAll(sql);
+    return dbAll(sql);
   }
 
   /**
    * Récupère une zone par identifiant.
    *
-   * @async
    * @param {string} id - Identifiant de la zone.
    * @returns {Promise<object | undefined>} Zone trouvée ou undefined.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const zone = await MarketZone.findById('zone-123');
+   * const zone = MarketZone.findById('zone-123');
    */
-  static async findById(id) {
+  static findById(id) {
     const sql = `SELECT * FROM market_zones WHERE id = ?`;
-    return await dbGet(sql, [id]);
+    return dbGet(sql, [id]);
   }
 
   /**
    * Crée une zone de marché.
    *
-   * @async
    * @param {object} zoneData - Données de la zone.
    * @returns {Promise<object>} Zone créée.
    * @throws {Error} Si l'insert échoue.
    *
    * @example
-   * const zone = await MarketZone.create({ name: 'Centre', price_level: 'premium' });
+   * const zone = MarketZone.create({ name: 'Centre', price_level: 'premium' });
    */
-  static async create(zoneData) {
+  static create(zoneData) {
     const {
       name, description, price_level, avg_subscription_min, avg_subscription_max,
       geographic_scope, population_density, avg_household_income_range
@@ -240,28 +232,27 @@ class MarketZone {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
     `;
     
-    await dbRun(sql, [
+    dbRun(sql, [
       id, name, description, price_level, avg_subscription_min, avg_subscription_max,
       geographic_scope, population_density, avg_household_income_range,
       now, now
     ]);
     
-    return await this.findById(id);
+    return this.findById(id);
   }
 
   /**
    * Met à jour une zone de marché.
    *
-   * @async
    * @param {string} id - Identifiant de la zone.
    * @param {object} zoneData - Données à mettre à jour.
    * @returns {Promise<object>} Zone mise à jour.
    * @throws {Error} Si la mise à jour échoue.
    *
    * @example
-   * const zone = await MarketZone.update('zone-123', { description: 'Zone premium' });
+   * const zone = MarketZone.update('zone-123', { description: 'Zone premium' });
    */
-  static async update(id, zoneData) {
+  static update(id, zoneData) {
     const fields = Object.keys(zoneData);
     const values = Object.values(zoneData);
     const now = new Date().toISOString();
@@ -269,24 +260,23 @@ class MarketZone {
     const setClause = fields.map(field => `${field} = ?`).join(', ');
     const sql = `UPDATE market_zones SET ${setClause}, updated_at = ? WHERE id = ?`;
     
-    await dbRun(sql, [...values, now, id]);
-    return await this.findById(id);
+    dbRun(sql, [...values, now, id]);
+    return this.findById(id);
   }
 
   /**
    * Désactive une zone de marché (suppression logique).
    *
-   * @async
    * @param {string} id - Identifiant de la zone.
    * @returns {Promise<boolean>} True si la suppression est effectuée.
    * @throws {Error} Si la mise à jour échoue.
    *
    * @example
-   * await MarketZone.delete('zone-123');
+   * MarketZone.delete('zone-123');
    */
-  static async delete(id) {
+  static delete(id) {
     const sql = `UPDATE market_zones SET is_active = 0 WHERE id = ?`;
-    await dbRun(sql, [id]);
+    dbRun(sql, [id]);
     return true;
   }
 }
@@ -301,73 +291,69 @@ class GymOffer {
   /**
    * Liste les offres d'une salle.
    *
-   * @async
    * @param {string} gymId - Identifiant de la salle.
    * @param {boolean} [includeInactive=false] - Inclure les offres inactives.
    * @returns {Promise<object[]>} Liste des offres.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const offers = await GymOffer.findByGymId('gym-123', true);
+   * const offers = GymOffer.findByGymId('gym-123', true);
    */
-  static async findByGymId(gymId, includeInactive = false) {
+  static findByGymId(gymId, includeInactive = false) {
     const sql = `
       SELECT * FROM gym_offers 
       WHERE gym_id = ? ${includeInactive ? '' : 'AND is_active = 1'}
       ORDER BY is_featured DESC, sort_order ASC, price ASC
     `;
-    return await dbAll(sql, [gymId]);
+    return dbAll(sql, [gymId]);
   }
 
   /**
    * Liste les offres d'un audit.
    *
-   * @async
    * @param {string} auditId - Identifiant de l'audit.
    * @param {boolean} [includeInactive=false] - Inclure les offres inactives.
    * @returns {Promise<object[]>} Liste des offres.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const offers = await GymOffer.findByAuditId('audit-123');
+   * const offers = GymOffer.findByAuditId('audit-123');
    */
-  static async findByAuditId(auditId, includeInactive = false) {
+  static findByAuditId(auditId, includeInactive = false) {
     const sql = `
       SELECT * FROM gym_offers 
       WHERE audit_id = ? ${includeInactive ? '' : 'AND is_active = 1'}
       ORDER BY is_featured DESC, sort_order ASC, price ASC
     `;
-    return await dbAll(sql, [auditId]);
+    return dbAll(sql, [auditId]);
   }
 
   /**
    * Récupère une offre par identifiant.
    *
-   * @async
    * @param {string} id - Identifiant de l'offre.
    * @returns {Promise<object | undefined>} Offre trouvée ou undefined.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const offer = await GymOffer.findById('offer-123');
+   * const offer = GymOffer.findById('offer-123');
    */
-  static async findById(id) {
+  static findById(id) {
     const sql = `SELECT * FROM gym_offers WHERE id = ?`;
-    return await dbGet(sql, [id]);
+    return dbGet(sql, [id]);
   }
 
   /**
    * Crée une offre commerciale.
    *
-   * @async
    * @param {object} offerData - Données de l'offre.
    * @returns {Promise<object>} Offre créée.
    * @throws {Error} Si l'insert échoue.
    *
    * @example
-   * const offer = await GymOffer.create({ gym_id: 'gym-123', offer_name: 'Unlimited', price: 180 });
+   * const offer = GymOffer.create({ gym_id: 'gym-123', offer_name: 'Unlimited', price: 180 });
    */
-  static async create(offerData) {
+  static create(offerData) {
     const {
       gym_id, audit_id, offer_type, offer_name, offer_description,
       price, currency, session_count, duration_months, commitment_months,
@@ -389,7 +375,7 @@ class GymOffer {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)
     `;
     
-    await dbRun(sql, [
+    dbRun(sql, [
       id, gym_id, audit_id, offer_type, offer_name, offer_description,
       price, currency, session_count, duration_months, commitment_months,
       target_audience, restrictions, included_services,
@@ -398,22 +384,21 @@ class GymOffer {
       now, now
     ]);
     
-    return await this.findById(id);
+    return this.findById(id);
   }
 
   /**
    * Met à jour une offre commerciale.
    *
-   * @async
    * @param {string} id - Identifiant de l'offre.
    * @param {object} offerData - Données à mettre à jour.
    * @returns {Promise<object>} Offre mise à jour.
    * @throws {Error} Si la mise à jour échoue.
    *
    * @example
-   * const offer = await GymOffer.update('offer-123', { price: 200 });
+   * const offer = GymOffer.update('offer-123', { price: 200 });
    */
-  static async update(id, offerData) {
+  static update(id, offerData) {
     const fields = Object.keys(offerData);
     const values = Object.values(offerData);
     const now = new Date().toISOString();
@@ -421,24 +406,23 @@ class GymOffer {
     const setClause = fields.map(field => `${field} = ?`).join(', ');
     const sql = `UPDATE gym_offers SET ${setClause}, updated_at = ? WHERE id = ?`;
     
-    await dbRun(sql, [...values, now, id]);
-    return await this.findById(id);
+    dbRun(sql, [...values, now, id]);
+    return this.findById(id);
   }
 
   /**
    * Désactive une offre commerciale (suppression logique).
    *
-   * @async
    * @param {string} id - Identifiant de l'offre.
    * @returns {Promise<boolean>} True si la suppression est effectuée.
    * @throws {Error} Si la mise à jour échoue.
    *
    * @example
-   * await GymOffer.delete('offer-123');
+   * GymOffer.delete('offer-123');
    */
-  static async delete(id) {
+  static delete(id) {
     const sql = `UPDATE gym_offers SET is_active = 0 WHERE id = ?`;
-    await dbRun(sql, [id]);
+    dbRun(sql, [id]);
     return true;
   }
 }

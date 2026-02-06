@@ -188,3 +188,17 @@ CREATE TABLE IF NOT EXISTS gym_offers (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_gyms_user_id ON gyms(user_id);
+CREATE INDEX IF NOT EXISTS idx_audits_gym_id ON audits(gym_id);
+CREATE INDEX IF NOT EXISTS idx_answers_audit_id ON answers(audit_id);
+CREATE INDEX IF NOT EXISTS idx_answers_audit_block ON answers(audit_id, block_code);
+CREATE INDEX IF NOT EXISTS idx_kpis_audit_id ON kpis(audit_id);
+CREATE INDEX IF NOT EXISTS idx_scores_audit_id ON scores(audit_id);
+CREATE INDEX IF NOT EXISTS idx_recommendations_audit_id ON recommendations(audit_id);
+CREATE INDEX IF NOT EXISTS idx_competitors_gym_active ON competitors(gym_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_competitors_market_zone_id ON competitors(market_zone_id);
+CREATE INDEX IF NOT EXISTS idx_gym_offers_gym_active ON gym_offers(gym_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_gym_offers_audit_active ON gym_offers(audit_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_gym_user_access_gym_id ON gym_user_access(gym_id);
+CREATE INDEX IF NOT EXISTS idx_gym_user_access_user_id ON gym_user_access(user_id);

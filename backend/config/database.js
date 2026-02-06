@@ -42,37 +42,31 @@ const normalizeParams = (params) => {
   return Array.isArray(params) ? params : [params];
 };
 
-// Wrapper pour promisifier les requêtes
+// Wrapper synchrones pour les requêtes
 const dbAll = (sql, params = []) => {
-  try {
-    const rows = db.prepare(sql).all(...normalizeParams(params));
-    return Promise.resolve(rows);
-  } catch (err) {
-    return Promise.reject(err);
-  }
+  const rows = db.prepare(sql).all(...normalizeParams(params));
+  return rows;
 };
 
 const dbGet = (sql, params = []) => {
-  try {
-    const row = db.prepare(sql).get(...normalizeParams(params));
-    return Promise.resolve(row ?? null);
-  } catch (err) {
-    return Promise.reject(err);
-  }
+  const row = db.prepare(sql).get(...normalizeParams(params));
+  return row ?? null;
 };
 
 const dbRun = (sql, params = []) => {
-  try {
-    const info = db.prepare(sql).run(...normalizeParams(params));
-    return Promise.resolve({ id: info.lastInsertRowid, changes: info.changes });
-  } catch (err) {
-    return Promise.reject(err);
-  }
+  const info = db.prepare(sql).run(...normalizeParams(params));
+  return { id: info.lastInsertRowid, changes: info.changes };
+};
+
+const dbTransaction = (fn) => {
+  const transaction = db.transaction(fn);
+  return transaction();
 };
 
 module.exports = {
   db,
   dbAll,
   dbGet,
-  dbRun
+  dbRun,
+  dbTransaction
 };

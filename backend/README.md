@@ -6,7 +6,7 @@ Backend Node.js/Express pour l'application d'audit CrossFit - Tulip Conseil
 
 - Node.js >= 16.x
 - npm ou yarn
-- SQLite3 (inclus avec sqlite3 package)
+- SQLite (via better-sqlite3)
 
 ## 🚀 Démarrage rapide (5 minutes)
 

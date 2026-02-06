@@ -8,15 +8,14 @@ class Gym {
   /**
    * Liste toutes les salles, ou celles d'un utilisateur.
    *
-   * @async
    * @param {string | null} [userId=null] - Identifiant de l'utilisateur.
-   * @returns {Promise<object[]>} Liste de salles triées par date.
+   * @returns {object[]} Liste de salles triées par date.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const gyms = await Gym.findAll('user-123');
+   * const gyms = Gym.findAll('user-123');
    */
-  static async findAll(userId = null) {
+  static findAll(userId = null) {
     let sql = `SELECT * FROM gyms ORDER BY created_at DESC`;
     let params = [];
     
@@ -25,21 +24,20 @@ class Gym {
       params = [userId];
     }
     
-    return await dbAll(sql, params);
+    return dbAll(sql, params);
   }
 
   /**
    * Liste les salles accessibles à un utilisateur.
    *
-   * @async
    * @param {string} userId - Identifiant de l'utilisateur.
-   * @returns {Promise<object[]>} Salles avec niveau d'accès calculé.
+   * @returns {object[]} Salles avec niveau d'accès calculé.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const gyms = await Gym.findAllForUser('user-123');
+   * const gyms = Gym.findAllForUser('user-123');
    */
-  static async findAllForUser(userId) {
+  static findAllForUser(userId) {
     const sql = `
       SELECT g.*, 
         CASE 
@@ -53,38 +51,36 @@ class Gym {
       GROUP BY g.id
       ORDER BY g.created_at DESC
     `;
-    return await dbAll(sql, [userId, userId, userId, userId]);
+    return dbAll(sql, [userId, userId, userId, userId]);
   }
 
   /**
    * Récupère une salle par identifiant.
    *
-   * @async
    * @param {string} id - Identifiant de la salle.
-   * @returns {Promise<object | undefined>} Salle trouvée ou undefined.
+   * @returns {object | null} Salle trouvée ou null.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const gym = await Gym.findById('gym-123');
+   * const gym = Gym.findById('gym-123');
    */
-  static async findById(id) {
+  static findById(id) {
     const sql = `SELECT * FROM gyms WHERE id = ?`;
-    return await dbGet(sql, [id]);
+    return dbGet(sql, [id]);
   }
 
   /**
    * Crée une nouvelle salle.
    *
-   * @async
    * @param {object} gymData - Données de la salle.
    * @param {string | null} [userId=null] - Propriétaire de la salle.
-   * @returns {Promise<object>} Salle créée.
+   * @returns {object | null} Salle créée.
    * @throws {Error} Si l'insert échoue.
    *
    * @example
-   * const gym = await Gym.create({ name: 'CrossFit Box' }, 'user-123');
+   * const gym = Gym.create({ name: 'CrossFit Box' }, 'user-123');
    */
-  static async create(gymData, userId = null) {
+  static create(gymData, userId = null) {
     const {
       name, address, city, postal_code, contact_name, phone, email,
       website, instagram, legal_status, founded_year, partners_count, notes
@@ -105,28 +101,27 @@ class Gym {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     
-    await dbRun(sql, [
+    dbRun(sql, [
       id, userId, name, address, city, postal_code, contact_name,
       phone, email, website, instagram, legal_status, founded_year,
       partners_count, notes, now, now
     ]);
     
-    return await this.findById(id);
+    return this.findById(id);
   }
 
   /**
    * Met à jour une salle existante.
    *
-   * @async
    * @param {string} id - Identifiant de la salle.
    * @param {object} gymData - Données à mettre à jour.
-   * @returns {Promise<object>} Salle mise à jour.
+   * @returns {object | null} Salle mise à jour.
    * @throws {Error} Si la mise à jour échoue.
    *
    * @example
-   * const gym = await Gym.update('gym-123', { city: 'Paris' });
+   * const gym = Gym.update('gym-123', { city: 'Paris' });
    */
-  static async update(id, gymData) {
+  static update(id, gymData) {
     const {
       name, address, city, postal_code, contact_name, phone, email,
       website, instagram, legal_status, founded_year, partners_count, notes
@@ -153,65 +148,61 @@ class Gym {
       WHERE id = ?
     `;
     
-    await dbRun(sql, [
+    dbRun(sql, [
       name, address, city, postal_code, contact_name, phone, email,
       website, instagram, legal_status, founded_year, partners_count,
       notes, now, id
     ]);
     
-    return await this.findById(id);
+    return this.findById(id);
   }
 
   /**
    * Supprime une salle.
    *
-   * @async
    * @param {string} id - Identifiant de la salle.
-   * @returns {Promise<boolean>} True si la suppression est effectuée.
+   * @returns {boolean} True si la suppression est effectuée.
    * @throws {Error} Si la suppression échoue.
    *
    * @example
-   * await Gym.delete('gym-123');
+   * Gym.delete('gym-123');
    */
-  static async delete(id) {
+  static delete(id) {
     const sql = `DELETE FROM gyms WHERE id = ?`;
-    await dbRun(sql, [id]);
+    dbRun(sql, [id]);
     return true;
   }
 
   /**
    * Récupère une salle avec ses statistiques (audits, concurrents, offres).
    *
-   * @async
    * @param {string} id - Identifiant de la salle.
-   * @returns {Promise<object | null>} Salle enrichie ou null si inexistante.
+   * @returns {object | null} Salle enrichie ou null si inexistante.
    * @throws {Error} Si une requête SQL échoue.
    *
    * @example
-   * const gym = await Gym.getWithStats('gym-123');
+   * const gym = Gym.getWithStats('gym-123');
    */
-  static async getWithStats(id) {
-    const gym = await this.findById(id);
+  static getWithStats(id) {
+    const sql = `
+      SELECT g.*,
+        (SELECT COUNT(*) FROM audits WHERE gym_id = g.id) AS audits_count,
+        (SELECT COUNT(*) FROM competitors WHERE gym_id = g.id AND is_active = 1) AS competitors_count,
+        (SELECT COUNT(*) FROM gym_offers WHERE gym_id = g.id AND is_active = 1) AS offers_count
+      FROM gyms g
+      WHERE g.id = ?
+    `;
+    const gym = dbGet(sql, [id]);
     if (!gym) return null;
 
-    // Compter les audits
-    const auditCountSql = `SELECT COUNT(*) as count FROM audits WHERE gym_id = ?`;
-    const auditCount = await dbGet(auditCountSql, [id]);
-
-    // Compter les concurrents
-    const competitorCountSql = `SELECT COUNT(*) as count FROM competitors WHERE gym_id = ? AND is_active = 1`;
-    const competitorCount = await dbGet(competitorCountSql, [id]);
-
-    // Compter les offres
-    const offerCountSql = `SELECT COUNT(*) as count FROM gym_offers WHERE gym_id = ? AND is_active = 1`;
-    const offerCount = await dbGet(offerCountSql, [id]);
+    const { audits_count, competitors_count, offers_count, ...gymData } = gym;
 
     return {
-      ...gym,
+      ...gymData,
       stats: {
-        audits_count: auditCount.count,
-        competitors_count: competitorCount.count,
-        offers_count: offerCount.count
+        audits_count,
+        competitors_count,
+        offers_count
       }
     };
   }

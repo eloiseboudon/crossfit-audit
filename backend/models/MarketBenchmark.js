@@ -8,57 +8,53 @@ class MarketBenchmark {
   /**
    * Liste tous les benchmarks.
    *
-   * @async
    * @returns {Promise<object[]>} Liste des benchmarks.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const benchmarks = await MarketBenchmark.findAll();
+   * const benchmarks = MarketBenchmark.findAll();
    */
-  static async findAll() {
+  static findAll() {
     const sql = `
       SELECT * FROM market_benchmarks
       ORDER BY category, name
     `;
-    return await dbAll(sql);
+    return dbAll(sql);
   }
 
   /**
    * Récupère un benchmark par identifiant.
    *
-   * @async
    * @param {string} id - Identifiant du benchmark.
    * @returns {Promise<object | undefined>} Benchmark trouvé ou undefined.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const benchmark = await MarketBenchmark.findById('benchmark-123');
+   * const benchmark = MarketBenchmark.findById('benchmark-123');
    */
-  static async findById(id) {
+  static findById(id) {
     const sql = `SELECT * FROM market_benchmarks WHERE id = ?`;
-    return await dbGet(sql, [id]);
+    return dbGet(sql, [id]);
   }
 
   /**
    * Récupère un benchmark par code.
    *
-   * @async
    * @param {string} code - Code de benchmark.
    * @returns {Promise<object | undefined>} Benchmark trouvé ou undefined.
    * @throws {Error} Si la requête SQL échoue.
    *
    * @example
-   * const benchmark = await MarketBenchmark.findByCode('CA_AVG');
+   * const benchmark = MarketBenchmark.findByCode('CA_AVG');
    */
-  static async findByCode(code) {
+  static findByCode(code) {
     const sql = `SELECT * FROM market_benchmarks WHERE benchmark_code = ?`;
-    return await dbGet(sql, [code]);
+    return dbGet(sql, [code]);
   }
 
   /**
    * Crée un benchmark de marché.
    *
-   * @async
    * @param {object} data - Données du benchmark.
    * @param {string} data.benchmark_code - Code unique.
    * @param {string} data.name - Nom.
@@ -70,9 +66,9 @@ class MarketBenchmark {
    * @throws {Error} Si l'insert échoue.
    *
    * @example
-   * const benchmark = await MarketBenchmark.create({ benchmark_code: 'CA_AVG', name: 'CA moyen', value: 200 });
+   * const benchmark = MarketBenchmark.create({ benchmark_code: 'CA_AVG', name: 'CA moyen', value: 200 });
    */
-  static async create(data) {
+  static create(data) {
     const { benchmark_code, name, value, unit, description, category } = data;
     const id = uuidv4();
     const now = new Date().toISOString();
@@ -83,7 +79,7 @@ class MarketBenchmark {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    await dbRun(sql, [
+    dbRun(sql, [
       id,
       benchmark_code,
       name,
@@ -94,29 +90,28 @@ class MarketBenchmark {
       now
     ]);
 
-    return await this.findById(id);
+    return this.findById(id);
   }
 
   /**
    * Met à jour un benchmark de marché.
    *
-   * @async
    * @param {string} id - Identifiant du benchmark.
    * @param {object} updates - Champs à mettre à jour.
    * @returns {Promise<object>} Benchmark mis à jour.
    * @throws {Error} Si la mise à jour échoue.
    *
    * @example
-   * const benchmark = await MarketBenchmark.update('benchmark-123', { value: 180 });
+   * const benchmark = MarketBenchmark.update('benchmark-123', { value: 180 });
    */
-  static async update(id, updates) {
+  static update(id, updates) {
     const allowedFields = ['name', 'value', 'unit', 'description', 'category'];
     const entries = Object.entries(updates).filter(([key, value]) => {
       return allowedFields.includes(key) && value !== undefined;
     });
 
     if (entries.length === 0) {
-      return await this.findById(id);
+      return this.findById(id);
     }
 
     const now = new Date().toISOString();
@@ -125,8 +120,8 @@ class MarketBenchmark {
 
     const sql = `UPDATE market_benchmarks SET ${setClause}, updated_at = ? WHERE id = ?`;
 
-    await dbRun(sql, [...values, now, id]);
-    return await this.findById(id);
+    dbRun(sql, [...values, now, id]);
+    return this.findById(id);
   }
 }
 
