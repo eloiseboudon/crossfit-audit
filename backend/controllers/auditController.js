@@ -3,7 +3,7 @@ const Answer = require('../models/Answer');
 const { KPI, Score, Recommendation } = require('../models/AuditData');
 const ApiError = require('../utils/ApiError');
 const { getGymAccess } = require('../middleware/gymAccessMiddleware');
-const { ROLES } = require('../constants');
+const { AUDIT_STATUS, ROLES } = require('../constants');
 
 /**
  * Valide l'accès à un audit et retourne le contexte d'accès.
@@ -118,7 +118,12 @@ const createAudit = async (req, res, next) => {
       await getGymAccess({ gymId: gym_id, user: req.user, write: true });
     }
 
-    const audit = await Audit.create(req.body);
+    const auditData = {
+      ...req.body,
+      status: req.body.status || AUDIT_STATUS.DRAFT
+    };
+
+    const audit = await Audit.create(auditData);
     
     res.status(201).json({
       success: true,

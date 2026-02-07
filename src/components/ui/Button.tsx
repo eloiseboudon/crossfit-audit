@@ -1,4 +1,5 @@
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
+import { COLOR_CLASSES } from '../../lib/constants';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -33,10 +34,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       'disabled:opacity-50 disabled:cursor-not-allowed';
 
     const variantClasses: Record<ButtonVariant, string> = {
-      primary: 'bg-[#48737F] text-white hover:bg-[#3A5D67] focus:ring-[#48737F]',
-      secondary: 'bg-[#CCBB90] text-[#48737F] hover:bg-[#B8A780] focus:ring-[#CCBB90]',
+      primary: `${COLOR_CLASSES.bgPrimary} text-white ${COLOR_CLASSES.hoverBgPrimaryDarker} ${COLOR_CLASSES.focusRingPrimary}`,
+      secondary: `${COLOR_CLASSES.bgSecondary} ${COLOR_CLASSES.textPrimary} ${COLOR_CLASSES.hoverBgSecondaryDark} ${COLOR_CLASSES.focusRingSecondary}`,
       danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-600',
-      ghost: 'bg-transparent text-[#48737F] hover:bg-[#48737F]/10 focus:ring-[#48737F]',
+      ghost: `bg-transparent ${COLOR_CLASSES.textPrimary} ${COLOR_CLASSES.hoverBgPrimary10} ${COLOR_CLASSES.focusRingPrimary}`,
     };
 
     const sizeClasses: Record<ButtonSize, string> = {

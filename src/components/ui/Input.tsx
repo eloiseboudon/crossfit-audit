@@ -1,4 +1,5 @@
 import { forwardRef, type InputHTMLAttributes } from 'react';
+import { COLOR_CLASSES } from '../../lib/constants';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -22,7 +23,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const inputClasses = [
       'w-full px-4 py-2 border rounded-lg transition-all',
       'focus:outline-none focus:ring-2',
-      error ? 'border-red-300 focus:ring-red-500' : 'border-[#DAD7CD] focus:ring-[#48737F]',
+      error ? 'border-red-300 focus:ring-red-500' : `${COLOR_CLASSES.borderNeutral} ${COLOR_CLASSES.focusRingPrimary}`,
       className,
     ]
       .filter(Boolean)
@@ -30,10 +31,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     return (
       <div className="space-y-1">
-        {label && <label className="block text-sm font-medium text-[#48737F]">{label}</label>}
+        {label && <label className={`block text-sm font-medium ${COLOR_CLASSES.textPrimary}`}>{label}</label>}
         <input ref={ref} className={inputClasses} {...props} />
         {error && <p className="text-sm text-red-600">{error}</p>}
-        {helpText && !error && <p className="text-sm text-[#48737F]/60">{helpText}</p>}
+        {helpText && !error && <p className={`text-sm ${COLOR_CLASSES.textPrimary60}`}>{helpText}</p>}
       </div>
     );
   },

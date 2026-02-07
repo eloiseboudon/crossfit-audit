@@ -2,6 +2,7 @@ const { Competitor, MarketZone, GymOffer } = require('../models/Market');
 const Audit = require('../models/Audit');
 const ApiError = require('../utils/ApiError');
 const { getGymAccess } = require('../middleware/gymAccessMiddleware');
+const { PRICE_LEVEL } = require('../constants');
 
 // ============================================
 // COMPETITORS
@@ -220,6 +221,10 @@ const createMarketZone = async (req, res, next) => {
       throw ApiError.badRequest('Nom, niveau de prix et fourchettes sont requis');
     }
 
+    if (!Object.values(PRICE_LEVEL).includes(price_level)) {
+      throw ApiError.badRequest('Niveau de prix invalide');
+    }
+
     const zone = await MarketZone.create(req.body);
     
     res.status(201).json({
@@ -246,6 +251,10 @@ const updateMarketZone = async (req, res, next) => {
     
     if (!zone) {
       throw ApiError.notFound('Cette zone marché n\'existe pas');
+    }
+
+    if (req.body.price_level && !Object.values(PRICE_LEVEL).includes(req.body.price_level)) {
+      throw ApiError.badRequest('Niveau de prix invalide');
     }
 
     const updated = await MarketZone.update(req.params.id, req.body);

@@ -1,6 +1,7 @@
 const Audit = require('../../models/Audit');
 const Gym = require('../../models/Gym');
 const { dbRun } = require('../../config/database');
+const { AUDIT_STATUS, CURRENCY } = require('../../constants');
 
 describe('Audit Model', () => {
   let testGym;
@@ -18,10 +19,10 @@ describe('Audit Model', () => {
         baseline_period: '2024-Q1'
       });
 
-      expect(audit.status).toBe('draft');
+      expect(audit.status).toBe(AUDIT_STATUS.DRAFT);
       expect(audit.gym_id).toBe(testGym.id);
       expect(audit.completion_percentage).toBe(0);
-      expect(audit.currency).toBe('EUR');
+      expect(audit.currency).toBe(CURRENCY.EUR);
     });
 
     it('devrait calculer completion_percentage correctement', async () => {

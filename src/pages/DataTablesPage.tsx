@@ -1,6 +1,7 @@
 import { AlertTriangle, Database, RefreshCcw } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getDataTable, listDataTables } from '../lib/api';
+import { COLOR_CLASSES } from '../lib/constants';
 import type { DataTableData, DataTableSummary } from '../lib/types';
 
 const formatTime = (date: Date | null) => {
@@ -94,7 +95,7 @@ export default function DataTablesPage() {
                 void loadTableData(activeTable);
               }
             }}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#4F7A7E]/30 px-3 py-2 text-sm font-semibold text-tulip-blue hover:bg-[#4F7A7E]/10"
+            className={`inline-flex items-center gap-2 rounded-lg border ${COLOR_CLASSES.borderDataTable30} px-3 py-2 text-sm font-semibold text-tulip-blue ${COLOR_CLASSES.hoverBgDataTable10}`}
           >
             <RefreshCcw className="w-4 h-4" />
             Rafraîchir
@@ -110,7 +111,7 @@ export default function DataTablesPage() {
       )}
 
       <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-        <section className="rounded-2xl border border-[#4F7A7E]/20 bg-white/70 p-4 shadow-sm">
+        <section className={`rounded-2xl border ${COLOR_CLASSES.borderDataTable20} bg-white/70 p-4 shadow-sm`}>
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-tulip-blue">Tables ({tables.length})</h3>
             {loadingTables && <span className="text-xs text-slate-400">Chargement...</span>}
@@ -126,8 +127,8 @@ export default function DataTablesPage() {
                 onClick={() => setActiveTable(table.name)}
                 className={`w-full rounded-lg border px-3 py-2 text-left text-sm transition ${
                   activeTable === table.name
-                    ? 'border-[#4F7A7E] bg-[#4F7A7E]/10 text-tulip-blue'
-                    : 'border-transparent hover:border-[#4F7A7E]/30 hover:bg-[#4F7A7E]/5 text-slate-600'
+                    ? `${COLOR_CLASSES.borderDataTable} ${COLOR_CLASSES.bgDataTable10} text-tulip-blue`
+                    : `border-transparent ${COLOR_CLASSES.hoverBorderDataTable30} ${COLOR_CLASSES.hoverBgDataTable5} text-slate-600`
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -139,7 +140,7 @@ export default function DataTablesPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-[#4F7A7E]/20 bg-white/70 p-4 shadow-sm">
+        <section className={`rounded-2xl border ${COLOR_CLASSES.borderDataTable20} bg-white/70 p-4 shadow-sm`}>
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-semibold text-tulip-blue">
@@ -160,7 +161,7 @@ export default function DataTablesPage() {
             <div className="overflow-auto">
               <table className="min-w-full text-left text-sm">
                 <thead className="sticky top-0 bg-white">
-                  <tr className="border-b border-[#4F7A7E]/20">
+                  <tr className={`border-b ${COLOR_CLASSES.borderDataTable20}`}>
                     {columns.map((column) => (
                       <th key={column} className="px-3 py-2 font-semibold text-tulip-blue whitespace-nowrap">
                         {column}

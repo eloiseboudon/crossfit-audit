@@ -1,4 +1,5 @@
 const { calculateKPIs, calculateScores, generateRecommendations } = require('../../utils/calculations');
+const { RECOMMENDATION_PRIORITY } = require('../../constants');
 
 describe('🧮 Algorithmes de Calcul - Business Logic', () => {
   /**
@@ -120,7 +121,7 @@ describe('🧮 Algorithmes de Calcul - Business Logic', () => {
       const kpis = calculateKPIs(answersPerformante);
       const recommendations = generateRecommendations(kpis, answersPerformante);
 
-      const p1Recommendations = recommendations.filter((r) => r.priority === 'P1');
+      const p1Recommendations = recommendations.filter((r) => r.priority === RECOMMENDATION_PRIORITY.HIGH);
       expect(p1Recommendations.length).toBeLessThanOrEqual(1);
     });
   });
@@ -219,7 +220,7 @@ describe('🧮 Algorithmes de Calcul - Business Logic', () => {
       const kpis = calculateKPIs(answersEnDifficulte);
       const recommendations = generateRecommendations(kpis, answersEnDifficulte);
 
-      const p1Recommendations = recommendations.filter((r) => r.priority === 'P1');
+      const p1Recommendations = recommendations.filter((r) => r.priority === RECOMMENDATION_PRIORITY.HIGH);
 
       // Devrait avoir au moins 3 recommandations P1
       expect(p1Recommendations.length).toBeGreaterThanOrEqual(3);

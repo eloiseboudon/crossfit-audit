@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { auth, isAdmin } = require('../../middleware/auth');
+const { ROLES } = require('../../constants');
 
 describe('Auth Middleware', () => {
   let req, res, next;
@@ -19,7 +20,7 @@ describe('Auth Middleware', () => {
   describe('protect middleware', () => {
     it('devrait authentifier avec token valide', async () => {
       const token = jwt.sign(
-        { id: 'user123', email: 'test@test.com', role: 'user' },
+        { id: 'user123', email: 'test@test.com', role: ROLES.USER },
         process.env.JWT_SECRET
       );
 
@@ -50,7 +51,7 @@ describe('Auth Middleware', () => {
 
   describe('authorize middleware', () => {
     it('devrait autoriser rôle admin', () => {
-      req.user = { role: 'admin' };
+      req.user = { role: ROLES.ADMIN };
       
       isAdmin(req, res, next);
 
@@ -58,7 +59,7 @@ describe('Auth Middleware', () => {
     });
 
     it('devrait rejeter utilisateur non autorisé', () => {
-      req.user = { role: 'user' };
+      req.user = { role: ROLES.USER };
       
       isAdmin(req, res, next);
 

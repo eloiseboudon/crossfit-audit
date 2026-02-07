@@ -12,18 +12,54 @@ const AUDIT_STATUS = {
 const ACCESS_LEVELS = {
   READ: 'read',
   WRITE: 'write',
-  OWNER: 'owner'
+  OWNER: 'owner',
+  PUBLIC: 'public'
+};
+
+const RECOMMENDATION_PRIORITY = {
+  HIGH: 'P1',
+  MEDIUM: 'P2',
+  LOW: 'P3'
+};
+
+const EFFORT_LEVEL = {
+  EASY: 'facile',
+  MEDIUM: 'moyen',
+  HARD: 'difficile'
+};
+
+const CONFIDENCE_LEVEL = {
+  LOW: 'faible',
+  MEDIUM: 'moyen',
+  HIGH: 'fort'
+};
+
+const CURRENCY = {
+  EUR: 'EUR',
+  USD: 'USD'
+};
+
+const PRICE_LEVEL = {
+  BUDGET: 'budget',
+  STANDARD: 'standard',
+  PREMIUM: 'premium',
+  LUXURY: 'luxe'
+};
+
+const OFFER_TYPE = {
+  SUBSCRIPTION: 'abonnement',
+  CARD: 'carte',
+  PACK: 'pack'
 };
 
 module.exports = {
   ROLES,
   AUDIT_STATUS,
-  ACCESS_LEVELS
+  ACCESS_LEVELS,
+  RECOMMENDATION_PRIORITY,
+  EFFORT_LEVEL,
+  CONFIDENCE_LEVEL,
+  CURRENCY,
+  PRICE_LEVEL,
+  OFFER_TYPE
 };
-
-const RECOMMENDATION_PRIORITY = { HIGH: 'P1', MEDIUM: 'P2', LOW: 'P3' };
-const EFFORT_LEVEL = { SMALL: 'S', MEDIUM: 'M', LARGE: 'L' };
-const CONFIDENCE_LEVEL = { LOW: 'faible', MEDIUM: 'moyen', HIGH: 'fort' };
-const CURRENCY = { EUR: 'EUR', USD: 'USD' };
-const PRICE_LEVEL = { BUDGET: 'budget', STANDARD: 'standard', PREMIUM: 'premium', LUXURY: 'luxe' };
-const OFFER_TYPE = { SUBSCRIPTION: 'abonnement', CARD: 'carte', PACK: 'pack' };

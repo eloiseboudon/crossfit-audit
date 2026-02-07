@@ -20,6 +20,11 @@ import {
   calculateScores,
   generateRecommendations
 } from '../lib/calculations';
+import {
+  COLOR_HEX,
+  EFFORT_ICONS,
+  PRIORITY_CLASSNAMES
+} from '../lib/constants';
 import { essentialQuestionItems } from '../lib/essentialQuestions';
 import { getAnswerValue } from '../lib/extractData';
 import { Answer, Audit } from '../lib/types';
@@ -258,21 +263,11 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
   };
 
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'P1': return 'bg-tulip-red/10 text-tulip-red';
-      case 'P2': return 'bg-orange-100 text-orange-700';
-      case 'P3': return 'bg-tulip-blue/10 text-tulip-blue';
-      default: return 'bg-tulip-beige text-tulip-blue/70';
-    }
+    return PRIORITY_CLASSNAMES[priority] || 'bg-tulip-beige text-tulip-blue/70';
   };
 
   const getEffortIcon = (effort: string) => {
-    switch (effort) {
-      case 'S': return '🟢';
-      case 'M': return '🟡';
-      case 'L': return '🔴';
-      default: return '';
-    }
+    return EFFORT_ICONS[effort] || '';
   };
 
   // === ÉTATS DE CHARGEMENT ===
@@ -635,7 +630,7 @@ function OverviewTab({
             <div className="lg:col-span-1 flex justify-center">
               <div className="relative w-48 h-48 md:w-56 md:h-56">
                 <svg className="transform -rotate-90 w-48 h-48 md:w-56 md:h-56">
-                  <circle cx="112" cy="112" r="100" stroke="#E8E2D5" strokeWidth="20" fill="none" />
+                  <circle cx="112" cy="112" r="100" stroke={COLOR_HEX.chartTrack} strokeWidth="20" fill="none" />
                   <circle
                     cx="112"
                     cy="112"
@@ -650,8 +645,8 @@ function OverviewTab({
                   />
                   <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#4F7A7E" />
-                      <stop offset="100%" stopColor="#8FB339" />
+                      <stop offset="0%" stopColor={COLOR_HEX.chartStart} />
+                      <stop offset="100%" stopColor={COLOR_HEX.chartEnd} />
                     </linearGradient>
                   </defs>
                 </svg>

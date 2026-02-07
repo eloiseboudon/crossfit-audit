@@ -1,6 +1,7 @@
 const { dbAll, dbGet, dbRun } = require('../config/database');
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
+const { ROLES } = require('../constants');
 
 /**
  * Modèle d'accès aux utilisateurs.
@@ -66,7 +67,7 @@ class User {
    * @param {string} userData.email - Adresse email.
    * @param {string} userData.password - Mot de passe en clair.
    * @param {string} userData.name - Nom affiché.
-   * @param {string} [userData.role='user'] - Rôle de l'utilisateur.
+   * @param {string} [userData.role=ROLES.USER] - Rôle de l'utilisateur.
    * @returns {Promise<object>} Utilisateur créé.
    * @throws {Error} Si l'email existe déjà ou si l'insert échoue.
    *
@@ -74,7 +75,7 @@ class User {
    * const user = User.create({ email: 'demo@example.com', password: 'Secret', name: 'Demo' });
    */
   static async create(userData) {
-    const { email, password, name, role = 'user' } = userData;
+    const { email, password, name, role = ROLES.USER } = userData;
 
     // Vérifier si l'email existe déjà
     const existing = await this.findByEmail(email);

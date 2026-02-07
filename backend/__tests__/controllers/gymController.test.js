@@ -3,6 +3,7 @@ const app = require('../../server');
 const User = require('../../models/User');
 const Gym = require('../../models/Gym');
 const { dbRun } = require('../../config/database');
+const { ROLES } = require('../../constants');
 
 describe('Gym Controller', () => {
   let authToken;
@@ -34,7 +35,7 @@ describe('Gym Controller', () => {
         email: 'admin@test.com',
         password: 'password123',
         name: 'Admin User',
-        role: 'admin'
+        role: ROLES.ADMIN
       });
       const adminLogin = await request(app)
         .post('/api/auth/login')
