@@ -1,5 +1,6 @@
 const { dbAll, dbGet, dbRun, dbTransaction } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
+const { RECOMMENDATION_PRIORITY } = require('../constants');
 
 // ============================================
 // KPI Model
@@ -285,10 +286,9 @@ class Recommendation {
       WHERE audit_id = ? 
       ORDER BY 
         CASE priority 
-          WHEN 'critical' THEN 1
-          WHEN 'high' THEN 2
-          WHEN 'medium' THEN 3
-          WHEN 'low' THEN 4
+          WHEN '${RECOMMENDATION_PRIORITY.HIGH}' THEN 1
+          WHEN '${RECOMMENDATION_PRIORITY.MEDIUM}' THEN 2
+          WHEN '${RECOMMENDATION_PRIORITY.LOW}' THEN 3
         END,
         expected_impact_eur DESC
     `;

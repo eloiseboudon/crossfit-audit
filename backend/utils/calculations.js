@@ -1,4 +1,9 @@
 const { extractAllData } = require('./extractData');
+const {
+  CONFIDENCE_LEVEL,
+  EFFORT_LEVEL,
+  RECOMMENDATION_PRIORITY
+} = require('../constants');
 
 function calculateKPIs(answers) {
   const data = extractAllData(answers);
@@ -178,10 +183,10 @@ function generateRecommendations(kpis, answers) {
       rec_code: 'improve_margins',
       title: 'Améliorer la rentabilité',
       description: `Votre marge EBITDA est de ${kpis.marge_ebitda.toFixed(1)}%, en dessous de la cible de 15-20%. Analysez vos charges fixes et optimisez votre structure de coûts.`,
-      priority: 'P1',
+      priority: RECOMMENDATION_PRIORITY.HIGH,
       expected_impact_eur: data.finance.revenus.ca_total * 0.05,
-      effort_level: 'moyen',
-      confidence: 85,
+      effort_level: EFFORT_LEVEL.MEDIUM,
+      confidence: CONFIDENCE_LEVEL.HIGH,
       category: 'finance',
       computed_at: new Date().toISOString()
     });
@@ -192,10 +197,10 @@ function generateRecommendations(kpis, answers) {
       rec_code: 'optimize_rent',
       title: 'Ratio loyer trop élevé',
       description: `Votre loyer représente ${kpis.loyer_ratio.toFixed(1)}% du CA (cible: < 15%). Envisagez une renégociation ou sous-location d'espaces non utilisés.`,
-      priority: 'P1',
+      priority: RECOMMENDATION_PRIORITY.HIGH,
       expected_impact_eur: ((kpis.loyer_ratio - 15) * data.finance.revenus.ca_total) / 100,
-      effort_level: 'difficile',
-      confidence: 70,
+      effort_level: EFFORT_LEVEL.HARD,
+      confidence: CONFIDENCE_LEVEL.MEDIUM,
       category: 'finance',
       computed_at: new Date().toISOString()
     });
@@ -207,10 +212,10 @@ function generateRecommendations(kpis, answers) {
       rec_code: 'increase_arpm',
       title: 'Augmenter l\'ARPM',
       description: `Votre ARPM est de ${kpis.arpm.toFixed(0)}€ (cible: 85-100€). Travaillez votre stratégie tarifaire et vendez plus de services additionnels (PT, nutrition).`,
-      priority: 'P1',
+      priority: RECOMMENDATION_PRIORITY.HIGH,
       expected_impact_eur: potentialIncrease * 0.7,
-      effort_level: 'moyen',
-      confidence: 80,
+      effort_level: EFFORT_LEVEL.MEDIUM,
+      confidence: CONFIDENCE_LEVEL.HIGH,
       category: 'commercial',
       computed_at: new Date().toISOString()
     });
@@ -221,10 +226,10 @@ function generateRecommendations(kpis, answers) {
       rec_code: 'reduce_churn',
       title: 'Réduire le churn',
       description: `Votre taux de churn est de ${kpis.churn_mensuel.toFixed(1)}% (cible: < 3%). Mettez en place des actions de rétention: onboarding, suivi personnalisé, événements communautaires.`,
-      priority: 'P1',
+      priority: RECOMMENDATION_PRIORITY.HIGH,
       expected_impact_eur: (kpis.churn_mensuel - 3) * data.membres.nb_membres_actifs_total * kpis.arpm * 6,
-      effort_level: 'moyen',
-      confidence: 75,
+      effort_level: EFFORT_LEVEL.MEDIUM,
+      confidence: CONFIDENCE_LEVEL.MEDIUM,
       category: 'commercial',
       computed_at: new Date().toISOString()
     });
@@ -235,10 +240,10 @@ function generateRecommendations(kpis, answers) {
       rec_code: 'improve_occupation',
       title: 'Optimiser le taux d\'occupation',
       description: `Votre taux d'occupation est de ${kpis.occupation_moyenne.toFixed(0)}% (cible: 70-80%). Analysez votre planning pour identifier les créneaux sous-utilisés et ajustez.`,
-      priority: 'P2',
+      priority: RECOMMENDATION_PRIORITY.MEDIUM,
       expected_impact_eur: 0,
-      effort_level: 'facile',
-      confidence: 70,
+      effort_level: EFFORT_LEVEL.EASY,
+      confidence: CONFIDENCE_LEVEL.MEDIUM,
       category: 'operations',
       computed_at: new Date().toISOString()
     });
@@ -249,10 +254,10 @@ function generateRecommendations(kpis, answers) {
       rec_code: 'improve_conversion',
       title: 'Améliorer la conversion essais',
       description: `Votre taux de conversion est de ${kpis.conversion_essai.toFixed(0)}% (cible: > 50%). Optimisez votre processus d'essai et formation du personnel commercial.`,
-      priority: 'P2',
+      priority: RECOMMENDATION_PRIORITY.MEDIUM,
       expected_impact_eur: data.operations.essais_gratuits_mois * 12 * (50 - kpis.conversion_essai) / 100 * kpis.arpm * 12 * 0.5,
-      effort_level: 'moyen',
-      confidence: 75,
+      effort_level: EFFORT_LEVEL.MEDIUM,
+      confidence: CONFIDENCE_LEVEL.MEDIUM,
       category: 'commercial',
       computed_at: new Date().toISOString()
     });
@@ -263,10 +268,10 @@ function generateRecommendations(kpis, answers) {
       rec_code: 'increase_recurring',
       title: 'Augmenter le CA récurrent',
       description: `Votre CA récurrent est de ${kpis.pourcent_recurrent.toFixed(0)}% (cible: > 85%). Privilégiez les abonnements mensuels aux cartes.`,
-      priority: 'P2',
+      priority: RECOMMENDATION_PRIORITY.MEDIUM,
       expected_impact_eur: 0,
-      effort_level: 'moyen',
-      confidence: 65,
+      effort_level: EFFORT_LEVEL.MEDIUM,
+      confidence: CONFIDENCE_LEVEL.MEDIUM,
       category: 'commercial',
       computed_at: new Date().toISOString()
     });
@@ -277,17 +282,21 @@ function generateRecommendations(kpis, answers) {
       rec_code: 'maintain_performance',
       title: 'Maintenir les performances',
       description: 'Vos indicateurs sont dans les cibles. Continuez vos efforts et suivez régulièrement vos KPIs.',
-      priority: 'P3',
+      priority: RECOMMENDATION_PRIORITY.LOW,
       expected_impact_eur: 0,
-      effort_level: 'facile',
-      confidence: 90,
+      effort_level: EFFORT_LEVEL.EASY,
+      confidence: CONFIDENCE_LEVEL.HIGH,
       category: 'general',
       computed_at: new Date().toISOString()
     });
   }
 
   recommendations.sort((a, b) => {
-    const priorityOrder = { P1: 1, P2: 2, P3: 3 };
+    const priorityOrder = {
+      [RECOMMENDATION_PRIORITY.HIGH]: 1,
+      [RECOMMENDATION_PRIORITY.MEDIUM]: 2,
+      [RECOMMENDATION_PRIORITY.LOW]: 3
+    };
     if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
       return priorityOrder[a.priority] - priorityOrder[b.priority];
     }

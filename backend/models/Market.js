@@ -1,5 +1,6 @@
 const { dbAll, dbGet, dbRun } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
+const { PRICE_LEVEL } = require('../constants');
 
 // ============================================
 // Competitor Model
@@ -220,6 +221,10 @@ class MarketZone {
       name, description, price_level, avg_subscription_min, avg_subscription_max,
       geographic_scope, population_density, avg_household_income_range
     } = zoneData;
+
+    if (!Object.values(PRICE_LEVEL).includes(price_level)) {
+      throw new Error('Invalid price level');
+    }
     
     const id = uuidv4();
     const now = new Date().toISOString();

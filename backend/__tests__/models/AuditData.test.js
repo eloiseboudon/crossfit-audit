@@ -2,6 +2,11 @@ const { KPI, Score, Recommendation } = require('../../models/AuditData');
 const Audit = require('../../models/Audit');
 const Gym = require('../../models/Gym');
 const { dbRun } = require('../../config/database');
+const {
+  CONFIDENCE_LEVEL,
+  EFFORT_LEVEL,
+  RECOMMENDATION_PRIORITY
+} = require('../../constants');
 
 describe('Audit Data Models', () => {
   let testGym;
@@ -112,9 +117,9 @@ describe('Audit Data Models', () => {
         audit_id: testAudit.id,
         rec_code: 'R1',
         title: 'Optimiser',
-        priority: 'high',
-        effort_level: 'moyen',
-        confidence: 'high'
+        priority: RECOMMENDATION_PRIORITY.HIGH,
+        effort_level: EFFORT_LEVEL.MEDIUM,
+        confidence: CONFIDENCE_LEVEL.HIGH
       });
 
       expect(rec.title).toBe('Optimiser');
@@ -125,25 +130,37 @@ describe('Audit Data Models', () => {
 
     it('devrait trier les recommandations par priorité et impact', async () => {
       await Recommendation.bulkCreate(testAudit.id, [
-        { rec_code: 'R1', title: 'Low', priority: 'low', expected_impact_eur: 1000, effort_level: 'low', confidence: 'medium' },
-        { rec_code: 'R2', title: 'Critical', priority: 'critical', expected_impact_eur: 500, effort_level: 'high', confidence: 'high' },
-        { rec_code: 'R3', title: 'High', priority: 'high', expected_impact_eur: 2000, effort_level: 'moyen', confidence: 'high' }
+        { rec_code: 'R1', title: 'Low', priority: RECOMMENDATION_PRIORITY.LOW, expected_impact_eur: 1000, effort_level: EFFORT_LEVEL.EASY, confidence: CONFIDENCE_LEVEL.MEDIUM },
+        { rec_code: 'R2', title: 'High', priority: RECOMMENDATION_PRIORITY.HIGH, expected_impact_eur: 500, effort_level: EFFORT_LEVEL.HARD, confidence: CONFIDENCE_LEVEL.HIGH },
+        { rec_code: 'R3', title: 'Medium', priority: RECOMMENDATION_PRIORITY.MEDIUM, expected_impact_eur: 2000, effort_level: EFFORT_LEVEL.MEDIUM, confidence: CONFIDENCE_LEVEL.HIGH }
       ]);
 
       const recs = await Recommendation.findByAuditId(testAudit.id);
 
-      expect(recs[0].priority).toBe('critical');
-      expect(recs[1].priority).toBe('high');
-      expect(recs[2].priority).toBe('low');
+      expect(recs[0].priority).toBe(RECOMMENDATION_PRIORITY.HIGH);
+      expect(recs[1].priority).toBe(RECOMMENDATION_PRIORITY.MEDIUM);
+      expect(recs[2].priority).toBe(RECOMMENDATION_PRIORITY.LOW);
     });
 
     it('devrait remplacer les recommandations via bulkCreate', async () => {
       await Recommendation.bulkCreate(testAudit.id, [
-        { rec_code: 'R1', title: 'Old', priority: 'low', effort_level: 'low', confidence: 'medium' }
+        {
+          rec_code: 'R1',
+          title: 'Old',
+          priority: RECOMMENDATION_PRIORITY.LOW,
+          effort_level: EFFORT_LEVEL.EASY,
+          confidence: CONFIDENCE_LEVEL.MEDIUM
+        }
       ]);
 
       const results = await Recommendation.bulkCreate(testAudit.id, [
-        { rec_code: 'R2', title: 'New', priority: 'high', effort_level: 'moyen', confidence: 'high' }
+        {
+          rec_code: 'R2',
+          title: 'New',
+          priority: RECOMMENDATION_PRIORITY.HIGH,
+          effort_level: EFFORT_LEVEL.MEDIUM,
+          confidence: CONFIDENCE_LEVEL.HIGH
+        }
       ]);
 
       expect(results).toHaveLength(1);
@@ -156,9 +173,9 @@ describe('Audit Data Models', () => {
         audit_id: testAudit.id,
         rec_code: 'R3',
         title: 'Delete',
-        priority: 'medium',
-        effort_level: 'moyen',
-        confidence: 'medium'
+        priority: RECOMMENDATION_PRIORITY.MEDIUM,
+        effort_level: EFFORT_LEVEL.MEDIUM,
+        confidence: CONFIDENCE_LEVEL.MEDIUM
       });
 
       await Recommendation.delete(rec.id);

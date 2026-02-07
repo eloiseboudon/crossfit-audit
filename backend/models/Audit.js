@@ -1,5 +1,6 @@
 const { dbAll, dbGet, dbRun } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
+const { AUDIT_STATUS, CURRENCY } = require('../constants');
 
 /**
  * Modèle d'accès aux audits.
@@ -101,11 +102,11 @@ class Audit {
    *
    * @param {object} auditData - Données de l'audit.
    * @param {string} auditData.gym_id - Identifiant de la salle.
-   * @param {string} [auditData.status='draft'] - Statut de l'audit.
+   * @param {string} [auditData.status=AUDIT_STATUS.DRAFT] - Statut de l'audit.
    * @param {string} [auditData.audit_date_start] - Date de début.
    * @param {string} [auditData.audit_date_end] - Date de fin.
    * @param {string} auditData.baseline_period - Période de référence.
-   * @param {string} [auditData.currency='EUR'] - Devise.
+   * @param {string} [auditData.currency=CURRENCY.EUR] - Devise.
    * @param {string} [auditData.notes] - Notes internes.
    * @returns {Promise<object>} Audit créé.
    * @throws {Error} Si l'insert échoue.
@@ -115,8 +116,8 @@ class Audit {
    */
   static async create(auditData) {
     const {
-      gym_id, status = 'draft', audit_date_start, audit_date_end,
-      baseline_period, currency = 'EUR', notes
+      gym_id, status = AUDIT_STATUS.DRAFT, audit_date_start, audit_date_end,
+      baseline_period, currency = CURRENCY.EUR, notes
     } = auditData;
     
     const id = uuidv4();

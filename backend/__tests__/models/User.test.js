@@ -1,5 +1,6 @@
 const User = require('../../models/User');
 const { dbRun } = require('../../config/database');
+const { ROLES } = require('../../constants');
 
 describe('User Model', () => {
   beforeEach(async () => {
@@ -14,7 +15,7 @@ describe('User Model', () => {
     });
 
     expect(user.email).toBe('user@test.com');
-    expect(user.role).toBe('user');
+    expect(user.role).toBe(ROLES.USER);
 
     const stored = await User.findByEmail('user@test.com');
     expect(stored.password).not.toBe('password123');
@@ -65,10 +66,10 @@ describe('User Model', () => {
       name: 'Old Name'
     });
 
-    const updated = await User.update(user.id, { name: 'New Name', role: 'admin' });
+    const updated = await User.update(user.id, { name: 'New Name', role: ROLES.ADMIN });
 
     expect(updated.name).toBe('New Name');
-    expect(updated.role).toBe('admin');
+    expect(updated.role).toBe(ROLES.ADMIN);
   });
 
   it('devrait mettre à jour le mot de passe', async () => {

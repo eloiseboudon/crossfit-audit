@@ -5,6 +5,7 @@ const Gym = require('../../models/Gym');
 const Audit = require('../../models/Audit');
 const { Competitor, MarketZone, GymOffer } = require('../../models/Market');
 const { dbRun } = require('../../config/database');
+const { CURRENCY, PRICE_LEVEL } = require('../../constants');
 
 describe('Market Controller', () => {
   let authToken;
@@ -85,7 +86,7 @@ describe('Market Controller', () => {
     it('devrait lister les zones de marché', async () => {
       await MarketZone.create({
         name: 'Centre',
-        price_level: 'premium',
+        price_level: PRICE_LEVEL.PREMIUM,
         avg_subscription_min: 80,
         avg_subscription_max: 120
       });
@@ -102,7 +103,7 @@ describe('Market Controller', () => {
         .set('Authorization', `Bearer ${authToken}`)
         .send({
           name: 'Centre',
-          price_level: 'premium',
+          price_level: PRICE_LEVEL.PREMIUM,
           avg_subscription_min: 80,
           avg_subscription_max: 120
         });
@@ -114,7 +115,7 @@ describe('Market Controller', () => {
     it('devrait mettre à jour une zone de marché', async () => {
       const zone = await MarketZone.create({
         name: 'Centre',
-        price_level: 'premium',
+        price_level: PRICE_LEVEL.PREMIUM,
         avg_subscription_min: 80,
         avg_subscription_max: 120
       });
@@ -131,7 +132,7 @@ describe('Market Controller', () => {
     it('devrait supprimer une zone de marché', async () => {
       const zone = await MarketZone.create({
         name: 'Centre',
-        price_level: 'premium',
+        price_level: PRICE_LEVEL.PREMIUM,
         avg_subscription_min: 80,
         avg_subscription_max: 120
       });
@@ -153,7 +154,7 @@ describe('Market Controller', () => {
         offer_type: 'membership',
         offer_name: 'Unlimited',
         price: 150,
-        currency: 'EUR',
+        currency: CURRENCY.EUR,
         duration_months: 12,
         commitment_months: 3
       });
@@ -176,7 +177,7 @@ describe('Market Controller', () => {
           offer_type: 'membership',
           offer_name: 'Unlimited',
           price: 150,
-          currency: 'EUR',
+          currency: CURRENCY.EUR,
           duration_months: 12,
           commitment_months: 3
         });
@@ -192,7 +193,7 @@ describe('Market Controller', () => {
         offer_type: 'membership',
         offer_name: 'Unlimited',
         price: 150,
-        currency: 'EUR',
+        currency: CURRENCY.EUR,
         duration_months: 12,
         commitment_months: 3
       });

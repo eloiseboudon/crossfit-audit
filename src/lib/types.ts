@@ -45,9 +45,9 @@ export enum RecommendationPriority {
  * Niveaux d'effort pour une recommandation.
  */
 export enum EffortLevel {
-  SMALL = 'S',
-  MEDIUM = 'M',
-  LARGE = 'L',
+  EASY = 'facile',
+  MEDIUM = 'moyen',
+  HARD = 'difficile',
 }
 
 /**

@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const ApiError = require('../utils/ApiError');
+const { ROLES } = require('../constants');
 
 /**
  * Génère un token JWT pour un utilisateur.
@@ -45,7 +46,7 @@ const register = async (req, res, next) => {
     }
 
     // Créer l'utilisateur
-    const user = await User.create({ email, password, name });
+    const user = await User.create({ email, password, name, role: ROLES.USER });
     
     // Générer le token
     const token = generateToken(user);

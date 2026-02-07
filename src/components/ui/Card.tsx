@@ -1,4 +1,5 @@
 import { forwardRef, type HTMLAttributes } from 'react';
+import { COLOR_CLASSES } from '../../lib/constants';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'bordered' | 'elevated';
@@ -17,7 +18,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ variant = 'default', className = '', children, ...props }, ref) => {
     const variantClasses: Record<string, string> = {
       default: 'bg-white rounded-lg p-6',
-      bordered: 'bg-white border-2 border-[#DAD7CD] rounded-lg p-6',
+      bordered: `bg-white border-2 ${COLOR_CLASSES.borderNeutral} rounded-lg p-6`,
       elevated: 'bg-white rounded-lg shadow-lg p-6',
     };
 

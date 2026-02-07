@@ -1,5 +1,6 @@
 const { dbAll, dbGet, dbRun } = require('../config/database');
 const { v4: uuidv4 } = require('uuid');
+const { ACCESS_LEVELS } = require('../constants');
 
 /**
  * Modèle d'accès aux salles (gyms).
@@ -41,7 +42,7 @@ class Gym {
     const sql = `
       SELECT g.*, 
         CASE 
-          WHEN g.user_id = ? THEN 'owner'
+          WHEN g.user_id = ? THEN '${ACCESS_LEVELS.OWNER}'
           ELSE ga.access_level
         END AS access_level
       FROM gyms g

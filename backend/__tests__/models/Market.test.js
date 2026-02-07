@@ -2,6 +2,7 @@ const { Competitor, MarketZone, GymOffer } = require('../../models/Market');
 const Audit = require('../../models/Audit');
 const Gym = require('../../models/Gym');
 const { dbRun } = require('../../config/database');
+const { CURRENCY, PRICE_LEVEL } = require('../../constants');
 
 describe('Market Models', () => {
   let testGym;
@@ -62,7 +63,7 @@ describe('Market Models', () => {
       const zone = await MarketZone.create({
         name: 'Centre',
         description: 'Zone centrale',
-        price_level: 'premium',
+        price_level: PRICE_LEVEL.PREMIUM,
         avg_subscription_min: 80,
         avg_subscription_max: 120
       });
@@ -80,7 +81,7 @@ describe('Market Models', () => {
     it('devrait lister les zones actives', async () => {
       await MarketZone.create({
         name: 'Centre',
-        price_level: 'premium',
+        price_level: PRICE_LEVEL.PREMIUM,
         avg_subscription_min: 80,
         avg_subscription_max: 120
       });
@@ -98,7 +99,7 @@ describe('Market Models', () => {
         offer_type: 'membership',
         offer_name: 'Unlimited',
         price: 150,
-        currency: 'EUR',
+        currency: CURRENCY.EUR,
         duration_months: 12,
         commitment_months: 3
       });
@@ -120,7 +121,7 @@ describe('Market Models', () => {
         offer_type: 'membership',
         offer_name: 'Unlimited',
         price: 150,
-        currency: 'EUR',
+        currency: CURRENCY.EUR,
         duration_months: 12,
         commitment_months: 3
       });
