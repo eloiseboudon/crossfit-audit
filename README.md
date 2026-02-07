@@ -33,7 +33,7 @@ Plateforme d'audit opérationnel et financier pour salles CrossFit (frontend Rea
 
 - Node.js >= 16
 - npm
-- SQLite (géré par le package `sqlite3`)
+- SQLite (géré par le package `better-sqlite3`)
 
 ## Démarrage local
 

@@ -98,12 +98,12 @@ echo "  🔍 Étape 3/5 : Vérification des dépendances"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Vérifier sqlite3
-if npm list sqlite3 &>/dev/null; then
-    echo "✓ sqlite3 déjà installé"
+# Vérifier better-sqlite3
+if npm list better-sqlite3 &>/dev/null; then
+    echo "✓ better-sqlite3 déjà installé"
 else
-    echo "→ Installation de sqlite3..."
-    npm install sqlite3 --save
+    echo "→ Installation de better-sqlite3..."
+    npm install better-sqlite3 --save
 fi
 
 echo ""
