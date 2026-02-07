@@ -1,3 +1,8 @@
+/**
+ * @module routes/market
+ * @description Routes marché : concurrents, zones de marché et offres commerciales.
+ */
+
 const express = require('express');
 const router = express.Router();
 const {

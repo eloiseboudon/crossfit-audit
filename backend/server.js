@@ -1,3 +1,10 @@
+/**
+ * @module server
+ * @description Point d'entrée de l'API CrossFit Audit.
+ * Configure Express avec les middlewares de sécurité, parsing et logging,
+ * monte les routes API et démarre le serveur HTTP.
+ */
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -117,6 +124,13 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5177;
 
+/**
+ * Initialise la base de données et démarre le serveur Express.
+ * Gère les signaux d'arrêt (SIGTERM, SIGINT) et les erreurs non interceptées.
+ *
+ * @async
+ * @returns {Promise<void>}
+ */
 const startServer = async () => {
   try {
     await initDatabase();

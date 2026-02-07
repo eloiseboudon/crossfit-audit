@@ -1,3 +1,8 @@
+/**
+ * @module routes/benchmarks
+ * @description Routes des benchmarks de marché : lecture, création et mise à jour.
+ */
+
 const express = require('express');
 const router = express.Router();
 const {

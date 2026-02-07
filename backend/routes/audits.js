@@ -1,3 +1,8 @@
+/**
+ * @module routes/audits
+ * @description Routes des audits : CRUD, réponses, KPIs, scores et recommandations.
+ */
+
 const express = require('express');
 const router = express.Router();
 const {

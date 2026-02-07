@@ -1,6 +1,12 @@
+/**
+ * @module validators/gymValidator
+ * @description Règles de validation express-validator pour les salles et leurs accès.
+ */
+
 const { body } = require('express-validator');
 const { ACCESS_LEVELS } = require('../constants');
 
+/** @type {import('express-validator').ValidationChain[]} Validation pour la création d'une salle */
 const createGymValidation = [
   body('name')
     .trim()
@@ -15,6 +21,7 @@ const createGymValidation = [
     .withMessage('La ville ne doit pas dépasser 100 caractères'),
 ];
 
+/** @type {import('express-validator').ValidationChain[]} Validation pour la mise à jour d'une salle */
 const updateGymValidation = [
   body('name')
     .optional()
@@ -30,6 +37,7 @@ const updateGymValidation = [
     .withMessage('La ville ne doit pas dépasser 100 caractères'),
 ];
 
+/** @type {import('express-validator').ValidationChain[]} Validation pour la gestion des accès à une salle */
 const gymAccessValidation = [
   body('access_level')
     .notEmpty()

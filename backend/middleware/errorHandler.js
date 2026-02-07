@@ -1,7 +1,21 @@
+/**
+ * @module middleware/errorHandler
+ * @description Middlewares de gestion globale des erreurs et routes non trouvées.
+ */
+
 const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 
-// Middleware de gestion des erreurs
+/**
+ * Middleware global de gestion des erreurs Express.
+ * Gère les erreurs ApiError, ValidationError, SQLite et JWT avec des réponses JSON adaptées.
+ * En production, les messages d'erreur internes sont masqués.
+ *
+ * @param {Error} err - Erreur interceptée.
+ * @param {import('express').Request} req - Requête Express.
+ * @param {import('express').Response} res - Réponse Express.
+ * @param {import('express').NextFunction} next - Fonction suivante.
+ */
 const errorHandler = (err, req, res, next) => {
   logger.error('❌ Erreur:', err);
 
@@ -49,7 +63,14 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-// Middleware pour les routes non trouvées
+/**
+ * Middleware interceptant les routes non trouvées.
+ * Crée une erreur 404 et la transmet au error handler.
+ *
+ * @param {import('express').Request} req - Requête Express.
+ * @param {import('express').Response} res - Réponse Express.
+ * @param {import('express').NextFunction} next - Fonction suivante.
+ */
 const notFound = (req, res, next) => {
   next(ApiError.notFound(`La route ${req.originalUrl} n'existe pas`));
 };

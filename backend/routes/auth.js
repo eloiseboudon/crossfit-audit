@@ -1,3 +1,8 @@
+/**
+ * @module routes/auth
+ * @description Routes d'authentification : inscription, connexion, profil et mot de passe.
+ */
+
 const express = require('express');
 const router = express.Router();
 const { register, login, getMe, updatePassword } = require('../controllers/authController');

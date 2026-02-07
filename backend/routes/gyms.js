@@ -1,3 +1,8 @@
+/**
+ * @module routes/gyms
+ * @description Routes CRUD des salles et gestion des accès utilisateurs.
+ */
+
 const express = require('express');
 const router = express.Router();
 const {

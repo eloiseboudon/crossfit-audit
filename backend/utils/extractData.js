@@ -1,3 +1,18 @@
+/**
+ * @module utils/extractData
+ * @description Extraction et structuration des données brutes des réponses d'audit
+ * en données financières, membres et opérationnelles exploitables.
+ */
+
+/**
+ * Récupère la valeur d'une réponse par bloc et code de question.
+ *
+ * @param {object[]} answers - Tableau des réponses d'audit.
+ * @param {string} blockCode - Code du bloc (ex: 'produits_exploitation').
+ * @param {string} questionCode - Code de la question (ex: 'ca_abonnements_mensuels').
+ * @param {number} [defaultValue=0] - Valeur par défaut si la réponse n'existe pas.
+ * @returns {number} Valeur de la réponse ou valeur par défaut.
+ */
 function getAnswerValue(answers, blockCode, questionCode, defaultValue = 0) {
   const answer = answers.find(
     (item) => item.block_code === blockCode && item.question_code === questionCode
@@ -5,6 +20,13 @@ function getAnswerValue(answers, blockCode, questionCode, defaultValue = 0) {
   return answer?.value ?? defaultValue;
 }
 
+/**
+ * Extrait les données financières des réponses d'audit.
+ * Calcule le CA (récurrent/non-récurrent), les charges, l'EBITDA et les ratios clés.
+ *
+ * @param {object[]} answers - Réponses brutes de l'audit.
+ * @returns {object} Données financières structurées : revenus, charges, résultat, ratios.
+ */
 function extractFinanceData(answers) {
   const ca_abonnements_mensuels = getAnswerValue(answers, 'produits_exploitation', 'ca_abonnements_mensuels', 0);
   const ca_abonnements_trimestriels = getAnswerValue(answers, 'produits_exploitation', 'ca_abonnements_trimestriels', 0);
@@ -148,6 +170,14 @@ function extractFinanceData(answers) {
   };
 }
 
+/**
+ * Extrait les données membres des réponses d'audit.
+ * Calcule l'ARPM (revenu moyen par membre) et la LTV estimée.
+ *
+ * @param {object[]} answers - Réponses brutes de l'audit.
+ * @param {object} financeData - Données financières extraites par extractFinanceData.
+ * @returns {object} Données membres : nb_membres_actifs_total, arpm, ltv_estime.
+ */
 function extractMembresData(answers, financeData) {
   const nb_membres_actifs_total = getAnswerValue(answers, 'structure_base', 'nb_membres_actifs_total', 0);
   const nb_membres_illimite = getAnswerValue(answers, 'structure_base', 'nb_membres_illimite', 0);
@@ -166,6 +196,15 @@ function extractMembresData(answers, financeData) {
   };
 }
 
+/**
+ * Extrait les données opérationnelles des réponses d'audit.
+ * Calcule le CA/m2, le taux d'occupation, le taux de conversion et le taux de churn.
+ *
+ * @param {object[]} answers - Réponses brutes de l'audit.
+ * @param {object} financeData - Données financières extraites.
+ * @param {object} membresData - Données membres extraites.
+ * @returns {object} Données opérationnelles : surfaces, occupation, conversion, churn.
+ */
 function extractOperationsData(answers, financeData, membresData) {
   const surface_totale = getAnswerValue(answers, 'infrastructure_detaillee', 'surface_totale', 1);
   const surface_crossfit = getAnswerValue(answers, 'infrastructure_detaillee', 'surface_crossfit', 0);
@@ -229,6 +268,14 @@ function extractOperationsData(answers, financeData, membresData) {
   };
 }
 
+/**
+ * Extrait et agrège toutes les données d'un audit : finance, membres et opérations.
+ * Orchestre les trois fonctions d'extraction en chaîne (les données membres
+ * dépendent des données financières, les opérations dépendent des deux).
+ *
+ * @param {object[]} answers - Réponses brutes de l'audit.
+ * @returns {{ finance: object, membres: object, operations: object }} Données complètes structurées.
+ */
 function extractAllData(answers) {
   const finance = extractFinanceData(answers);
   const membres = extractMembresData(answers, finance);

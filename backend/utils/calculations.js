@@ -1,3 +1,9 @@
+/**
+ * @module utils/calculations
+ * @description Fonctions de calcul des KPIs, scores par pilier et recommandations
+ * pour les audits CrossFit. Contient la logique métier de scoring.
+ */
+
 const { extractAllData } = require('./extractData');
 const {
   CONFIDENCE_LEVEL,
@@ -5,6 +11,13 @@ const {
   RECOMMENDATION_PRIORITY
 } = require('../constants');
 
+/**
+ * Calcule les KPIs à partir des réponses d'un audit.
+ * Extrait les données financières, membres et opérationnelles puis les agrège en indicateurs clés.
+ *
+ * @param {object[]} answers - Tableau des réponses d'audit (block_code, question_code, value).
+ * @returns {object} KPIs calculés incluant CA, ARPM, ratios, EBITDA, churn, conversion, occupation.
+ */
 function calculateKPIs(answers) {
   const data = extractAllData(answers);
 
@@ -25,10 +38,25 @@ function calculateKPIs(answers) {
   };
 }
 
+/**
+ * Restreint une valeur numérique entre un minimum et un maximum.
+ *
+ * @param {number} value - Valeur à contraindre.
+ * @param {number} min - Borne inférieure.
+ * @param {number} max - Borne supérieure.
+ * @returns {number} Valeur contrainte dans l'intervalle [min, max].
+ */
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
+/**
+ * Calcule les scores par pilier (finance, clientèle, exploitation) et le score global.
+ * Chaque pilier est pondéré et noté de 0 à 100 selon des seuils métier.
+ *
+ * @param {object} kpis - KPIs calculés (marge_ebitda, loyer_ratio, arpm, churn, etc.).
+ * @returns {{ scores: object[], globalScore: number }} Scores par pilier avec détails et score global pondéré.
+ */
 function calculateScores(kpis) {
   const scores = [];
 
@@ -174,6 +202,15 @@ function calculateScores(kpis) {
   return { scores, globalScore };
 }
 
+/**
+ * Génère des recommandations d'amélioration basées sur les KPIs et les réponses.
+ * Analyse chaque indicateur par rapport à ses seuils cibles et produit des recommandations
+ * triées par priorité (P1 > P2 > P3), limitées à 6 maximum.
+ *
+ * @param {object} kpis - KPIs calculés de l'audit.
+ * @param {object[]} answers - Réponses brutes de l'audit.
+ * @returns {object[]} Recommandations triées par priorité et impact attendu (max 6).
+ */
 function generateRecommendations(kpis, answers) {
   const recommendations = [];
   const data = extractAllData(answers);

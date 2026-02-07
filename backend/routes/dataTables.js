@@ -1,3 +1,8 @@
+/**
+ * @module routes/dataTables
+ * @description Routes d'exploration des tables de la base de données.
+ */
+
 const express = require('express');
 const router = express.Router();
 const { listDataTables, getDataTable } = require('../controllers/dataTablesController');
