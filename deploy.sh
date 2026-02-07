@@ -90,7 +90,7 @@ cd $APP_DIR
 npm install
 
 # Executer les tests unitaires 
-echo -e "${YELLOW}→${NC} Tests unitaires frontend..."
+echo -e "${YELLOW}→${NC} Tests unitaires..."
 npm test
 
 # Rebuild du frontend
@@ -129,9 +129,6 @@ else
     exit 1
 fi
 
-# Executer les tests unitaires 
-echo -e "${YELLOW}→${NC} Tests unitaires backend..."
-npm test
 
 # 6. Redémarrage des services
 echo -e "\n${YELLOW}[6/7]${NC} Redémarrage des services..."

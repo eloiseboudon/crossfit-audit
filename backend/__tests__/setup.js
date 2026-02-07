@@ -1,7 +1,8 @@
 const path = require('path');
 const fs = require('fs');
+const { jest: jestGlobals } = require('@jest/globals');
 
-global.vi = globalThis.jest || globalThis.vi;
+global.vi = jestGlobals;
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
 
 const workerId = process.env.JEST_WORKER_ID || '0';
