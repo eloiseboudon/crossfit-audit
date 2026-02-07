@@ -75,7 +75,7 @@ class User {
    */
   static async create(userData) {
     const { email, password, name, role = 'user' } = userData;
-    
+
     // Vérifier si l'email existe déjà
     const existing = await this.findByEmail(email);
     if (existing) {
@@ -84,17 +84,17 @@ class User {
 
     // Hash du mot de passe
     const hashedPassword = bcrypt.hashSync(password, 10);
-    
+
     const id = uuidv4();
     const now = new Date().toISOString();
-    
+
     const sql = `
       INSERT INTO users (id, email, password, name, role, is_active, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, 1, ?, ?)
     `;
-    
+
     dbRun(sql, [id, email, hashedPassword, name, role, now, now]);
-    
+
     return await this.findById(id);
   }
 
@@ -112,7 +112,7 @@ class User {
   static async update(id, userData) {
     const { name, role } = userData;
     const now = new Date().toISOString();
-    
+
     const sql = `
       UPDATE users 
       SET name = COALESCE(?, name),
@@ -120,7 +120,7 @@ class User {
           updated_at = ?
       WHERE id = ?
     `;
-    
+
     dbRun(sql, [name, role, now, id]);
     return await this.findById(id);
   }
@@ -139,13 +139,13 @@ class User {
   static async updatePassword(id, newPassword) {
     const hashedPassword = bcrypt.hashSync(newPassword, 10);
     const now = new Date().toISOString();
-    
+
     const sql = `
       UPDATE users 
       SET password = ?, updated_at = ?
       WHERE id = ?
     `;
-    
+
     dbRun(sql, [hashedPassword, now, id]);
     return true;
   }
