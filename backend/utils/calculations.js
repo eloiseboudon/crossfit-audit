@@ -10,6 +10,20 @@ const {
   EFFORT_LEVEL,
   RECOMMENDATION_PRIORITY
 } = require('../constants');
+const {
+  MARGE_EBITDA, MARGE_EBITDA_DEFAULT,
+  LOYER_RATIO, LOYER_RATIO_DEFAULT,
+  MASSE_SALARIALE, MASSE_SALARIALE_DEFAULT,
+  CA_PAR_M2, CA_PAR_M2_DEFAULT,
+  RECURRENCE, RECURRENCE_DEFAULT,
+  ARPM, ARPM_DEFAULT,
+  CHURN, CHURN_DEFAULT,
+  OCCUPATION, OCCUPATION_DEFAULT,
+  CONVERSION, CONVERSION_DEFAULT,
+  PILLAR_WEIGHTS,
+  GLOBAL_WEIGHTS,
+  RECOMMENDATION_TRIGGERS,
+} = require('../constants/scoringThresholds');
 
 /**
  * Calcule les KPIs à partir des réponses d'un audit.
@@ -51,6 +65,51 @@ function clamp(value, min, max) {
 }
 
 /**
+ * Évalue un score à partir de seuils "plus c'est mieux" (min décroissants).
+ *
+ * @param {number} value - Valeur à évaluer.
+ * @param {{ min: number, score: number }[]} thresholds - Seuils triés par min décroissant.
+ * @param {number} defaultScore - Score par défaut si aucun seuil ne correspond.
+ * @returns {number} Score correspondant.
+ */
+function scoreHigherIsBetter(value, thresholds, defaultScore) {
+  for (const t of thresholds) {
+    if (value >= t.min) return t.score;
+  }
+  return defaultScore;
+}
+
+/**
+ * Évalue un score à partir de seuils "moins c'est mieux" (max croissants).
+ *
+ * @param {number} value - Valeur à évaluer.
+ * @param {{ max: number, score: number }[]} thresholds - Seuils triés par max croissant.
+ * @param {number} defaultScore - Score par défaut si aucun seuil ne correspond.
+ * @returns {number} Score correspondant.
+ */
+function scoreLowerIsBetter(value, thresholds, defaultScore) {
+  for (const t of thresholds) {
+    if (value <= t.max) return t.score;
+  }
+  return defaultScore;
+}
+
+/**
+ * Évalue un score à partir de seuils à zone optimale (min/max).
+ *
+ * @param {number} value - Valeur à évaluer.
+ * @param {{ min: number, max: number, score: number }[]} thresholds - Seuils de zone.
+ * @param {number} defaultScore - Score par défaut.
+ * @returns {number} Score correspondant.
+ */
+function scoreInRange(value, thresholds, defaultScore) {
+  for (const t of thresholds) {
+    if (value >= t.min && value <= t.max) return t.score;
+  }
+  return defaultScore;
+}
+
+/**
  * Calcule les scores par pilier (finance, clientèle, exploitation) et le score global.
  * Chaque pilier est pondéré et noté de 0 à 100 selon des seuils métier.
  *
@@ -60,41 +119,15 @@ function clamp(value, min, max) {
 function calculateScores(kpis) {
   const scores = [];
 
-  let score_rentabilite = 50;
-  if (kpis.marge_ebitda >= 25) score_rentabilite = 100;
-  else if (kpis.marge_ebitda >= 20) score_rentabilite = 90;
-  else if (kpis.marge_ebitda >= 15) score_rentabilite = 75;
-  else if (kpis.marge_ebitda >= 10) score_rentabilite = 60;
-  else if (kpis.marge_ebitda >= 5) score_rentabilite = 40;
-  else if (kpis.marge_ebitda >= 0) score_rentabilite = 25;
-  else score_rentabilite = 10;
+  // --- Finance ---
+  const score_rentabilite = scoreHigherIsBetter(kpis.marge_ebitda, MARGE_EBITDA, MARGE_EBITDA_DEFAULT);
+  const score_loyer = scoreLowerIsBetter(kpis.loyer_ratio, LOYER_RATIO, LOYER_RATIO_DEFAULT);
+  const score_ms = scoreInRange(kpis.masse_salariale_ratio, MASSE_SALARIALE, MASSE_SALARIALE_DEFAULT);
+  const score_ca_m2 = scoreHigherIsBetter(kpis.ca_par_m2, CA_PAR_M2, CA_PAR_M2_DEFAULT);
 
-  let score_loyer = 50;
-  if (kpis.loyer_ratio <= 12) score_loyer = 100;
-  else if (kpis.loyer_ratio <= 15) score_loyer = 85;
-  else if (kpis.loyer_ratio <= 18) score_loyer = 70;
-  else if (kpis.loyer_ratio <= 22) score_loyer = 50;
-  else if (kpis.loyer_ratio <= 25) score_loyer = 30;
-  else score_loyer = 10;
-
-  let score_ms = 50;
-  if (kpis.masse_salariale_ratio >= 30 && kpis.masse_salariale_ratio <= 40) score_ms = 100;
-  else if (kpis.masse_salariale_ratio >= 25 && kpis.masse_salariale_ratio <= 45) score_ms = 85;
-  else if (kpis.masse_salariale_ratio >= 20 && kpis.masse_salariale_ratio <= 50) score_ms = 70;
-  else if (kpis.masse_salariale_ratio < 20) score_ms = 50;
-  else if (kpis.masse_salariale_ratio <= 55) score_ms = 50;
-  else score_ms = 25;
-
-  let score_ca_m2 = 50;
-  if (kpis.ca_par_m2 >= 400) score_ca_m2 = 100;
-  else if (kpis.ca_par_m2 >= 300) score_ca_m2 = 85;
-  else if (kpis.ca_par_m2 >= 250) score_ca_m2 = 75;
-  else if (kpis.ca_par_m2 >= 200) score_ca_m2 = 60;
-  else if (kpis.ca_par_m2 >= 150) score_ca_m2 = 40;
-  else score_ca_m2 = 25;
-
+  const fw = PILLAR_WEIGHTS.finance;
   const financeScore = clamp(
-    score_rentabilite * 0.4 + score_loyer * 0.2 + score_ms * 0.2 + score_ca_m2 * 0.2,
+    score_rentabilite * fw.rentabilite + score_loyer * fw.loyer + score_ms * fw.masse_salariale + score_ca_m2 * fw.ca_m2,
     0,
     100
   );
@@ -103,7 +136,7 @@ function calculateScores(kpis) {
     code: 'finance',
     name: 'Finance',
     score: Math.round(financeScore),
-    weight: 0.3,
+    weight: GLOBAL_WEIGHTS.finance,
     details: {
       marge_ebitda: kpis.marge_ebitda,
       loyer_ratio: kpis.loyer_ratio,
@@ -116,32 +149,14 @@ function calculateScores(kpis) {
     }
   });
 
-  let score_recurrence = 50;
-  if (kpis.pourcent_recurrent >= 90) score_recurrence = 100;
-  else if (kpis.pourcent_recurrent >= 85) score_recurrence = 90;
-  else if (kpis.pourcent_recurrent >= 80) score_recurrence = 80;
-  else if (kpis.pourcent_recurrent >= 70) score_recurrence = 65;
-  else if (kpis.pourcent_recurrent >= 60) score_recurrence = 45;
-  else score_recurrence = 25;
+  // --- Clientèle ---
+  const score_recurrence = scoreHigherIsBetter(kpis.pourcent_recurrent, RECURRENCE, RECURRENCE_DEFAULT);
+  const score_arpm = scoreHigherIsBetter(kpis.arpm, ARPM, ARPM_DEFAULT);
+  const score_churn = scoreLowerIsBetter(kpis.churn_mensuel, CHURN, CHURN_DEFAULT);
 
-  let score_arpm = 50;
-  if (kpis.arpm >= 110) score_arpm = 100;
-  else if (kpis.arpm >= 95) score_arpm = 90;
-  else if (kpis.arpm >= 85) score_arpm = 80;
-  else if (kpis.arpm >= 75) score_arpm = 65;
-  else if (kpis.arpm >= 65) score_arpm = 50;
-  else score_arpm = 30;
-
-  let score_churn = 50;
-  if (kpis.churn_mensuel <= 2) score_churn = 100;
-  else if (kpis.churn_mensuel <= 3) score_churn = 90;
-  else if (kpis.churn_mensuel <= 5) score_churn = 75;
-  else if (kpis.churn_mensuel <= 7) score_churn = 55;
-  else if (kpis.churn_mensuel <= 10) score_churn = 35;
-  else score_churn = 15;
-
+  const cw = PILLAR_WEIGHTS.clientele;
   const clienteleScore = clamp(
-    score_recurrence * 0.4 + score_arpm * 0.35 + score_churn * 0.25,
+    score_recurrence * cw.recurrence + score_arpm * cw.arpm + score_churn * cw.churn,
     0,
     100
   );
@@ -150,7 +165,7 @@ function calculateScores(kpis) {
     code: 'clientele',
     name: 'Commercial & rétention',
     score: Math.round(clienteleScore),
-    weight: 0.35,
+    weight: GLOBAL_WEIGHTS.clientele,
     details: {
       pourcent_recurrent: kpis.pourcent_recurrent,
       arpm: kpis.arpm,
@@ -161,25 +176,13 @@ function calculateScores(kpis) {
     }
   });
 
-  let score_occupation = 50;
-  if (kpis.occupation_moyenne >= 85) score_occupation = 100;
-  else if (kpis.occupation_moyenne >= 75) score_occupation = 90;
-  else if (kpis.occupation_moyenne >= 70) score_occupation = 80;
-  else if (kpis.occupation_moyenne >= 65) score_occupation = 70;
-  else if (kpis.occupation_moyenne >= 55) score_occupation = 55;
-  else if (kpis.occupation_moyenne >= 45) score_occupation = 40;
-  else score_occupation = 25;
+  // --- Exploitation ---
+  const score_occupation = scoreHigherIsBetter(kpis.occupation_moyenne, OCCUPATION, OCCUPATION_DEFAULT);
+  const score_conversion = scoreHigherIsBetter(kpis.conversion_essai, CONVERSION, CONVERSION_DEFAULT);
 
-  let score_conversion = 50;
-  if (kpis.conversion_essai >= 60) score_conversion = 100;
-  else if (kpis.conversion_essai >= 50) score_conversion = 90;
-  else if (kpis.conversion_essai >= 40) score_conversion = 75;
-  else if (kpis.conversion_essai >= 30) score_conversion = 55;
-  else if (kpis.conversion_essai >= 20) score_conversion = 35;
-  else score_conversion = 20;
-
+  const ew = PILLAR_WEIGHTS.exploitation;
   const exploitationScore = clamp(
-    score_occupation * 0.6 + score_conversion * 0.4,
+    score_occupation * ew.occupation + score_conversion * ew.conversion,
     0,
     100
   );
@@ -188,7 +191,7 @@ function calculateScores(kpis) {
     code: 'exploitation',
     name: 'Organisation & pilotage',
     score: Math.round(exploitationScore),
-    weight: 0.35,
+    weight: GLOBAL_WEIGHTS.exploitation,
     details: {
       occupation_moyenne: kpis.occupation_moyenne,
       conversion_essai: kpis.conversion_essai,
@@ -214,8 +217,9 @@ function calculateScores(kpis) {
 function generateRecommendations(kpis, answers) {
   const recommendations = [];
   const data = extractAllData(answers);
+  const triggers = RECOMMENDATION_TRIGGERS;
 
-  if (kpis.marge_ebitda < 15) {
+  if (kpis.marge_ebitda < triggers.marge_ebitda) {
     recommendations.push({
       rec_code: 'improve_margins',
       title: 'Améliorer la rentabilité',
@@ -229,7 +233,7 @@ function generateRecommendations(kpis, answers) {
     });
   }
 
-  if (kpis.loyer_ratio > 18) {
+  if (kpis.loyer_ratio > triggers.loyer_ratio) {
     recommendations.push({
       rec_code: 'optimize_rent',
       title: 'Ratio loyer trop élevé',
@@ -243,7 +247,7 @@ function generateRecommendations(kpis, answers) {
     });
   }
 
-  if (kpis.arpm < 80) {
+  if (kpis.arpm < triggers.arpm) {
     const potentialIncrease = (85 - kpis.arpm) * data.membres.nb_membres_actifs_total * 12;
     recommendations.push({
       rec_code: 'increase_arpm',
@@ -258,7 +262,7 @@ function generateRecommendations(kpis, answers) {
     });
   }
 
-  if (kpis.churn_mensuel > 5) {
+  if (kpis.churn_mensuel > triggers.churn_mensuel) {
     recommendations.push({
       rec_code: 'reduce_churn',
       title: 'Réduire le churn',
@@ -272,7 +276,7 @@ function generateRecommendations(kpis, answers) {
     });
   }
 
-  if (kpis.occupation_moyenne < 65) {
+  if (kpis.occupation_moyenne < triggers.occupation_moyenne) {
     recommendations.push({
       rec_code: 'improve_occupation',
       title: 'Optimiser le taux d\'occupation',
@@ -286,7 +290,7 @@ function generateRecommendations(kpis, answers) {
     });
   }
 
-  if (kpis.conversion_essai < 40) {
+  if (kpis.conversion_essai < triggers.conversion_essai) {
     recommendations.push({
       rec_code: 'improve_conversion',
       title: 'Améliorer la conversion essais',
@@ -300,7 +304,7 @@ function generateRecommendations(kpis, answers) {
     });
   }
 
-  if (kpis.pourcent_recurrent < 80) {
+  if (kpis.pourcent_recurrent < triggers.pourcent_recurrent) {
     recommendations.push({
       rec_code: 'increase_recurring',
       title: 'Augmenter le CA récurrent',

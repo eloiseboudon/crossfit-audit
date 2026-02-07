@@ -58,6 +58,16 @@ class ApiError extends Error {
   static notFound(message = 'Ressource non trouvée') {
     return new ApiError(404, message);
   }
+
+  /**
+   * Crée une erreur 409 Conflict.
+   *
+   * @param {string} [message='Conflit'] - Message d'erreur.
+   * @returns {ApiError} Instance d'erreur 409.
+   */
+  static conflict(message = 'Conflit') {
+    return new ApiError(409, message);
+  }
 }
 
 module.exports = ApiError;

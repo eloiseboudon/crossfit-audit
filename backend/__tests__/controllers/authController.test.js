@@ -41,7 +41,7 @@ describe('Auth Controller', () => {
         });
 
       expect(res.status).toBe(409);
-      expect(res.body.error).toBe('Email déjà utilisé');
+      expect(res.body.message).toBe('Email déjà utilisé');
     });
 
     it('devrait valider le mot de passe (min 6 caractères)', async () => {
@@ -54,7 +54,7 @@ describe('Auth Controller', () => {
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toBe('Mot de passe trop court');
+      expect(res.body.message).toBe('Le mot de passe doit contenir au moins 6 caractères');
     });
 
     it('devrait rejeter si un champ requis manque', async () => {

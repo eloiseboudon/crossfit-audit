@@ -46,6 +46,27 @@ const toBoolean = (value: unknown): boolean => {
 };
 
 /**
+ * Normalise les champs booléens d'un objet retourné par l'API (SQLite renvoie 0/1).
+ *
+ * @param obj - Objet source.
+ * @param fields - Noms des propriétés à convertir en booléens.
+ * @returns Copie de l'objet avec les champs normalisés.
+ */
+const normalizeBooleans = <T>(obj: T, fields: (keyof T)[]): T => {
+  const result = { ...obj };
+  for (const field of fields) {
+    (result as Record<string, unknown>)[field as string] = toBoolean(result[field]);
+  }
+  return result;
+};
+
+const COMPETITOR_BOOL_FIELDS: (keyof Competitor)[] = [
+  'has_hyrox', 'has_weightlifting', 'has_gymnastics', 'has_childcare', 'has_nutrition', 'is_active',
+];
+const GYM_OFFER_BOOL_FIELDS: (keyof GymOffer)[] = ['is_active', 'is_featured'];
+const MARKET_ZONE_BOOL_FIELDS: (keyof MarketZone)[] = ['is_active'];
+
+/**
  * Effectue une requête HTTP vers l'API backend.
  *
  * @param path - Chemin d'API relatif.
@@ -337,10 +358,7 @@ export async function updateMarketBenchmark(
  */
 export async function listMarketZones(): Promise<MarketZone[]> {
   const payload = await request<ApiResponse<MarketZone[]>>('/market-zones');
-  return (payload.data ?? []).map((zone) => ({
-    ...zone,
-    is_active: toBoolean(zone.is_active),
-  }));
+  return (payload.data ?? []).map((zone) => normalizeBooleans(zone, MARKET_ZONE_BOOL_FIELDS));
 }
 
 /**
@@ -358,10 +376,7 @@ export async function createMarketZone(payload: Partial<MarketZone>): Promise<Ma
   if (!response.data) {
     throw new Error('Zone not created');
   }
-  return {
-    ...response.data,
-    is_active: toBoolean(response.data.is_active),
-  };
+  return normalizeBooleans(response.data, MARKET_ZONE_BOOL_FIELDS);
 }
 
 /**
@@ -380,10 +395,7 @@ export async function updateMarketZone(zoneId: string, payload: Partial<MarketZo
   if (!response.data) {
     throw new Error('Zone not updated');
   }
-  return {
-    ...response.data,
-    is_active: toBoolean(response.data.is_active),
-  };
+  return normalizeBooleans(response.data, MARKET_ZONE_BOOL_FIELDS);
 }
 
 /**
@@ -406,15 +418,7 @@ export async function deleteMarketZone(zoneId: string): Promise<void> {
  */
 export async function listCompetitors(gymId: string): Promise<Competitor[]> {
   const payload = await request<ApiResponse<Competitor[]>>(`/competitors?gym_id=${gymId}`);
-  return (payload.data ?? []).map((competitor) => ({
-    ...competitor,
-    has_hyrox: toBoolean(competitor.has_hyrox),
-    has_weightlifting: toBoolean(competitor.has_weightlifting),
-    has_gymnastics: toBoolean(competitor.has_gymnastics),
-    has_childcare: toBoolean(competitor.has_childcare),
-    has_nutrition: toBoolean(competitor.has_nutrition),
-    is_active: toBoolean(competitor.is_active),
-  }));
+  return (payload.data ?? []).map((c) => normalizeBooleans(c, COMPETITOR_BOOL_FIELDS));
 }
 
 /**
@@ -432,15 +436,7 @@ export async function createCompetitor(payload: Partial<Competitor>): Promise<Co
   if (!response.data) {
     throw new Error('Competitor not created');
   }
-  return {
-    ...response.data,
-    has_hyrox: toBoolean(response.data.has_hyrox),
-    has_weightlifting: toBoolean(response.data.has_weightlifting),
-    has_gymnastics: toBoolean(response.data.has_gymnastics),
-    has_childcare: toBoolean(response.data.has_childcare),
-    has_nutrition: toBoolean(response.data.has_nutrition),
-    is_active: toBoolean(response.data.is_active),
-  };
+  return normalizeBooleans(response.data, COMPETITOR_BOOL_FIELDS);
 }
 
 /**
@@ -459,15 +455,7 @@ export async function updateCompetitor(competitorId: string, payload: Partial<Co
   if (!response.data) {
     throw new Error('Competitor not updated');
   }
-  return {
-    ...response.data,
-    has_hyrox: toBoolean(response.data.has_hyrox),
-    has_weightlifting: toBoolean(response.data.has_weightlifting),
-    has_gymnastics: toBoolean(response.data.has_gymnastics),
-    has_childcare: toBoolean(response.data.has_childcare),
-    has_nutrition: toBoolean(response.data.has_nutrition),
-    is_active: toBoolean(response.data.is_active),
-  };
+  return normalizeBooleans(response.data, COMPETITOR_BOOL_FIELDS);
 }
 
 /**
@@ -490,11 +478,7 @@ export async function deleteCompetitor(competitorId: string): Promise<void> {
  */
 export async function listGymOffers(gymId: string): Promise<GymOffer[]> {
   const payload = await request<ApiResponse<GymOffer[]>>(`/gym-offers?gym_id=${gymId}&include_inactive=1`);
-  return (payload.data ?? []).map((offer) => ({
-    ...offer,
-    is_active: toBoolean(offer.is_active),
-    is_featured: toBoolean(offer.is_featured),
-  }));
+  return (payload.data ?? []).map((offer) => normalizeBooleans(offer, GYM_OFFER_BOOL_FIELDS));
 }
 
 /**
@@ -512,11 +496,7 @@ export async function createGymOffer(payload: Partial<GymOffer>): Promise<GymOff
   if (!response.data) {
     throw new Error('Offer not created');
   }
-  return {
-    ...response.data,
-    is_active: toBoolean(response.data.is_active),
-    is_featured: toBoolean(response.data.is_featured),
-  };
+  return normalizeBooleans(response.data, GYM_OFFER_BOOL_FIELDS);
 }
 
 /**
@@ -535,11 +515,7 @@ export async function updateGymOffer(offerId: string, payload: Partial<GymOffer>
   if (!response.data) {
     throw new Error('Offer not updated');
   }
-  return {
-    ...response.data,
-    is_active: toBoolean(response.data.is_active),
-    is_featured: toBoolean(response.data.is_featured),
-  };
+  return normalizeBooleans(response.data, GYM_OFFER_BOOL_FIELDS);
 }
 
 /**
