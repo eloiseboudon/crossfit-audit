@@ -22,6 +22,14 @@ dist-ssr
 *.sw?
 .env
 backend/data/*.db
+backend/database/test.db
+backend/database/test.db-shm
+backend/database/test.db-wal
+backend/database/*.db-shm
+backend/database/*.db-wal
+
+*.db-shm
+*.db-wal
 
 
 TODO.md
