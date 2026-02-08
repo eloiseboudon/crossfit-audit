@@ -3,7 +3,7 @@ import { getAnswerValue, extractFinanceData, extractMembresData, extractOperatio
 import type { Answer } from '../../lib/types';
 
 function makeAnswer(blockCode: string, questionCode: string, value: number): Answer {
-  return { id: '1', audit_id: 'a1', block_code: blockCode, question_code: questionCode, value };
+  return { id: '1', audit_id: 'a1', block_code: blockCode, question_code: questionCode, value, created_at: '', updated_at: '' };
 }
 
 describe('getAnswerValue', () => {

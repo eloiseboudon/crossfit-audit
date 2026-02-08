@@ -26,7 +26,7 @@ describe('useAudits', () => {
   });
 
   it('charge les audits et met à jour le state', async () => {
-    const audits = [{ id: '1', gym_id: 'g1', status: 'draft' } as Audit];
+    const audits = [{ id: '1', gym_id: 'g1', status: 'draft' } as unknown as Audit];
     listAudits.mockResolvedValue(audits);
 
     const { result } = renderHook(() => useAudits());
@@ -54,7 +54,7 @@ describe('useAudits', () => {
   });
 
   it('ajoute un audit lors de la création', async () => {
-    const created = { id: '2', gym_id: 'g1', status: 'draft' } as Audit;
+    const created = { id: '2', gym_id: 'g1', status: 'draft' } as unknown as Audit;
     createAudit.mockResolvedValue(created);
 
     const { result } = renderHook(() => useAudits());
@@ -67,8 +67,8 @@ describe('useAudits', () => {
   });
 
   it('met à jour un audit existant', async () => {
-    const initial = { id: '1', gym_id: 'g1', status: 'draft' } as Audit;
-    const updated = { id: '1', gym_id: 'g1', status: 'completed' } as Audit;
+    const initial = { id: '1', gym_id: 'g1', status: 'draft' } as unknown as Audit;
+    const updated = { id: '1', gym_id: 'g1', status: 'completed' } as unknown as Audit;
     createAudit.mockResolvedValue(initial);
     updateAudit.mockResolvedValue(updated);
 
@@ -79,14 +79,14 @@ describe('useAudits', () => {
     });
 
     await act(async () => {
-      await result.current.updateAudit('1', { status: 'completed' });
+      await result.current.updateAudit('1', { status: 'completed' as any });
     });
 
     expect(result.current.audits).toEqual([updated]);
   });
 
   it('supprime un audit du state', async () => {
-    const initial = { id: '1', gym_id: 'g1', status: 'draft' } as Audit;
+    const initial = { id: '1', gym_id: 'g1', status: 'draft' } as unknown as Audit;
     createAudit.mockResolvedValue(initial);
     deleteAudit.mockResolvedValue(undefined);
 

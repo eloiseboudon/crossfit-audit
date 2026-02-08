@@ -165,6 +165,51 @@ export interface Recommendation {
 /**
  * Benchmark de marché utilisé pour les comparaisons.
  */
+/**
+ * KPIs calculés à partir des réponses d'un audit.
+ */
+export interface CalculatedKPIs {
+  ca_total_12m: number;
+  ca_recurrent_12m: number;
+  pourcent_recurrent: number;
+  arpm: number;
+  loyer_ratio: number;
+  ca_par_m2: number;
+  masse_salariale_ratio: number;
+  ebitda_estime: number;
+  marge_ebitda: number;
+  churn_mensuel: number;
+  conversion_essai: number;
+  occupation_moyenne: number;
+  loyer_net_annuel: number;
+}
+
+/**
+ * Score par pilier d'un audit.
+ */
+export interface PillarScore {
+  code: string;
+  name: string;
+  score: number;
+  weight: number;
+  details: Record<string, any>;
+}
+
+/**
+ * Recommandation générée par le moteur de calcul.
+ */
+export interface RecommendationOutput {
+  rec_code: string;
+  title: string;
+  description: string;
+  priority: string;
+  expected_impact_eur: number;
+  effort_level: string;
+  confidence: string;
+  category: string;
+  computed_at: string;
+}
+
 export interface MarketBenchmark {
   id: string;
   benchmark_code: string;

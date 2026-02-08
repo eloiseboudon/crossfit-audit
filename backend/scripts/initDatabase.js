@@ -1,9 +1,23 @@
+/**
+ * @module scripts/initDatabase
+ * @description Script d'initialisation de la base de données SQLite.
+ * Crée toutes les tables, index et insère les benchmarks par défaut.
+ * Peut être exécuté directement via `node scripts/initDatabase.js`
+ * ou importé comme module pour un usage programmatique.
+ */
+
 require('dotenv').config();
 const { db } = require('../config/database');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
+/**
+ * Benchmarks de marché par défaut insérés à l'initialisation.
+ * Servent de référence pour le scoring des audits.
+ *
+ * @type {{ benchmark_code: string, name: string, value: number, unit: string, description: string, category: string }[]}
+ */
 const defaultBenchmarks = [
   {
     benchmark_code: 'arpm_toulouse',
@@ -293,6 +307,13 @@ CREATE INDEX IF NOT EXISTS idx_gym_user_access_user_id ON gym_user_access(user_i
 
 const logger = require('../utils/logger');
 
+/**
+ * Initialise la base de données : crée les tables, index et insère les benchmarks par défaut.
+ *
+ * @async
+ * @returns {Promise<void>}
+ * @throws {Error} Si l'exécution du schéma SQL échoue.
+ */
 async function initDatabase() {
   logger.info('🚀 Initialisation de la base de données...');
 

@@ -158,13 +158,13 @@ export default function MarketZonesPage({ onBack }: MarketZonesPageProps) {
 
         await updateMarketZone(editingZone.id, {
           name: formData.name.trim(),
-          description: formData.description.trim() || null,
+          description: formData.description.trim() || undefined,
           price_level: formData.price_level,
           avg_subscription_min: formData.avg_subscription_min,
           avg_subscription_max: formData.avg_subscription_max,
           geographic_scope: formData.geographic_scope,
           population_density: formData.population_density,
-          avg_household_income_range: formData.avg_household_income_range.trim() || null,
+          avg_household_income_range: formData.avg_household_income_range.trim() || undefined,
           updated_at: new Date().toISOString()
         });
 
@@ -175,13 +175,13 @@ export default function MarketZonesPage({ onBack }: MarketZonesPageProps) {
 
         await createMarketZone({
           name: formData.name.trim(),
-          description: formData.description.trim() || null,
+          description: formData.description.trim() || undefined,
           price_level: formData.price_level,
           avg_subscription_min: formData.avg_subscription_min,
           avg_subscription_max: formData.avg_subscription_max,
           geographic_scope: formData.geographic_scope,
           population_density: formData.population_density,
-          avg_household_income_range: formData.avg_household_income_range.trim() || null,
+          avg_household_income_range: formData.avg_household_income_range.trim() || undefined,
           is_active: true
         });
 

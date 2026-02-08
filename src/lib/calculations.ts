@@ -1,4 +1,4 @@
-import { Answer, CalculatedKPIs, PillarScore, RecommendationOutput } from './types';
+import type { Answer, CalculatedKPIs, PillarScore, RecommendationOutput } from './types';
 import { CONFIDENCE_LEVELS, EFFORT_LEVELS, RECOMMENDATION_PRIORITY } from './constants';
 import { extractAllData } from './extractData';
 
@@ -257,7 +257,7 @@ export function generateRecommendations(
       title: 'Améliorer la conversion essais',
       description: `Votre taux de conversion est de ${kpis.conversion_essai.toFixed(0)}% (cible: > 50%). Optimisez votre processus d'essai et formation du personnel commercial.`,
       priority: RECOMMENDATION_PRIORITY.MEDIUM,
-      expected_impact_eur: data.operations.nb_essais_gratuits_mois * 12 * (50 - kpis.conversion_essai) / 100 * kpis.arpm * 12 * 0.5,
+      expected_impact_eur: data.operations.essais_gratuits_mois * 12 * (50 - kpis.conversion_essai) / 100 * kpis.arpm * 12 * 0.5,
       effort_level: EFFORT_LEVELS.MEDIUM,
       confidence: CONFIDENCE_LEVELS.MEDIUM,
       category: 'commercial',
@@ -294,7 +294,7 @@ export function generateRecommendations(
   }
 
   recommendations.sort((a, b) => {
-    const priorityOrder = {
+    const priorityOrder: Record<string, number> = {
       [RECOMMENDATION_PRIORITY.HIGH]: 1,
       [RECOMMENDATION_PRIORITY.MEDIUM]: 2,
       [RECOMMENDATION_PRIORITY.LOW]: 3
@@ -308,7 +308,7 @@ export function generateRecommendations(
   return recommendations.slice(0, 6);
 }
 
-export function calculateAdvancedFinancialKPIs(kpis: CalculatedKPIs, answers: Answer[]) {
+export function calculateAdvancedFinancialKPIs(_kpis: CalculatedKPIs, answers: Answer[]) {
   const data = extractAllData(answers);
 
   return {

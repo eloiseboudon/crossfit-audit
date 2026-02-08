@@ -27,7 +27,7 @@ import {
 } from '../lib/constants';
 import { essentialQuestionItems } from '../lib/essentialQuestions';
 import { getAnswerValue } from '../lib/extractData';
-import { Answer, Audit } from '../lib/types';
+import { Answer, Audit, ConfidenceLevel, EffortLevel, RecommendationPriority } from '../lib/types';
 
 /**
  * Props du composant Dashboard
@@ -59,7 +59,7 @@ type TabType = 'overview' | 'finance' | 'clientele' | 'operations' | 'rh';
 export default function Dashboard({ auditId, onBack }: DashboardProps) {
   // État principal
   const [audit, setAudit] = useState<Audit | null>(null);
-  const [answers, setAnswers] = useState<Answer[]>([]);
+  const [_answers, setAnswers] = useState<Answer[]>([]);
   const [loading, setLoading] = useState(true);
   const [calculating, setCalculating] = useState(false);
 
@@ -225,10 +225,10 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
         rec_code: rec.rec_code,
         title: rec.title,
         description: rec.description,
-        priority: rec.priority,
+        priority: rec.priority as RecommendationPriority,
         expected_impact_eur: rec.expected_impact_eur,
-        effort_level: rec.effort_level,
-        confidence: rec.confidence,
+        effort_level: rec.effort_level as EffortLevel,
+        confidence: rec.confidence as ConfidenceLevel,
         category: rec.category,
         computed_at: new Date().toISOString()
       }));
@@ -904,7 +904,7 @@ function OverviewTab({
 // ONGLET 2: FINANCE
 // ============================================================================
 
-function FinanceTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any) {
+function FinanceTab({ kpis: _kpis, advancedKPIs, formatNumber, formatCurrency }: any) {
   if (!advancedKPIs) {
     return (
       <div className="bg-white rounded-card shadow-card border border-tulip-beige/30 p-8">
@@ -1105,7 +1105,7 @@ function FinanceTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any) {
 // ONGLET 3: CLIENTÈLE
 // ============================================================================
 
-function ClienteleTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any) {
+function ClienteleTab({ kpis: _kpis, advancedKPIs, formatNumber, formatCurrency }: any) {
   if (!advancedKPIs) {
     return (
       <div className="bg-white rounded-card shadow-card border border-tulip-beige/30 p-8">
@@ -1322,7 +1322,7 @@ function ClienteleTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any)
 // ONGLET 4: OPÉRATIONS
 // ============================================================================
 
-function OperationsTab({ kpis, advancedKPIs, formatNumber, formatCurrency }: any) {
+function OperationsTab({ kpis: _kpis, advancedKPIs, formatNumber, formatCurrency }: any) {
   if (!advancedKPIs) {
     return (
       <div className="bg-white rounded-card shadow-card border border-tulip-beige/30 p-8">
