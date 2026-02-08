@@ -20,7 +20,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
   const [showIntro, setShowIntro] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saveTimeoutRef] = useState<Record<string, NodeJS.Timeout>>({});
+  const [saveTimeoutRef] = useState<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
     if (auditId) {
