@@ -5,6 +5,7 @@ import CompetitorsPage from './pages/CompetitorsPage';
 import Dashboard from './pages/Dashboard';
 import DataTablesPage from './pages/DataTablesPage';
 import GymForm from './pages/GymForm';
+import VersionBadge from './components/VersionBadge';
 import HomePage from './pages/HomePage';
 import MarketZonesPage from './pages/MarketZonesPage';
 import OffersPage from './pages/OffersPage';
@@ -173,6 +174,8 @@ export default function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {renderView()}
       </main>
+
+      <VersionBadge />
     </div>
   );
 }

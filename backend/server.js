@@ -14,6 +14,8 @@ const rateLimit = require('express-rate-limit');
 
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 const { initDatabase } = require('./scripts/initDatabase');
+const { dbGet } = require('./config/database');
+const backendPkg = require('./package.json');
 
 // Import des routes
 const authRoutes = require('./routes/auth');
@@ -80,6 +82,20 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV
   });
+});
+
+// Version
+app.get('/api/version', (req, res) => {
+  let dbVersion = null;
+  try {
+    const row = dbGet('SELECT version, applied_at FROM schema_version ORDER BY applied_at DESC LIMIT 1');
+    if (row) {
+      dbVersion = { version: row.version, appliedAt: row.applied_at };
+    }
+  } catch {
+    // schema_version table may not exist yet
+  }
+  res.json({ app: backendPkg.version, db: dbVersion });
 });
 
 // Routes API
