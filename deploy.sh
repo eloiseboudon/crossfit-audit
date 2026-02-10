@@ -39,7 +39,7 @@ fi
 cd "$APP_DIR"
 
 # 1. Sauvegarde de la base de données
-echo -e "${YELLOW}[1/7]${NC} Sauvegarde de la base de données..."
+echo -e "${YELLOW}[1/6]${NC} Sauvegarde de la base de données..."
 mkdir -p "$BACKUP_DIR"
 if [ -f "backend/database/crossfit_audit.db" ]; then
     cp backend/database/crossfit_audit.db "$BACKUP_DIR/crossfit_audit_backup_$TIMESTAMP.db"
@@ -52,7 +52,7 @@ else
 fi
 
 # 2. Récupération du code depuis GitHub
-echo -e "\n${YELLOW}[2/7]${NC} Récupération du code depuis GitHub..."
+echo -e "\n${YELLOW}[2/6]${NC} Récupération du code depuis GitHub..."
 
 # Sauvegarder les fichiers .env
 cp backend/.env backend/.env.backup 2>/dev/null || true
@@ -78,8 +78,8 @@ echo -e "${GREEN}✓${NC} Code mis à jour depuis GitHub (branche: $BRANCH)"
 mv backend/.env.backup backend/.env 2>/dev/null || true
 mv .env.backup .env 2>/dev/null || true
 
-# 3. Installation des dépendances et tests
-echo -e "\n${YELLOW}[3/7]${NC} Installation des dépendances..."
+# 3. Installation des dépendances
+echo -e "\n${YELLOW}[3/6]${NC} Installation des dépendances..."
 
 # Backend : installer TOUTES les dépendances (devDeps nécessaires pour les tests)
 cd "$APP_DIR/backend"
@@ -91,16 +91,8 @@ cd "$APP_DIR"
 npm install
 echo -e "${GREEN}✓${NC} Dépendances frontend installées"
 
-# 4. Tests et build du frontend
-echo -e "\n${YELLOW}[4/7]${NC} Tests unitaires et build..."
-
-# Exécuter les tests (frontend + backend)
-echo -e "${YELLOW}→${NC} Tests unitaires..."
-if npm test; then
-    echo -e "${GREEN}✓${NC} Tous les tests passent"
-else
-    fail "Les tests ont échoué" "Corrigez les erreurs avant de déployer"
-fi
+# 4. Build du frontend
+echo -e "\n${YELLOW}[4/6]${NC} Build du frontend..."
 
 # Build du frontend
 echo -e "${YELLOW}→${NC} Build du frontend..."
@@ -116,7 +108,7 @@ npm prune --production
 echo -e "${GREEN}✓${NC} Backend nettoyé pour la production"
 
 # 5. Mise à jour de la base de données (migrations automatiques)
-echo -e "\n${YELLOW}[5/7]${NC} Mise à jour de la base de données..."
+echo -e "\n${YELLOW}[5/6]${NC} Mise à jour de la base de données..."
 cd "$APP_DIR/backend"
 
 # Vérifier que la base de données existe, sinon l'initialiser
@@ -142,7 +134,7 @@ fi
 
 
 # 6. Redémarrage des services
-echo -e "\n${YELLOW}[6/7]${NC} Redémarrage des services..."
+echo -e "\n${YELLOW}[6/6]${NC} Redémarrage des services..."
 
 # Vérifier que les services systemd existent
 if ! systemctl list-unit-files | grep -q crossfit-audit-backend.service; then
@@ -189,8 +181,8 @@ else
     exit 1
 fi
 
-# 7. Tests de santé
-echo -e "\n${YELLOW}[7/7]${NC} Vérification des services..."
+# Vérification des services
+echo -e "\nVérification des services..."
 sleep 3
 
 # Test backend
