@@ -20,7 +20,7 @@ const {
   saveRecommendations,
   getRecommendations
 } = require('../controllers/auditController');
-const { auth, optionalAuth } = require('../middleware/auth');
+const { optionalAuth } = require('../middleware/auth');
 
 // Lecture possible sans authentification
 router.use(optionalAuth);
@@ -32,8 +32,8 @@ router.route('/')
 
 router.route('/:id')
   .get(getAudit)
-  .put(auth, updateAudit)
-  .delete(auth, deleteAudit);
+  .put(updateAudit)
+  .delete(deleteAudit);
 
 // Audit complet avec toutes les données
 router.get('/:id/complete', getCompleteAudit);
@@ -41,18 +41,18 @@ router.get('/:id/complete', getCompleteAudit);
 // Gestion des réponses
 router.route('/:id/answers')
   .get(getAnswers)
-  .post(auth, saveAnswers);
+  .post(saveAnswers);
 
 // Gestion des KPIs
-router.post('/:id/kpis', auth, saveKPIs);
+router.post('/:id/kpis', saveKPIs);
 
 // Gestion des scores
-router.post('/:id/scores', auth, saveScores);
+router.post('/:id/scores', saveScores);
 router.get('/:id/global-score', getGlobalScore);
 
 // Gestion des recommandations
 router.route('/:id/recommendations')
   .get(getRecommendations)
-  .post(auth, saveRecommendations);
+  .post(saveRecommendations);
 
 module.exports = router;

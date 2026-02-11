@@ -82,12 +82,14 @@ describe('Gym Controller', () => {
       expect(res.body.data.user_id).toBe(userId);
     });
 
-    it('devrait rejeter sans authentification', async () => {
+    it('devrait créer une salle sans authentification', async () => {
       const res = await request(app)
         .post('/api/gyms')
         .send({ name: 'Test' });
 
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(201);
+      expect(res.body.data.name).toBe('Test');
+      expect(res.body.data.user_id).toBeNull();
     });
   });
 

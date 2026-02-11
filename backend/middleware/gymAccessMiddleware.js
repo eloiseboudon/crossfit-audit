@@ -24,13 +24,8 @@ const getGymAccess = async ({ gymId, user, write = false }) => {
     throw ApiError.forbidden('Vous n\'avez pas accès à cette salle');
   }
 
-  if (write) {
-    if (!user) {
-      throw ApiError.unauthorized('Token manquant');
-    }
-    if (!access.canWrite) {
-      throw ApiError.forbidden('Vous ne pouvez pas modifier cette salle');
-    }
+  if (write && !access.canWrite) {
+    throw ApiError.forbidden('Vous ne pouvez pas modifier cette salle');
   }
 
   return access;

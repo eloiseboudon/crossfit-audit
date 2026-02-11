@@ -10,15 +10,15 @@ const {
   createMarketBenchmark,
   updateMarketBenchmark
 } = require('../controllers/benchmarkController');
-const { auth, optionalAuth } = require('../middleware/auth');
+const { optionalAuth } = require('../middleware/auth');
 
 router.use(optionalAuth);
 
 router.route('/')
   .get(getMarketBenchmarks)
-  .post(auth, createMarketBenchmark);
+  .post(createMarketBenchmark);
 
 router.route('/:id')
-  .put(auth, updateMarketBenchmark);
+  .put(updateMarketBenchmark);
 
 module.exports = router;

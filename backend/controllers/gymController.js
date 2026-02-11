@@ -45,7 +45,7 @@ const getGym = asyncHandler(async (req, res) => {
  * @access Private
  */
 const createGym = asyncHandler(async (req, res) => {
-  const gym = await Gym.create(req.body, req.user.id);
+  const gym = await Gym.create(req.body, req.user?.id || null);
 
   res.status(201).json({
     success: true,
