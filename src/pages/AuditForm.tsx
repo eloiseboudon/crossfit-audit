@@ -506,14 +506,23 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
             ))}
           </div>
 
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className={`text-sm ${COLOR_CLASSES.textPrimary70} space-y-1`}>
-              <p>Vous pouvez commencer l’audit maintenant ou calculer les ratios clés dès que ces réponses sont saisies.</p>
-              {missingEssentials.length > 0 && (
-                <p className={COLOR_CLASSES.textWarning}>
-                  Champs essentiels manquants : {missingEssentials.join(', ')}.
+          {missingEssentials.length > 0 && (
+            <div className="mt-6 bg-amber-50 border border-amber-300 rounded-lg p-4 flex items-start gap-3">
+              <span className="text-amber-500 text-xl leading-none mt-0.5">&#9888;</span>
+              <div>
+                <p className="font-semibold text-amber-800">
+                  {missingEssentials.length} champ{missingEssentials.length > 1 ? 's' : ''} essentiel{missingEssentials.length > 1 ? 's' : ''} manquant{missingEssentials.length > 1 ? 's' : ''}
                 </p>
-              )}
+                <p className="text-sm text-amber-700 mt-1">
+                  Renseignez ces champs pour pouvoir calculer les ratios : {missingEssentials.join(', ')}.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className={`text-sm ${COLOR_CLASSES.textPrimary70}`}>
+              <p>Vous pouvez commencer l'audit maintenant ou calculer les ratios clés dès que ces réponses sont saisies.</p>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
@@ -523,9 +532,18 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
                 Commencer le questionnaire
               </button>
               <button
-                onClick={() => auditId && onViewDashboard(auditId)}
-                disabled={missingEssentials.length > 0}
-                className={`px-6 py-3 ${COLOR_CLASSES.bgSecondary} ${COLOR_CLASSES.textPrimary} rounded-lg ${COLOR_CLASSES.hoverBgSecondaryDark} transition-all shadow-md font-semibold disabled:opacity-50 disabled:cursor-not-allowed`}
+                onClick={() => {
+                  if (missingEssentials.length > 0) {
+                    alert(`Impossible de calculer les ratios.\n\n${missingEssentials.length} champ(s) essentiel(s) manquant(s) :\n- ${missingEssentials.join('\n- ')}`);
+                    return;
+                  }
+                  if (auditId) onViewDashboard(auditId);
+                }}
+                className={`px-6 py-3 ${COLOR_CLASSES.bgSecondary} ${COLOR_CLASSES.textPrimary} rounded-lg transition-all shadow-md font-semibold ${
+                  missingEssentials.length > 0
+                    ? 'opacity-50 cursor-not-allowed'
+                    : `${COLOR_CLASSES.hoverBgSecondaryDark}`
+                }`}
               >
                 Calculer les ratios clés
               </button>
@@ -623,9 +641,19 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
             )}
             {audit.status !== AuditStatus.COMPLETED && (
               <button
-                onClick={calculateAndFinalize}
-                disabled={saving || audit.completion_percentage < 50}
-                className={`flex items-center space-x-2 px-5 py-2.5 ${COLOR_CLASSES.bgSecondary} ${COLOR_CLASSES.textPrimary} rounded-lg ${COLOR_CLASSES.hoverBgSecondaryDark} transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md font-semibold`}
+                onClick={() => {
+                  if (saving) return;
+                  if (audit.completion_percentage < 50) {
+                    alert(`Impossible de finaliser l'audit.\n\nLe questionnaire doit être rempli à au moins 50% pour pouvoir calculer les ratios.\nProgression actuelle : ${Math.round(audit.completion_percentage)}%`);
+                    return;
+                  }
+                  calculateAndFinalize();
+                }}
+                className={`flex items-center space-x-2 px-5 py-2.5 ${COLOR_CLASSES.bgSecondary} ${COLOR_CLASSES.textPrimary} rounded-lg transition-all shadow-md font-semibold ${
+                  saving || audit.completion_percentage < 50
+                    ? 'opacity-50 cursor-not-allowed'
+                    : `${COLOR_CLASSES.hoverBgSecondaryDark}`
+                }`}
               >
                 <Calculator className="w-5 h-5" />
                 <span className="hidden md:inline">{saving ? 'Calcul en cours...' : 'Calculer & Finaliser'}</span>
