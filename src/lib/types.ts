@@ -585,6 +585,19 @@ export interface AdvancedFinancialKPIs {
   capacite_remboursement_mois: number;        // Dettes / EBITDA mensuel (mois)
   charge_dette_mensuelle: number;             // Charge dette mensuelle (€)
 
+  // === INDICATEURS COMPLÉMENTAIRES ===
+  point_mort_mensuel_euro: number;            // Point mort mensuel (€)
+  mois_point_mort: number;                    // Mois pour atteindre le point mort
+  ratio_energie_ca_pct: number;               // Ratio énergie/CA (%)
+  ebe_euro: number;                           // EBE en euros
+  ebe_pourcent: number;                       // EBE en % du CA
+  resultat_courant_avant_impot: number;       // RCAI (€)
+  capacite_autofinancement: number;           // CAF (€)
+  ca_cartes_pct: number;                      // % CA cartes/drop-in
+  ca_pt_pct: number;                          // % CA Personal Training
+  jours_tresorerie: number;                   // Jours de trésorerie disponible
+  poids_echeances_ca_pct: number;             // Poids des échéances/CA (%)
+
   // === PERFORMANCE COMPARATIVE ===
   benchmark_marge_nette_sector_pct: number;   // Benchmark secteur marge nette (%)
   ecart_marge_vs_benchmark_pct: number;       // Écart vs benchmark (points %)
@@ -678,6 +691,13 @@ export interface AdvancedClientKPIs {
   pct_membres_pt: number;                     // % membres faisant du PT
   pct_membres_nutrition: number;              // % membres avec suivi nutrition
 
+  // === INDICATEURS COMPLÉMENTAIRES ===
+  delai_conversion_moyen_jours: number;       // Délai moyen de conversion (jours)
+  taux_retention_3m_pct: number;              // Taux de rétention à 3 mois (%)
+  taux_retention_6m_pct: number;              // Taux de rétention à 6 mois (%)
+  taux_retention_12m_pct: number;             // Taux de rétention à 12 mois (%)
+  taux_penetration_premium_pct: number;       // Taux de pénétration offres premium (%)
+
   // Méta-données
   computed_at: string;
   periode_analyse: string;                    // Période d'analyse (ex: "2024-Q1")
@@ -765,6 +785,10 @@ export interface AdvancedOperationalKPIs {
   // === CONSOMMABLES & SUPPLIES ===
   cout_consommables_mois: number;             // Consommables/mois (€)
   cout_consommables_par_membre: number;       // Consommables/membre/mois (€)
+
+  // === INDICATEURS COMPLÉMENTAIRES ===
+  cout_loyer_par_m2_mois: number;             // Coût loyer par m² par mois (€/m²/mois)
+  rentabilite_m2_an: number;                  // Rentabilité par m² par an (€/m²/an)
 
   // Méta-données
   computed_at: string;
@@ -857,6 +881,11 @@ export interface AdvancedHRKPIs {
   utilisation_outils_com_pct: number;         // Utilisation outils comm. (%)
   score_culture_entreprise: number;           // Score culture (0-100)
   taux_cohesion_equipe_pct: number;           // Cohésion équipe (%)
+
+  // === INDICATEURS COMPLÉMENTAIRES ===
+  taux_externalisation_pct: number;           // Taux d'externalisation coaching (%)
+  nb_certifications_moyennes_par_coach: number; // Nb certifications moyennes par coach
+  taux_double_coaching_pct: number;           // Taux de séances en double coaching (%)
 
   // Méta-données
   computed_at: string;

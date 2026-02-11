@@ -16,6 +16,10 @@ import {
 } from '../lib/api';
 import {
   calculateAdvancedFinancialKPIs,
+  calculateAdvancedClientKPIs,
+  calculateAdvancedOperationalKPIs,
+  calculateAdvancedHRKPIs,
+  calculateFinancialHealthScore,
   calculateKPIs,
   calculateScores,
   generateRecommendations
@@ -66,6 +70,10 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
   // KPIs de base et avancés
   const [kpis, setKpis] = useState<any>(null);
   const [advancedFinancialKPIs, setAdvancedFinancialKPIs] = useState<any>(null);
+  const [advancedClientKPIs, setAdvancedClientKPIs] = useState<any>(null);
+  const [advancedOperationalKPIs, setAdvancedOperationalKPIs] = useState<any>(null);
+  const [advancedHRKPIs, setAdvancedHRKPIs] = useState<any>(null);
+  const [financialHealthScore, setFinancialHealthScore] = useState<any>(null);
   const [missingEssentialFields, setMissingEssentialFields] = useState<string[]>([]);
   const [keyRatios, setKeyRatios] = useState<any>(null);
 
@@ -198,6 +206,18 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
       // === KPIs AVANCÉS ===
       const advFinKPIs = calculateAdvancedFinancialKPIs(calculatedKPIs, answersData);
       setAdvancedFinancialKPIs(advFinKPIs);
+
+      const advClientKPIs = calculateAdvancedClientKPIs(answersData);
+      setAdvancedClientKPIs(advClientKPIs);
+
+      const advOpsKPIs = calculateAdvancedOperationalKPIs(answersData);
+      setAdvancedOperationalKPIs(advOpsKPIs);
+
+      const advHRKPIs = calculateAdvancedHRKPIs(answersData);
+      setAdvancedHRKPIs(advHRKPIs);
+
+      const healthScore = calculateFinancialHealthScore(advFinKPIs);
+      setFinancialHealthScore(healthScore);
 
       // === SCORES ET RECOMMANDATIONS ===
       const { scores: calculatedScores, globalScore } = calculateScores(calculatedKPIs);
@@ -367,6 +387,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
             scenarios={scenarios}
             keyRatios={keyRatios}
             missingEssentialFields={missingEssentialFields}
+            financialHealthScore={financialHealthScore}
             formatNumber={formatNumber}
             formatCurrency={formatCurrency}
             getPriorityColor={getPriorityColor}
@@ -386,7 +407,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
         {activeTab === 'clientele' && (
           <ClienteleTab
             kpis={kpis}
-            advancedKPIs={null}
+            advancedKPIs={advancedClientKPIs}
             formatNumber={formatNumber}
             formatCurrency={formatCurrency}
           />
@@ -395,7 +416,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
         {activeTab === 'operations' && (
           <OperationsTab
             kpis={kpis}
-            advancedKPIs={null}
+            advancedKPIs={advancedOperationalKPIs}
             formatNumber={formatNumber}
             formatCurrency={formatCurrency}
           />
@@ -403,7 +424,7 @@ export default function Dashboard({ auditId, onBack }: DashboardProps) {
 
         {activeTab === 'rh' && (
           <RHTab
-            advancedKPIs={null}
+            advancedKPIs={advancedHRKPIs}
             formatNumber={formatNumber}
             formatCurrency={formatCurrency}
           />
@@ -609,6 +630,7 @@ function OverviewTab({
   scenarios,
   keyRatios,
   missingEssentialFields,
+  financialHealthScore,
   formatNumber,
   formatCurrency,
   getPriorityColor,
@@ -707,6 +729,51 @@ function OverviewTab({
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Score Santé Financière */}
+      {financialHealthScore && (
+        <div className="bg-white rounded-card shadow-card border border-tulip-beige/30 p-4 md:p-6">
+          <h2 className="text-xl font-bold text-tulip-blue mb-4">Score de Santé Financière</h2>
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="shrink-0">
+              <div className={`text-5xl font-bold ${
+                financialHealthScore.score >= 70 ? 'text-tulip-green-success' :
+                financialHealthScore.score >= 50 ? 'text-orange-500' : 'text-tulip-red'
+              }`}>
+                {formatNumber(financialHealthScore.score, 0)}
+                <span className="text-lg text-tulip-blue/50 font-medium">/100</span>
+              </div>
+              <p className="text-sm text-tulip-blue/70 mt-1">
+                {financialHealthScore.score >= 70 ? 'Bonne santé' :
+                  financialHealthScore.score >= 50 ? 'Attention requise' : 'Situation critique'}
+              </p>
+            </div>
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+              <div className="p-4 bg-tulip-beige/20 rounded-card">
+                <p className="text-xs text-tulip-blue/70 uppercase mb-1">Rentabilité</p>
+                <p className="text-xl font-bold text-tulip-blue">{formatNumber(financialHealthScore.rentabilite.score, 0)}/40</p>
+                <div className="w-full bg-tulip-beige rounded-full h-2 mt-2">
+                  <div className="bg-gradient-to-r from-tulip-green to-tulip-green-success h-2 rounded-full" style={{ width: `${(financialHealthScore.rentabilite.score / 40) * 100}%` }} />
+                </div>
+              </div>
+              <div className="p-4 bg-tulip-beige/20 rounded-card">
+                <p className="text-xs text-tulip-blue/70 uppercase mb-1">Trésorerie</p>
+                <p className="text-xl font-bold text-tulip-blue">{formatNumber(financialHealthScore.tresorerie.score, 0)}/30</p>
+                <div className="w-full bg-tulip-beige rounded-full h-2 mt-2">
+                  <div className="bg-gradient-to-r from-tulip-green to-tulip-green-success h-2 rounded-full" style={{ width: `${(financialHealthScore.tresorerie.score / 30) * 100}%` }} />
+                </div>
+              </div>
+              <div className="p-4 bg-tulip-beige/20 rounded-card">
+                <p className="text-xs text-tulip-blue/70 uppercase mb-1">Structure</p>
+                <p className="text-xl font-bold text-tulip-blue">{formatNumber(financialHealthScore.structure.score, 0)}/30</p>
+                <div className="w-full bg-tulip-beige rounded-full h-2 mt-2">
+                  <div className="bg-gradient-to-r from-tulip-green to-tulip-green-success h-2 rounded-full" style={{ width: `${(financialHealthScore.structure.score / 30) * 100}%` }} />
+                </div>
+              </div>
             </div>
           </div>
         </div>

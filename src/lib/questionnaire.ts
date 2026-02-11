@@ -238,6 +238,139 @@ export const questionnaireBlocks: QuestionBlock[] = [
         type: 'number',
         unit: 'ans',
         help_text: 'Estimation de l\'âge moyen des équipements'
+      },
+
+      // Inventaire matériel détaillé (22 questions)
+      // Barres
+      {
+        code: 'nb_barres_olympiques',
+        label: 'Nombre de barres olympiques (20kg)',
+        type: 'number'
+      },
+      {
+        code: 'nb_barres_femmes',
+        label: 'Nombre de barres femmes (15kg)',
+        type: 'number'
+      },
+      {
+        code: 'nb_barres_techniques',
+        label: 'Nombre de barres techniques (training)',
+        type: 'number'
+      },
+      // Poids
+      {
+        code: 'poids_total_disques_kg',
+        label: 'Poids total des disques',
+        type: 'number',
+        unit: 'kg',
+        help_text: 'Total bumpers + disques acier'
+      },
+      // Structure
+      {
+        code: 'nb_racks',
+        label: 'Nombre de racks/squat stands',
+        type: 'number'
+      },
+      {
+        code: 'nb_rigs',
+        label: 'Nombre de rigs',
+        type: 'number'
+      },
+      {
+        code: 'nb_pull_up_bars',
+        label: 'Nombre de postes pull-up',
+        type: 'number'
+      },
+      {
+        code: 'nb_anneaux',
+        label: 'Nombre de paires d\'anneaux',
+        type: 'number'
+      },
+      // Cardio
+      {
+        code: 'nb_rowers',
+        label: 'Nombre de rameurs (rowers)',
+        type: 'number'
+      },
+      {
+        code: 'nb_assault_bikes',
+        label: 'Nombre d\'assault bikes',
+        type: 'number'
+      },
+      {
+        code: 'nb_ski_ergs',
+        label: 'Nombre de ski ergs',
+        type: 'number'
+      },
+      {
+        code: 'nb_echo_bikes',
+        label: 'Nombre d\'echo bikes',
+        type: 'number'
+      },
+      {
+        code: 'nb_tapis_course',
+        label: 'Nombre de tapis de course',
+        type: 'number'
+      },
+      // Accessoires
+      {
+        code: 'nb_wall_balls',
+        label: 'Nombre de wall balls',
+        type: 'number'
+      },
+      {
+        code: 'nb_kettlebells',
+        label: 'Nombre de kettlebells',
+        type: 'number'
+      },
+      {
+        code: 'nb_dumbbells',
+        label: 'Nombre de paires de dumbbells',
+        type: 'number'
+      },
+      {
+        code: 'nb_boxes',
+        label: 'Nombre de boxes (plyo)',
+        type: 'number'
+      },
+      {
+        code: 'nb_cordes',
+        label: 'Nombre de cordes à grimper',
+        type: 'number'
+      },
+      // Spécialisé
+      {
+        code: 'nb_ghd',
+        label: 'Nombre de GHD',
+        type: 'number'
+      },
+      {
+        code: 'nb_reverse_hyper',
+        label: 'Nombre de reverse hyper',
+        type: 'number'
+      },
+      {
+        code: 'nb_sleds',
+        label: 'Nombre de sleds/prowlers',
+        type: 'number'
+      },
+      {
+        code: 'nb_strongman',
+        label: 'Nombre d\'équipements strongman',
+        type: 'number',
+        help_text: 'Yoke, atlas stones, logs, etc.'
+      },
+      // État
+      {
+        code: 'etat_general_materiel',
+        label: 'État général du matériel',
+        type: 'select',
+        options: ['Excellent', 'Bon', 'Moyen', 'Mauvais']
+      },
+      {
+        code: 'date_derniere_renovation',
+        label: 'Date de la dernière rénovation/investissement majeur',
+        type: 'date'
       }
     ]
   },
@@ -797,6 +930,29 @@ export const questionnaireBlocks: QuestionBlock[] = [
         label: 'Autres charges personnel',
         type: 'number',
         unit: '€/an'
+      },
+
+      // Amortissements (3 questions)
+      {
+        code: 'amortissement_materiel',
+        label: 'Amortissement matériel',
+        type: 'number',
+        unit: '€/an',
+        help_text: 'Dotation aux amortissements du matériel sportif'
+      },
+      {
+        code: 'amortissement_travaux',
+        label: 'Amortissement travaux/aménagements',
+        type: 'number',
+        unit: '€/an',
+        help_text: 'Dotation aux amortissements des travaux d\'aménagement'
+      },
+      {
+        code: 'amortissement_vehicule',
+        label: 'Amortissement véhicule',
+        type: 'number',
+        unit: '€/an',
+        help_text: 'Dotation aux amortissements du véhicule d\'entreprise'
       }
     ]
   },
@@ -872,6 +1028,36 @@ export const questionnaireBlocks: QuestionBlock[] = [
         label: 'Autres dettes',
         type: 'number',
         unit: '€'
+      },
+
+      // Résultats financiers (4 questions)
+      {
+        code: 'resultat_exploitation',
+        label: 'Résultat d\'exploitation',
+        type: 'number',
+        unit: '€',
+        help_text: 'Résultat d\'exploitation comptable'
+      },
+      {
+        code: 'resultat_net',
+        label: 'Résultat net comptable',
+        type: 'number',
+        unit: '€',
+        help_text: 'Résultat net après impôts'
+      },
+      {
+        code: 'ebitda',
+        label: 'EBITDA (si connu)',
+        type: 'number',
+        unit: '€',
+        help_text: 'Excédent brut d\'exploitation'
+      },
+      {
+        code: 'capacite_autofinancement',
+        label: 'Capacité d\'autofinancement',
+        type: 'number',
+        unit: '€',
+        help_text: 'CAF = résultat net + amortissements + provisions'
       }
     ]
   },

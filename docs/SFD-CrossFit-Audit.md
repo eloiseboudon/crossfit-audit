@@ -5,7 +5,7 @@
 | Information | Valeur |
 |---|---|
 | **Projet** | CrossFit Audit |
-| **Version** | 1.1 |
+| **Version** | 1.2 |
 | **Date** | Février 2026 |
 | **Statut** | En production |
 | **Stack technique** | React/TypeScript (Frontend) + Node.js/Express (Backend) + SQLite + GitHub Actions CI/CD |
@@ -121,14 +121,20 @@ Réponses au questionnaire (block_code, question_code, value)
    ├── extractMembresData()      → ARPM, LTV, segmentation
    └── extractOperationsData()   → Occupation, conversion, churn
         │
-        ▼
-   calculateKPIs()               → 12 KPIs normalisés
-        │
-        ▼
-   calculateScores()             → 3 scores pilier + score global
-        │
-        ▼
-   generateRecommendations()     → 1 à 6 recommandations priorisées
+        ├──────────────────────────────────────────┐
+        ▼                                          ▼
+   calculateKPIs()  → 12 KPIs          Calculs avancés (v1.2)
+        │                               ├── calculateAdvancedFinancialKPIs()
+        ▼                               ├── calculateAdvancedClientKPIs()
+   calculateScores()                    ├── calculateAdvancedOperationalKPIs()
+        │                               ├── calculateAdvancedHRKPIs()
+        ▼                               ├── calculateFinancialHealthScore()
+   generateRecommendations()            ├── generateScheduleHeatMap()
+        │                               ├── analyzeChurnRisk()
+        ▼                               └── calculatePricingPosition()
+   1 à 6 recommandations                       │
+                                                ▼
+                                    Dashboard 5 onglets avancés
 ```
 
 ---
@@ -478,8 +484,8 @@ Le questionnaire est organisé en **5 blocs thématiques** totalisant **250 ques
 
 | Bloc | Titre | Nb questions | Code bloc |
 |------|-------|:---:|-----------|
-| 1 | Identité & Contexte | 35 | `identite_legale`, `infrastructure_detaillee`, `localisation_environnement` |
-| 2 | Analyse Financière Complète | 80 | `produits_exploitation`, `charges_exploitation`, `resultat_tresorerie` |
+| 1 | Identité & Contexte | ~57 | `identite_legale`, `infrastructure_detaillee` (dont inventaire matériel détaillé), `localisation_environnement` |
+| 2 | Analyse Financière Complète | ~87 | `produits_exploitation`, `charges_exploitation` (dont amortissements), `resultat_tresorerie` (dont résultats financiers) |
 | 3 | Adhésions & Clientèle | 50 | `structure_base`, `tarification_detaillee`, `demographie`, `acquisition_conversion`, `retention_churn`, `engagement_satisfaction` |
 | 4 | Planning & Opérations | 45 | `structure_planning`, `capacite_occupation`, `types_cours`, `evenements_communaute` |
 | 5 | RH & Coaching | 40 | `structure_equipe`, `certifications`, `formation_developpement`, `remuneration`, `organisation_communication`, `turnover_stabilite`, `qualite_coaching` |
@@ -511,7 +517,40 @@ Certaines questions ne s'affichent que si une condition est remplie :
 | Nombre en liste d'attente | Liste d'attente active = Oui | `liste_attente_active` |
 | Fréquence formations internes | Formations internes = Oui | `formations_internes_regulieres` |
 
-### 6.4 Questions essentielles (mode rapide)
+### 6.4 Questions ajoutées (v1.2)
+
+#### Inventaire matériel détaillé (Bloc 1.2 - `infrastructure_detaillee`)
+
+22 questions de type `number` + 2 questions complémentaires :
+
+| Catégorie | Questions | Type |
+|-----------|-----------|------|
+| Barres | `nb_barres_olympiques`, `nb_barres_femmes`, `nb_barres_techniques` | number |
+| Poids | `poids_total_disques_kg` | number (kg) |
+| Structure | `nb_racks`, `nb_rigs`, `nb_pull_up_bars`, `nb_anneaux` | number |
+| Cardio | `nb_rowers`, `nb_assault_bikes`, `nb_ski_ergs`, `nb_echo_bikes`, `nb_tapis_course` | number |
+| Accessoires | `nb_wall_balls`, `nb_kettlebells`, `nb_dumbbells`, `nb_boxes`, `nb_cordes` | number |
+| Spécialisé | `nb_ghd`, `nb_reverse_hyper`, `nb_sleds`, `nb_strongman` | number |
+| État | `etat_general_materiel` (excellent/bon/moyen/mauvais), `date_derniere_renovation` | select, date |
+
+#### Amortissements (Bloc 2.2 - `charges_exploitation`)
+
+| Question | Code | Type | Unité |
+|----------|------|------|-------|
+| Amortissement matériel | `amortissement_materiel` | number | €/an |
+| Amortissement travaux | `amortissement_travaux` | number | €/an |
+| Amortissement véhicule | `amortissement_vehicule` | number | €/an |
+
+#### Résultats financiers (Bloc 2.3 - `resultat_tresorerie`)
+
+| Question | Code | Type | Unité |
+|----------|------|------|-------|
+| Résultat d'exploitation | `resultat_exploitation` | number | € |
+| Résultat net | `resultat_net` | number | € |
+| EBITDA | `ebitda` | number | € |
+| Capacité d'autofinancement | `capacite_autofinancement` | number | € |
+
+### 6.5 Questions essentielles (mode rapide)
 
 Un mode rapide de **25 questions essentielles** est disponible pour un pré-diagnostic accéléré :
 
@@ -550,7 +589,7 @@ Un mode rapide de **25 questions essentielles** est disponible pour un pré-diag
 - Nombre total de coachs
 - Salaire coach temps plein
 
-### 6.5 Sauvegarde des réponses
+### 6.6 Sauvegarde des réponses
 
 **RG-ANS-03** : Les réponses sont sauvegardées individuellement (question par question) via un mécanisme de debounce à 800ms.
 **RG-ANS-04** : Le mode "bulk" permet la sauvegarde transactionnelle de plusieurs réponses simultanément.
@@ -650,6 +689,40 @@ CA_non_récurrent = (ca_cartes_10 + ca_cartes_20 + ca_seances_unitaires
 | Churn mensuel | `churn_mensuel` | % | Opérations |
 | Conversion essais | `conversion_essai` | % | Opérations |
 | Occupation moyenne | `occupation_moyenne` | % | Opérations |
+
+### 7.5 Calculs avancés (v1.2)
+
+En plus des 12 KPIs de base, le moteur de calcul propose 8 fonctions avancées pour une analyse approfondie :
+
+| Fonction | Retour | Description |
+|----------|--------|-------------|
+| `calculateAdvancedFinancialKPIs` | `AdvancedFinancialKPIs` | Analyse financière détaillée : CA par segment, marges, EBE, ratios, point mort, trésorerie, endettement |
+| `calculateAdvancedClientKPIs` | `AdvancedClientKPIs` | Analyse clientèle : base membres, CAC, LTV, ARPM, churn, rétention, segmentation, démographie |
+| `calculateAdvancedOperationalKPIs` | `AdvancedOperationalKPIs` | Analyse opérationnelle : occupation, productivité, planning, CA/m², types de cours |
+| `calculateAdvancedHRKPIs` | `AdvancedHRKPIs` | Analyse RH : structure équipe, certifications, turnover, qualité coaching |
+| `calculateFinancialHealthScore` | Score /100 | Score de santé financière : Rentabilité (40pts) + Trésorerie (30pts) + Structure (30pts) |
+| `generateScheduleHeatMap` | Matrice 6×7 | Carte de chaleur d'occupation : 6 tranches horaires × 7 jours, niveaux saturé/bon/moyen/faible |
+| `analyzeChurnRisk` | Risque + actions | Analyse du risque de churn : scoring 5 facteurs, niveau faible/modéré/élevé/critique |
+| `calculatePricingPosition` | Position P1-P4 | Positionnement prix : matrice qualité × prix avec recommandation tarifaire |
+
+### 7.6 Score de santé financière
+
+Le score de santé financière est un indicateur composite sur 100 points affiché dans l'onglet Vue d'ensemble du Dashboard :
+
+| Sous-catégorie | Points | Indicateurs |
+|----------------|:------:|-------------|
+| Rentabilité | 40 | Marge EBITDA (25 pts) + Marge nette (15 pts) |
+| Trésorerie | 30 | Jours de trésorerie (20 pts) + Ratio de liquidité (10 pts) |
+| Structure | 30 | Ratio loyer/CA (10 pts) + Ratio MS/CA (10 pts) + Ratio endettement (10 pts) |
+
+**Grille d'interprétation** :
+
+| Score | Zone | Interprétation |
+|:-----:|------|----------------|
+| 80-100 | Vert | Santé financière excellente |
+| 60-79 | Jaune | Santé financière correcte, axes d'amélioration |
+| 40-59 | Orange | Santé financière fragile, vigilance requise |
+| 0-39 | Rouge | Santé financière critique, intervention urgente |
 
 ---
 
@@ -1076,7 +1149,7 @@ L'endpoint `/api/version` retourne :
 | Page | Fichier | Fonction |
 |------|---------|----------|
 | **Accueil** | `HomePage.tsx` | Page d'atterrissage, navigation principale |
-| **Dashboard** | `Dashboard.tsx` | Affichage des résultats d'audit en 5 onglets : Vue d'ensemble, Finance, Clientèle, Opérations, RH |
+| **Dashboard** | `Dashboard.tsx` | Affichage des résultats d'audit en 5 onglets : Vue d'ensemble (score global + score santé financière /100 + KPIs clés), Finance (KPIs financiers avancés), Clientèle (KPIs clientèle avancés), Opérations (KPIs opérationnels avancés), RH & Coaching (KPIs RH avancés) |
 | **Formulaire d'audit** | `AuditForm.tsx` | Questionnaire multi-étapes (250 questions, 5 blocs) avec sauvegarde automatique |
 | **Formulaire salle** | `GymForm.tsx` | Création et édition des informations de la salle |
 | **Concurrents** | `CompetitorsPage.tsx` | Gestion des concurrents et analyse du marché |
@@ -1694,6 +1767,7 @@ Le fichier `deploy.sh` à la racine du projet doit :
 
 | Version | Date | Changements |
 |:-------:|------|-------------|
+| 1.2 | Février 2026 | Moteur de calcul avancé complet (8 fonctions), score de santé financière /100, inventaire matériel détaillé, amortissements, résultats financiers, Dashboard 5 onglets fonctionnels |
 | 1.1 | Février 2026 | CI/CD GitHub Actions, badge de version, optimisation better-sqlite3, refactoring constantes, séparation Jest/Vitest |
 | 1.0 | Février 2026 | Version initiale : questionnaire, KPIs, scoring, recommandations, concurrence, déploiement VPS |
 
