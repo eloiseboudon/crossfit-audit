@@ -5,10 +5,10 @@
 | Information | Valeur |
 |---|---|
 | **Projet** | CrossFit Audit |
-| **Version** | 1.0 |
+| **Version** | 1.1 |
 | **Date** | Février 2026 |
 | **Statut** | En production |
-| **Stack technique** | React/TypeScript (Frontend) + Node.js/Express (Backend) + SQLite |
+| **Stack technique** | React/TypeScript (Frontend) + Node.js/Express (Backend) + SQLite + GitHub Actions CI/CD |
 
 ---
 
@@ -27,7 +27,8 @@
 11. [Catalogue d'API REST](#11-catalogue-dapi-rest)
 12. [Pages et navigation frontend](#12-pages-et-navigation-frontend)
 13. [Règles de gestion transversales](#13-règles-de-gestion-transversales)
-14. [Annexes](#14-annexes)
+14. [CI/CD - Intégration et Déploiement Continus](#14-cicd---intégration-et-déploiement-continus)
+15. [Annexes](#15-annexes)
 
 ---
 
@@ -69,31 +70,44 @@ CrossFit Audit est une plateforme d'audit de performance qui permet de :
 | **Authentification** | JWT (jsonwebtoken) + bcrypt | - |
 | **Tests Frontend** | Vitest + @testing-library/react | - |
 | **Tests Backend** | Jest + supertest | - |
+| **CI/CD** | GitHub Actions (CI + Deploy) | - |
 | **Reverse Proxy** | Nginx (production) | 80/443 |
+| **Process Manager** | systemd (2 services) | - |
 
 ### 2.2 Organisation du code
 
 ```
 crossfit-audit/
-├── src/                          # Frontend React/TypeScript
-│   ├── pages/                    # Pages applicatives
-│   ├── hooks/                    # Hooks React personnalisés
-│   ├── lib/                      # Logique métier, types, API
-│   ├── components/               # Composants réutilisables
-│   └── __tests__/                # Tests unitaires frontend
-├── backend/                      # Backend Node.js/Express
-│   ├── controllers/              # Logique des endpoints
-│   ├── models/                   # Accès données (SQLite)
-│   ├── routes/                   # Définition des routes API
-│   ├── middleware/                # Auth, erreurs, accès gym
-│   ├── utils/                    # Calculs, extraction, helpers
-│   ├── constants/                # Constantes et seuils métier
-│   ├── validators/               # Validation des requêtes
-│   ├── scripts/                  # Scripts d'initialisation
-│   ├── migrations/               # Fichiers SQL de migration
-│   └── __tests__/                # Tests unitaires backend
-├── deploy/                       # Fichiers de déploiement (systemd, nginx)
-└── docs/                         # Documentation
+├── .github/
+│   └── workflows/
+│       ├── ci.yml                    # Pipeline CI (lint, typecheck, tests)
+│       └── deploy.yml                # Pipeline de déploiement automatique
+├── src/                              # Frontend React/TypeScript
+│   ├── pages/                        # Pages applicatives
+│   ├── hooks/                        # Hooks React personnalisés
+│   ├── lib/                          # Logique métier, types, API
+│   ├── components/                   # Composants réutilisables (UI + VersionBadge)
+│   └── __tests__/                    # Tests unitaires frontend (Vitest)
+├── backend/                          # Backend Node.js/Express
+│   ├── controllers/                  # Logique des endpoints (6 controllers)
+│   ├── models/                       # Accès données SQLite (better-sqlite3)
+│   ├── routes/                       # Définition des routes API
+│   ├── middleware/                    # Auth, erreurs, accès gym
+│   ├── utils/                        # Calculs, extraction, helpers
+│   ├── constants/                    # Constantes et seuils métier
+│   ├── validators/                   # Validation des requêtes
+│   ├── scripts/                      # Scripts d'initialisation
+│   ├── migrations/                   # Fichiers SQL de migration
+│   ├── migration-manager.js          # Moteur d'exécution des migrations
+│   └── __tests__/                    # Tests unitaires backend (Jest)
+├── deploy/                           # Fichiers de déploiement
+│   ├── crossfit-audit-backend.service  # Service systemd backend
+│   ├── crossfit-audit-frontend.service # Service systemd frontend
+│   ├── nginx-crossfit-audit            # Configuration Nginx reverse proxy
+│   └── setup-services.sh              # Script d'installation initiale
+├── deploy.sh                         # Script de déploiement (exécuté par CI/CD)
+├── db-manage.sh                      # Utilitaire de gestion BDD (backup/restore)
+└── docs/                             # Documentation
 ```
 
 ### 2.3 Flux de données global
@@ -1037,12 +1051,21 @@ Les offres commerciales de la salle sont cataloguées avec :
 | GET | `/api/data-tables` | Opt. | Lister les tables disponibles |
 | GET | `/api/data-tables/:name` | Opt. | Contenu d'une table |
 
-### 11.7 Santé
+### 11.7 Santé et version
 
 | Méthode | Endpoint | Auth | Description |
 |---------|----------|:----:|-------------|
 | GET | `/health` | Non | Healthcheck du serveur |
 | GET | `/` | Non | Informations API |
+| GET | `/api/version` | Non | Version de l'application et de la base de données |
+
+L'endpoint `/api/version` retourne :
+```json
+{
+  "app": "1.1.0",
+  "db": { "version": "20250210143000", "appliedAt": "2025-02-10T14:30:00Z" }
+}
+```
 
 ---
 
@@ -1073,6 +1096,13 @@ Les offres commerciales de la salle sont cataloguées avec :
 | `useMarketZones` | `useMarketZones.ts` | CRUD zones de marché |
 | `useMarketBenchmarks` | `useMarketBenchmarks.ts` | Lecture benchmarks |
 | `useEntityCRUD` | `useEntityCRUD.ts` | Hook générique factorisé pour les opérations CRUD |
+
+### 12.3 Composant VersionBadge
+
+Le composant `VersionBadge` affiche un badge discret en bas à droite de l'écran. Au clic, il déploie un panneau montrant :
+- **Version Front** : version du package.json injectée au build via `__APP_VERSION__`
+- **Version API** : version du backend (récupérée via `/api/version`)
+- **Version DB** : version du schéma de base de données (dernière migration appliquée)
 
 ---
 
@@ -1125,26 +1155,472 @@ Le système de migration permet l'évolution du schéma de manière contrôlée 
 
 ### 13.6 Déploiement
 
-Le script `deploy.sh` exécute les étapes suivantes en séquence :
+Le déploiement est entièrement automatisé via GitHub Actions CI/CD (voir [section 14](#14-cicd---intégration-et-déploiement-continus) pour le détail complet).
 
-1. Sauvegarde de la base de données (10 dernières sauvegardes conservées)
-2. Récupération du code depuis GitHub (`git fetch` + `git reset --hard`)
-3. Installation des dépendances (npm install backend + frontend)
-4. Exécution des tests unitaires (frontend + backend)
-5. Build du frontend (`tsc -b && vite build`)
-6. Application des migrations de base de données
-7. Redémarrage des services systemd (backend + frontend)
-8. Tests de santé (healthcheck sur les deux ports)
-
-**RG-DEP-01** : Le déploiement est interrompu si les tests échouent.
+**RG-DEP-01** : Le déploiement est interrompu si les tests échouent (vérifié en CI avant déploiement).
 **RG-DEP-02** : Le déploiement est interrompu si le build frontend échoue.
 **RG-DEP-03** : Une sauvegarde de la BDD est toujours créée avant mise à jour.
+**RG-DEP-04** : Les fichiers `.env` sont sauvegardés et restaurés automatiquement lors du pull Git.
+**RG-DEP-05** : Seules les 10 dernières sauvegardes de BDD sont conservées (nettoyage automatique).
 
 ---
 
-## 14. Annexes
+## 14. CI/CD - Intégration et Déploiement Continus
 
-### 14.1 Exemple de calcul complet
+### 14.1 Vue d'ensemble
+
+Le projet utilise **GitHub Actions** pour automatiser l'intégration continue (CI) et le déploiement continu (CD). Le pipeline garantit que chaque modification est testée avant d'atteindre la production.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        WORKFLOW CI/CD                                │
+│                                                                     │
+│  Développeur                                                        │
+│      │                                                              │
+│      ├─── push sur branche feature ──→ CI Pipeline                  │
+│      │                                  ├── Lint (ESLint)           │
+│      │                                  ├── Typecheck (TypeScript)  │
+│      │                                  └── Tests (Vitest + Jest)   │
+│      │                                                              │
+│      ├─── Pull Request vers main ────→ CI Pipeline (même chose)     │
+│      │                                                              │
+│      └─── merge/push sur main ───────→ Deploy Pipeline              │
+│                                         ├── Tests (Vitest + Jest)   │
+│                                         └── Deploy via SSH ──→ VPS  │
+│                                              ├── Backup BDD         │
+│                                              ├── Pull code          │
+│                                              ├── Install deps       │
+│                                              ├── Build frontend     │
+│                                              ├── Migrations BDD     │
+│                                              └── Restart services   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### 14.2 Pipeline CI (Intégration Continue)
+
+**Fichier** : `.github/workflows/ci.yml`
+
+**Déclenchement** :
+- Push sur toute branche **sauf** `main`
+- Pull Request ciblant `main`
+
+**Environnement** : Ubuntu latest, Node.js 22
+
+#### Job 1 : Lint & Typecheck
+
+| Étape | Commande | Description |
+|-------|----------|-------------|
+| Checkout | `actions/checkout@v4` | Récupère le code source |
+| Setup Node | `actions/setup-node@v4` | Installe Node.js 22 avec cache npm |
+| Install | `npm ci` | Installation propre des dépendances frontend |
+| Lint | `npm run lint` | Vérification ESLint (qualité de code) |
+| Typecheck | `npm run typecheck` | Vérification TypeScript (`tsc --noEmit`) |
+
+#### Job 2 : Tests
+
+| Étape | Commande | Description |
+|-------|----------|-------------|
+| Checkout | `actions/checkout@v4` | Récupère le code source |
+| Setup Node | `actions/setup-node@v4` | Installe Node.js 22 avec cache npm |
+| Install Frontend | `npm ci` | Dépendances frontend |
+| Install Backend | `cd backend && npm ci` | Dépendances backend |
+| Tests | `npm test` | Exécute Vitest (frontend) + Jest (backend) |
+
+> **Note** : Les deux jobs s'exécutent **en parallèle** pour un retour rapide.
+
+### 14.3 Pipeline Deploy (Déploiement Continu)
+
+**Fichier** : `.github/workflows/deploy.yml`
+
+**Déclenchement** : Push sur la branche `main` uniquement
+
+#### Job 1 : Tests (identique au CI)
+
+Les tests sont rejoués avant tout déploiement pour garantir l'intégrité du code sur `main`.
+
+#### Job 2 : Deploy to VPS
+
+**Prérequis** : Le job `test` doit réussir (`needs: test`).
+
+| Propriété | Valeur |
+|-----------|--------|
+| **Action utilisée** | `appleboy/ssh-action@v1` |
+| **Connexion** | SSH via clé privée |
+| **Commande distante** | `cd /home/ubuntu/crossfit-audit && bash deploy.sh` |
+
+### 14.4 Secrets GitHub requis
+
+Pour que le pipeline de déploiement fonctionne, les secrets suivants doivent être configurés dans **Settings > Secrets and variables > Actions** du repository GitHub :
+
+| Secret | Description | Exemple |
+|--------|-------------|---------|
+| `VPS_HOST` | Adresse IP ou hostname du serveur | `203.0.113.42` |
+| `VPS_USER` | Utilisateur SSH sur le serveur | `ubuntu` |
+| `VPS_SSH_KEY` | Clé privée SSH (contenu complet) | `-----BEGIN OPENSSH PRIVATE KEY-----...` |
+| `VPS_PORT` | Port SSH (optionnel, défaut 22) | `22` |
+
+### 14.5 Script de déploiement (`deploy.sh`)
+
+Le script `deploy.sh` est exécuté sur le VPS par GitHub Actions. Il orchestre les 6 étapes suivantes :
+
+#### Étape 1 : Sauvegarde de la base de données
+
+```bash
+# Crée une copie horodatée de la BDD
+cp backend/database/crossfit_audit.db backups/crossfit_audit_backup_YYYYMMDD_HHMMSS.db
+
+# Conserve uniquement les 10 dernières sauvegardes
+ls -t backups/crossfit_audit_backup_*.db | tail -n +11 | xargs -r rm
+```
+
+#### Étape 2 : Récupération du code depuis GitHub
+
+```bash
+# Sauvegarde les fichiers .env (non versionnés)
+cp backend/.env backend/.env.backup
+
+# Mise à jour du code
+git fetch origin
+git reset --hard origin/main
+
+# Restaure les .env
+mv backend/.env.backup backend/.env
+```
+
+> **Important** : Les fichiers `.env` sont sauvegardés puis restaurés car le `git reset --hard` écrase tous les fichiers locaux.
+
+#### Étape 3 : Installation des dépendances
+
+```bash
+cd backend && npm install       # Backend (avec devDeps pour les migrations)
+cd .. && npm install             # Frontend
+```
+
+#### Étape 4 : Build du frontend
+
+```bash
+npm run build    # Exécute tsc -b && vite build → génère le dossier dist/
+```
+
+Après le build, les devDependencies du backend sont nettoyées :
+```bash
+cd backend && npm prune --production
+```
+
+#### Étape 5 : Migrations de base de données
+
+```bash
+# Si la BDD n'existe pas → initialisation complète
+npm run init-db
+
+# Application des migrations en attente
+npm run migrate
+```
+
+#### Étape 6 : Redémarrage des services et healthcheck
+
+```bash
+# Redémarrage des services systemd
+sudo systemctl restart crossfit-audit-backend
+sudo systemctl restart crossfit-audit-frontend
+
+# Vérification de santé
+curl -sf http://localhost:5177/health    # Backend
+curl -sf http://localhost:5176           # Frontend
+```
+
+Le script affiche un résumé final avec le commit déployé, la date, l'auteur et le message.
+
+### 14.6 Infrastructure de production
+
+#### Architecture du serveur
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                    VPS (Ubuntu)                           │
+│                                                          │
+│  ┌─────────────────────────────────────────────────────┐ │
+│  │                 Nginx (port 80/443)                  │ │
+│  │  ┌──────────────────┐  ┌──────────────────────────┐ │ │
+│  │  │  /               │  │  /api + /health          │ │ │
+│  │  │  → localhost:5176 │  │  → localhost:5177        │ │ │
+│  │  └──────────────────┘  └──────────────────────────┘ │ │
+│  └─────────────────────────────────────────────────────┘ │
+│                                                          │
+│  ┌─────────────────────┐  ┌────────────────────────────┐ │
+│  │  systemd service    │  │  systemd service           │ │
+│  │  crossfit-audit-    │  │  crossfit-audit-           │ │
+│  │  frontend           │  │  backend                   │ │
+│  │  (Vite preview      │  │  (Node.js Express          │ │
+│  │   :5176)            │  │   :5177)                   │ │
+│  └─────────────────────┘  └────────────┬───────────────┘ │
+│                                        │                 │
+│                              ┌─────────▼──────────┐      │
+│                              │  SQLite Database    │      │
+│                              │  crossfit_audit.db  │      │
+│                              └────────────────────┘      │
+└──────────────────────────────────────────────────────────┘
+```
+
+#### Services systemd
+
+**Backend** (`crossfit-audit-backend.service`) :
+
+| Propriété | Valeur |
+|-----------|--------|
+| **Type** | simple |
+| **Utilisateur** | ubuntu |
+| **Répertoire** | `/home/ubuntu/crossfit-audit/backend` |
+| **Commande** | `/usr/bin/node server.js` |
+| **Port** | 5177 |
+| **Redémarrage** | Automatique (délai 10s) |
+| **Logs** | `sudo journalctl -u crossfit-audit-backend -f` |
+
+**Frontend** (`crossfit-audit-frontend.service`) :
+
+| Propriété | Valeur |
+|-----------|--------|
+| **Type** | simple |
+| **Utilisateur** | ubuntu |
+| **Répertoire** | `/home/ubuntu/crossfit-audit` |
+| **Commande** | `/usr/bin/npm run preview -- --port 5176 --host` |
+| **Port** | 5176 |
+| **Redémarrage** | Automatique (délai 10s) |
+| **Logs** | `sudo journalctl -u crossfit-audit-frontend -f` |
+
+#### Configuration Nginx
+
+Le reverse proxy Nginx route les requêtes vers les bons services :
+
+| Route | Destination | Description |
+|-------|-------------|-------------|
+| `/` | `localhost:5176` | Application frontend (SPA React) |
+| `/api` | `localhost:5177` | API REST backend |
+| `/health` | `localhost:5177/health` | Healthcheck (sans logs d'accès) |
+
+**Headers de sécurité** configurés :
+- `X-Frame-Options: SAMEORIGIN` - Protection contre le clickjacking
+- `X-Content-Type-Options: nosniff` - Empêche le MIME sniffing
+- `X-XSS-Protection: 1; mode=block` - Protection XSS
+
+**Limite upload** : 10 MB (`client_max_body_size`)
+
+**Domaine** : `crossfit-audit.tulipe-saas.fr`
+
+### 14.7 Guide de mise en place CI/CD (pour un nouveau projet)
+
+Ce guide explique comment reproduire la CI/CD de ce projet depuis zéro.
+
+#### Prérequis
+
+- Un repository GitHub
+- Un VPS avec Ubuntu (accès SSH root ou sudo)
+- Node.js 22+ installé sur le VPS
+- Nginx installé sur le VPS
+
+#### Étape 1 : Préparer le VPS
+
+```bash
+# 1. Se connecter au VPS
+ssh ubuntu@votre-serveur
+
+# 2. Installer Node.js 22
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# 3. Installer Nginx
+sudo apt-get install -y nginx
+
+# 4. Cloner le repository
+cd /home/ubuntu
+git clone https://github.com/votre-user/votre-repo.git
+cd votre-repo
+```
+
+#### Étape 2 : Configurer les services systemd
+
+Créer les fichiers de service pour le backend et le frontend :
+
+```bash
+# Copier les fichiers de service
+sudo cp deploy/crossfit-audit-backend.service /etc/systemd/system/
+sudo cp deploy/crossfit-audit-frontend.service /etc/systemd/system/
+
+# Recharger systemd et activer les services
+sudo systemctl daemon-reload
+sudo systemctl enable crossfit-audit-backend crossfit-audit-frontend
+
+# Démarrer les services
+sudo systemctl start crossfit-audit-backend
+sudo systemctl start crossfit-audit-frontend
+```
+
+> **Astuce** : Le script `deploy/setup-services.sh` automatise toute cette étape (installation des dépendances, création des `.env`, init BDD, setup systemd, configuration Nginx).
+
+#### Étape 3 : Configurer Nginx
+
+```bash
+# Copier la configuration
+sudo cp deploy/nginx-crossfit-audit /etc/nginx/sites-available/crossfit-audit
+
+# Activer le site
+sudo ln -sf /etc/nginx/sites-available/crossfit-audit /etc/nginx/sites-enabled/
+
+# Tester et recharger
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Pour HTTPS (recommandé) :
+```bash
+sudo apt-get install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d votre-domaine.fr
+```
+
+#### Étape 4 : Générer une clé SSH pour GitHub Actions
+
+```bash
+# Sur le VPS : générer une paire de clés dédiée
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/github_actions
+
+# Ajouter la clé publique aux authorized_keys
+cat ~/.ssh/github_actions.pub >> ~/.ssh/authorized_keys
+
+# Afficher la clé privée (à copier dans GitHub Secrets)
+cat ~/.ssh/github_actions
+```
+
+#### Étape 5 : Configurer les secrets GitHub
+
+Dans le repository GitHub : **Settings > Secrets and variables > Actions > New repository secret**
+
+| Secret | Valeur à renseigner |
+|--------|---------------------|
+| `VPS_HOST` | Adresse IP du VPS |
+| `VPS_USER` | `ubuntu` (ou votre utilisateur) |
+| `VPS_SSH_KEY` | Contenu de `~/.ssh/github_actions` (clé privée) |
+| `VPS_PORT` | `22` (ou votre port SSH personnalisé) |
+
+#### Étape 6 : Créer les workflows GitHub Actions
+
+**Fichier `.github/workflows/ci.yml`** (intégration continue) :
+
+```yaml
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: cd backend && npm ci
+      - run: npm test
+```
+
+**Fichier `.github/workflows/deploy.yml`** (déploiement) :
+
+```yaml
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: cd backend && npm ci
+      - run: npm test
+
+  deploy:
+    name: Deploy to VPS
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: cd /home/ubuntu/crossfit-audit && bash deploy.sh
+```
+
+#### Étape 7 : Créer le script de déploiement
+
+Le fichier `deploy.sh` à la racine du projet doit :
+1. Sauvegarder la BDD avant toute modification
+2. Récupérer le code (`git fetch` + `git reset --hard`)
+3. Préserver les fichiers `.env` (non versionnés)
+4. Installer les dépendances (`npm install`)
+5. Builder le frontend (`npm run build`)
+6. Appliquer les migrations de BDD
+7. Redémarrer les services systemd
+8. Vérifier la santé des services (healthcheck)
+
+> Le script complet est disponible dans `deploy.sh` à la racine du projet (229 lignes).
+
+#### Résumé du flux
+
+1. Le développeur push sur une branche feature → **CI** vérifie lint, types et tests
+2. Le développeur ouvre une Pull Request vers `main` → **CI** revalide
+3. La PR est mergée dans `main` → **Deploy** lance les tests puis déploie automatiquement
+4. Le VPS exécute `deploy.sh` : backup, pull, build, migrate, restart
+5. Les healthchecks confirment que l'application est opérationnelle
+
+### 14.8 Commandes utiles en production
+
+| Commande | Description |
+|----------|-------------|
+| `sudo journalctl -u crossfit-audit-backend -f` | Logs backend en temps réel |
+| `sudo journalctl -u crossfit-audit-frontend -f` | Logs frontend en temps réel |
+| `sudo systemctl status crossfit-audit-*` | Statut des deux services |
+| `sudo systemctl restart crossfit-audit-backend` | Redémarrer le backend |
+| `sudo systemctl restart crossfit-audit-frontend` | Redémarrer le frontend |
+| `cd /home/ubuntu/crossfit-audit && ./db-manage.sh restore` | Restaurer un backup BDD |
+| `cd /home/ubuntu/crossfit-audit && bash deploy.sh` | Déploiement manuel |
+
+---
+
+## 15. Annexes
+
+### 15.1 Exemple de calcul complet
 
 **Données d'entrée** :
 - CA abonnements mensuels : 8 000 EUR
@@ -1200,7 +1676,7 @@ Le script `deploy.sh` exécute les étapes suivantes en séquence :
 - % récurrent = 80% >= 80% → Pas de recommandation
 - Tous les seuils passent → **Recommandation : "Maintenir les performances" (P3)**
 
-### 14.2 Constantes et enums
+### 15.2 Constantes et enums
 
 | Constante | Valeurs |
 |-----------|---------|
@@ -1214,10 +1690,37 @@ Le script `deploy.sh` exécute les étapes suivantes en séquence :
 | `PRICE_LEVEL` | `budget`, `standard`, `premium`, `luxe` |
 | `OFFER_TYPE` | `abonnement`, `carte`, `pack` |
 
-### 14.3 Couverture des tests
+### 15.3 Historique des évolutions majeures
 
-| Couche | Framework | Fichiers | Tests |
-|--------|-----------|:--------:|:-----:|
-| Frontend | Vitest | 13 | 73 |
-| Backend | Jest | 12 | 109 |
-| **Total** | | **25** | **182** |
+| Version | Date | Changements |
+|:-------:|------|-------------|
+| 1.1 | Février 2026 | CI/CD GitHub Actions, badge de version, optimisation better-sqlite3, refactoring constantes, séparation Jest/Vitest |
+| 1.0 | Février 2026 | Version initiale : questionnaire, KPIs, scoring, recommandations, concurrence, déploiement VPS |
+
+**Détail des évolutions v1.1** :
+- **CI/CD GitHub Actions** : Pipelines automatisés de lint, typecheck, tests et déploiement
+- **Badge de version** : Composant `VersionBadge` affichant les versions front, API et BDD
+- **Migration better-sqlite3** : Remplacement de `sqlite3` (async) par `better-sqlite3` (synchrone) pour de meilleures performances
+- **Refactoring constantes** : Remplacement de toutes les magic strings par des constantes centralisées (`backend/constants/`)
+- **Séparation des tests** : Jest pour le backend, Vitest pour le frontend (configurations isolées)
+- **Correction TypeScript** : Résolution de 36 erreurs TypeScript bloquant le build de production
+- **Tests frontend** : Ajout de 73 tests unitaires Vitest (composants, hooks, utilitaires)
+- **JSDoc backend** : Documentation complète de toutes les fonctions backend
+
+### 15.4 Couverture des tests
+
+| Couche | Framework | Fichiers | Tests | Catégories |
+|--------|-----------|:--------:|:-----:|------------|
+| Frontend | Vitest + @testing-library/react | 13 | 73 | Composants UI, hooks CRUD, utilitaires |
+| Backend | Jest + supertest | 12 | 109 | Business logic, controllers, models, middleware |
+| **Total** | | **25** | **182** | |
+
+**Commandes de test** :
+
+| Commande | Description |
+|----------|-------------|
+| `npm test` | Tous les tests (frontend + backend) |
+| `npm run test:frontend` | Tests frontend uniquement (Vitest) |
+| `npm run test:backend` | Tests backend uniquement (Jest) |
+| `cd backend && npm run test:applicatif` | Tests métier backend (business + controllers) |
+| `cd backend && npm run test:crud` | Tests CRUD backend (models + middleware + utils) |
