@@ -142,7 +142,7 @@ describe('calculateKPIs', () => {
     const kpis = calculateKPIs(answers);
 
     // Tous les KPIs sont des nombres finis
-    expectAllNumericFieldsFinite(kpis, 'kpis');
+    expectAllNumericFieldsFinite(kpis as unknown as Record<string, unknown>, 'kpis');
 
     // CA total raisonnable (entre 5k et 500k pour une box)
     expect(kpis.ca_total_12m).toBeGreaterThan(5000);
@@ -166,7 +166,7 @@ describe('calculateKPIs', () => {
   it('retourne des zéros cohérents avec un tableau vide', () => {
     const kpis = calculateKPIs([]);
 
-    expectAllNumericFieldsFinite(kpis, 'kpis_empty');
+    expectAllNumericFieldsFinite(kpis as unknown as Record<string, unknown>, 'kpis_empty');
     expect(kpis.ca_total_12m).toBe(0);
     expect(kpis.arpm).toBe(0);
     expect(kpis.marge_ebitda).toBe(0);
@@ -480,7 +480,7 @@ describe('Pipeline complet de calcul', () => {
 
     // Étape 1: KPIs de base
     const kpis = calculateKPIs(answers);
-    expectAllNumericFieldsFinite(kpis, 'kpis');
+    expectAllNumericFieldsFinite(kpis as unknown as Record<string, unknown>, 'kpis');
 
     // Étape 2: Scores
     const { scores, globalScore } = calculateScores(kpis);
@@ -532,7 +532,7 @@ describe('Pipeline complet de calcul', () => {
     const pricing = calculatePricingPosition(answers);
 
     // Tout doit retourner des valeurs finies, pas de NaN, pas de crash
-    expectAllNumericFieldsFinite(kpis, 'kpis_empty');
+    expectAllNumericFieldsFinite(kpis as unknown as Record<string, unknown>, 'kpis_empty');
     expect(Number.isFinite(globalScore)).toBe(true);
     expectAllNumericFieldsFinite(advFin as unknown as Record<string, unknown>, 'advFin_empty');
     expectAllNumericFieldsFinite(advClient as unknown as Record<string, unknown>, 'advClient_empty');
