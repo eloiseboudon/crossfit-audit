@@ -511,10 +511,10 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
               <span className="text-amber-500 text-xl leading-none mt-0.5">&#9888;</span>
               <div>
                 <p className="font-semibold text-amber-800">
-                  {missingEssentials.length} champ{missingEssentials.length > 1 ? 's' : ''} essentiel{missingEssentials.length > 1 ? 's' : ''} manquant{missingEssentials.length > 1 ? 's' : ''}
+                  {missingEssentials.length} champ{missingEssentials.length > 1 ? 's' : ''} essentiel{missingEssentials.length > 1 ? 's' : ''} non encore renseigné{missingEssentials.length > 1 ? 's' : ''}
                 </p>
                 <p className="text-sm text-amber-700 mt-1">
-                  Renseignez ces champs pour pouvoir calculer les ratios : {missingEssentials.join(', ')}.
+                  Les ratios seront calculés avec les données disponibles. Pour un diagnostic plus complet, renseignez : {missingEssentials.join(', ')}.
                 </p>
               </div>
             </div>
@@ -522,7 +522,7 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
 
           <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className={`text-sm ${COLOR_CLASSES.textPrimary70}`}>
-              <p>Vous pouvez commencer l'audit maintenant ou calculer les ratios clés dès que ces réponses sont saisies.</p>
+              <p>Vous pouvez commencer l'audit maintenant ou calculer les ratios clés avec les données déjà saisies.</p>
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
@@ -532,18 +532,8 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
                 Commencer le questionnaire
               </button>
               <button
-                onClick={() => {
-                  if (missingEssentials.length > 0) {
-                    alert(`Impossible de calculer les ratios.\n\n${missingEssentials.length} champ(s) essentiel(s) manquant(s) :\n- ${missingEssentials.join('\n- ')}`);
-                    return;
-                  }
-                  if (auditId) onViewDashboard(auditId);
-                }}
-                className={`px-6 py-3 ${COLOR_CLASSES.bgSecondary} ${COLOR_CLASSES.textPrimary} rounded-lg transition-all shadow-md font-semibold ${
-                  missingEssentials.length > 0
-                    ? 'opacity-50 cursor-not-allowed'
-                    : `${COLOR_CLASSES.hoverBgSecondaryDark}`
-                }`}
+                onClick={() => { if (auditId) onViewDashboard(auditId); }}
+                className={`px-6 py-3 ${COLOR_CLASSES.bgSecondary} ${COLOR_CLASSES.textPrimary} rounded-lg ${COLOR_CLASSES.hoverBgSecondaryDark} transition-all shadow-md font-semibold`}
               >
                 Calculer les ratios clés
               </button>
@@ -643,16 +633,10 @@ export default function AuditForm({ auditId, onBack, onViewDashboard }: AuditFor
               <button
                 onClick={() => {
                   if (saving) return;
-                  if (audit.completion_percentage < 50) {
-                    alert(`Impossible de finaliser l'audit.\n\nLe questionnaire doit être rempli à au moins 50% pour pouvoir calculer les ratios.\nProgression actuelle : ${Math.round(audit.completion_percentage)}%`);
-                    return;
-                  }
                   calculateAndFinalize();
                 }}
-                className={`flex items-center space-x-2 px-5 py-2.5 ${COLOR_CLASSES.bgSecondary} ${COLOR_CLASSES.textPrimary} rounded-lg transition-all shadow-md font-semibold ${
-                  saving || audit.completion_percentage < 50
-                    ? 'opacity-50 cursor-not-allowed'
-                    : `${COLOR_CLASSES.hoverBgSecondaryDark}`
+                className={`flex items-center space-x-2 px-5 py-2.5 ${COLOR_CLASSES.bgSecondary} ${COLOR_CLASSES.textPrimary} rounded-lg ${COLOR_CLASSES.hoverBgSecondaryDark} transition-all shadow-md font-semibold ${
+                  saving ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
                 <Calculator className="w-5 h-5" />

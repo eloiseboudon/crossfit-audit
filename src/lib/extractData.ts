@@ -11,7 +11,15 @@ export function getAnswerValue(
   const answer = answers.find(
     (a) => a.block_code === blockCode && a.question_code === questionCode
   );
-  return answer?.value ?? defaultValue;
+  if (answer === undefined) return defaultValue;
+  const raw = answer.value;
+  if (raw === null || raw === undefined || raw === '') return defaultValue;
+  // Si le defaultValue est un nombre, parser la valeur en nombre
+  if (typeof defaultValue === 'number') {
+    const num = Number(raw);
+    return isNaN(num) ? defaultValue : num;
+  }
+  return raw;
 }
 
 export interface ExtractedIdentiteData {
