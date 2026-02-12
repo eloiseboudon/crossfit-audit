@@ -57,9 +57,11 @@ class KPI {
    */
   static upsertSync(kpiData) {
     const { audit_id, kpi_code, value, unit, inputs_snapshot } = kpiData;
-    
+
     const now = new Date().toISOString();
     const id = uuidv4();
+    const snapshotStr = inputs_snapshot != null && typeof inputs_snapshot === 'object'
+      ? JSON.stringify(inputs_snapshot) : (inputs_snapshot ?? null);
     const sql = `
       INSERT INTO kpis (id, audit_id, kpi_code, value, unit, computed_at, inputs_snapshot)
       VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -69,7 +71,7 @@ class KPI {
         computed_at = excluded.computed_at,
         inputs_snapshot = excluded.inputs_snapshot
     `;
-    dbRun(sql, [id, audit_id, kpi_code, value, unit, now, inputs_snapshot]);
+    dbRun(sql, [id, audit_id, kpi_code, value, unit, now, snapshotStr]);
     const selectSql = `SELECT * FROM kpis WHERE audit_id = ? AND kpi_code = ?`;
     return dbGet(selectSql, [audit_id, kpi_code]);
   }

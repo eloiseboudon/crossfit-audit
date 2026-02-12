@@ -1,6 +1,19 @@
 import type { Answer, AdvancedFinancialKPIs, AdvancedClientKPIs, AdvancedOperationalKPIs, AdvancedHRKPIs, CalculatedKPIs, PillarScore, RecommendationOutput } from './types';
 import { CONFIDENCE_LEVELS, EFFORT_LEVELS, RECOMMENDATION_PRIORITY } from './constants';
 import { extractAllData, getAnswerValue } from './extractData';
+import {
+  scoreFromMinBrackets, scoreFromMaxBrackets, scoreFromRangeBrackets,
+  HEALTH_EBITDA_BRACKETS, HEALTH_EBITDA_FALLBACK,
+  HEALTH_MARGE_NETTE_BRACKETS, HEALTH_MARGE_NETTE_FALLBACK,
+  HEALTH_JOURS_TRESORERIE_BRACKETS, HEALTH_JOURS_TRESORERIE_FALLBACK,
+  HEALTH_LIQUIDITE_BRACKETS, HEALTH_LIQUIDITE_FALLBACK,
+  HEALTH_LOYER_BRACKETS, HEALTH_LOYER_FALLBACK,
+  HEALTH_MS_BRACKETS, HEALTH_MS_FALLBACK,
+  HEALTH_ENDETTEMENT_BRACKETS, HEALTH_ENDETTEMENT_FALLBACK,
+  BENCHMARK_MARGE_NETTE_SECTOR_PCT,
+  PERCENTILE_RENTABILITE_BRACKETS, PERCENTILE_RENTABILITE_FALLBACK,
+  MOIS_POINT_MORT_UNREACHABLE,
+} from './benchmarks';
 
 export function calculateKPIs(answers: Answer[]): CalculatedKPIs {
   const data = extractAllData(answers);
@@ -363,14 +376,14 @@ export function calculateAdvancedFinancialKPIs(_kpis: CalculatedKPIs, answers: A
   const seuil_rentabilite_membres = arpm > 0 ? Math.ceil(seuil_rentabilite_eur / arpm) : 0;
 
   // Ratios d'efficience
-  const surface_totale = data.identite.surface_totale || 1;
-  const nb_coaches = data.rh.nombre_coaches || 1;
-  const nb_membres = data.membres.nb_membres_actifs_total || 1;
-  const ca_par_m2 = ca_total / surface_totale;
-  const ca_par_coach = ca_total / nb_coaches;
-  const ca_par_membre = (ca_total / 12) / nb_membres;
-  const charges_par_m2 = charges_totales / surface_totale;
-  const charges_par_membre = (charges_totales / 12) / nb_membres;
+  const surface_totale = data.identite.surface_totale;
+  const nb_coaches = data.rh.nombre_coaches;
+  const nb_membres = data.membres.nb_membres_actifs_total;
+  const ca_par_m2 = surface_totale > 0 ? ca_total / surface_totale : 0;
+  const ca_par_coach = nb_coaches > 0 ? ca_total / nb_coaches : 0;
+  const ca_par_membre = nb_membres > 0 ? (ca_total / 12) / nb_membres : 0;
+  const charges_par_m2 = surface_totale > 0 ? charges_totales / surface_totale : 0;
+  const charges_par_membre = nb_membres > 0 ? (charges_totales / 12) / nb_membres : 0;
 
   // Structure de coûts
   const ratio_loyer_ca_pct = data.finance.ratios.loyer_ca_ratio;
@@ -395,8 +408,8 @@ export function calculateAdvancedFinancialKPIs(_kpis: CalculatedKPIs, answers: A
   const dettes_fiscales = getAnswerValue(answers, 'resultat_tresorerie', 'dettes_fiscales', 0);
   const autres_dettes = getAnswerValue(answers, 'resultat_tresorerie', 'autres_dettes', 0);
   const total_dettes = tres.emprunts_capital_restant + tres.dettes_fournisseurs + dettes_sociales + dettes_fiscales + autres_dettes;
-  const fonds_propres = ca_total > 0 ? ca_total * 0.3 : 1; // estimation
-  const ratio_endettement = (total_dettes / fonds_propres) * 100;
+  const fonds_propres = ca_total > 0 ? ca_total * 0.3 : 0; // estimation : 30% du CA
+  const ratio_endettement = fonds_propres > 0 ? (total_dettes / fonds_propres) * 100 : 0;
   const ebitda_mensuel = ebitda / 12;
   const capacite_remboursement = ebitda_mensuel > 0 ? total_dettes / ebitda_mensuel : 999;
 
@@ -414,14 +427,12 @@ export function calculateAdvancedFinancialKPIs(_kpis: CalculatedKPIs, answers: A
   // Point mort
   const point_mort_mensuel = seuil_rentabilite_eur;
   const ca_mensuel = ca_total / 12;
-  const mois_point_mort = ca_mensuel > 0 && ca_mensuel >= point_mort_mensuel ? 0 :
-    (ca_mensuel > 0 ? Math.ceil(point_mort_mensuel / ca_mensuel) : 12);
+  const mois_point_mort = ca_mensuel >= point_mort_mensuel ? 0 : MOIS_POINT_MORT_UNREACHABLE;
 
-  // Benchmark - benchmarks secteur CrossFit
-  const benchmark_marge_nette = 8; // 8% benchmark
+  // Benchmark secteur CrossFit
+  const benchmark_marge_nette = BENCHMARK_MARGE_NETTE_SECTOR_PCT;
   const ecart_marge_vs_benchmark = marge_nette_pct - benchmark_marge_nette;
-  const percentile = marge_nette_pct >= 15 ? 90 : marge_nette_pct >= 10 ? 75 :
-    marge_nette_pct >= 5 ? 50 : marge_nette_pct >= 0 ? 30 : 10;
+  const percentile = scoreFromMinBrackets(marge_nette_pct, PERCENTILE_RENTABILITE_BRACKETS, PERCENTILE_RENTABILITE_FALLBACK);
 
   // Data quality score
   const totalFields = 30;
@@ -429,7 +440,7 @@ export function calculateAdvancedFinancialKPIs(_kpis: CalculatedKPIs, answers: A
     ca_total > 0, charges_totales > 0, ch.loyer_annuel_total > 0, ch.masse_salariale_total > 0,
     ch.energies_total > 0, ch.marketing_total > 0, ch.assurances_total > 0,
     tresorerie_actuelle > 0 || tres.tresorerie_disponible > 0,
-    ca_abonnements > 0, nb_membres > 1, surface_totale > 1, nb_coaches > 1,
+    ca_abonnements > 0, nb_membres > 0, surface_totale > 0, nb_coaches > 0,
     tres.emprunts_capital_restant >= 0, ch.entretien_total >= 0,
     ch.services_exterieurs_total >= 0, ch.communication_total >= 0,
     ca_personal_training >= 0, ca_merchandising >= 0, ca_events >= 0,
@@ -442,6 +453,9 @@ export function calculateAdvancedFinancialKPIs(_kpis: CalculatedKPIs, answers: A
   if (charges_totales === 0) missing_data_fields.push('charges_totales');
   if (ch.loyer_annuel_total === 0) missing_data_fields.push('loyer');
   if (ch.masse_salariale_total === 0) missing_data_fields.push('masse_salariale');
+  if (surface_totale === 0) missing_data_fields.push('surface_totale');
+  if (nb_coaches === 0) missing_data_fields.push('nombre_coaches');
+  if (nb_membres === 0) missing_data_fields.push('membres_actifs');
 
   return {
     audit_id: '',
@@ -695,12 +709,12 @@ export function calculateAdvancedOperationalKPIs(answers: Answer[]): AdvancedOpe
   const ch = data.finance.charges;
 
   // Infrastructure
-  const surface_totale = data.identite.surface_totale || 1;
+  const surface_totale = data.identite.surface_totale;
   const surface_crossfit = data.identite.surface_crossfit || surface_totale;
   const capacite_max = getAnswerValue(answers, 'capacite_occupation', 'capacite_max_cours', 0);
   const participants_moyen = getAnswerValue(answers, 'capacite_occupation', 'participants_moyen_cours', 0);
-  const nb_membres = data.membres.nb_membres_actifs_total || 1;
-  const ratio_m2_membre = surface_totale / nb_membres;
+  const nb_membres = data.membres.nb_membres_actifs_total;
+  const ratio_m2_membre = nb_membres > 0 ? surface_totale / nb_membres : 0;
   const ratio_m2_poste = capacite_max > 0 ? surface_crossfit / capacite_max : 0;
 
   // Planning
@@ -729,9 +743,9 @@ export function calculateAdvancedOperationalKPIs(answers: Answer[]): AdvancedOpe
   const taux_remplissage = occupation_global;
 
   // Productivité
-  const nb_coaches = data.rh.nombre_coaches || 1;
-  const seances_par_coach = total_cours_semaine / nb_coaches;
-  const membres_par_coach = nb_membres / nb_coaches;
+  const nb_coaches = data.rh.nombre_coaches;
+  const seances_par_coach = nb_coaches > 0 ? total_cours_semaine / nb_coaches : 0;
+  const membres_par_coach = nb_coaches > 0 ? nb_membres / nb_coaches : 0;
   const ca_total = rev.ca_total;
   const ca_par_heure = heures_ouverture_semaine > 0 ? ca_total / (heures_ouverture_semaine * 52) : 0;
   const ca_par_seance = seances_mois > 0 ? (ca_total / 12) / seances_mois : 0;
@@ -786,8 +800,8 @@ export function calculateAdvancedOperationalKPIs(answers: Answer[]): AdvancedOpe
 
   // Compléments
   const loyer_mensuel = getAnswerValue(answers, 'charges_exploitation', 'loyer_mensuel_ht', 0);
-  const cout_loyer_m2_mois = surface_totale > 1 ? loyer_mensuel / surface_totale : 0;
-  const rentabilite_m2_an = surface_totale > 1 ? (ca_total - ch.charges_total) / surface_totale : 0;
+  const cout_loyer_m2_mois = surface_totale > 0 ? loyer_mensuel / surface_totale : 0;
+  const rentabilite_m2_an = surface_totale > 0 ? (ca_total - ch.charges_total) / surface_totale : 0;
 
   return {
     audit_id: '',
@@ -1046,69 +1060,19 @@ export function calculateFinancialHealthScore(financialKPIs: AdvancedFinancialKP
   structure: { score: number; ratio_loyer_score: number; ratio_ms_score: number; ratio_endettement_score: number };
 } {
   // === RENTABILITÉ (40 pts) ===
-  // Marge EBITDA (25 pts)
-  let marge_ebitda_score = 0;
-  if (financialKPIs.marge_ebitda_pct >= 25) marge_ebitda_score = 25;
-  else if (financialKPIs.marge_ebitda_pct >= 20) marge_ebitda_score = 22;
-  else if (financialKPIs.marge_ebitda_pct >= 15) marge_ebitda_score = 18;
-  else if (financialKPIs.marge_ebitda_pct >= 10) marge_ebitda_score = 14;
-  else if (financialKPIs.marge_ebitda_pct >= 5) marge_ebitda_score = 10;
-  else if (financialKPIs.marge_ebitda_pct >= 0) marge_ebitda_score = 5;
-  else marge_ebitda_score = 0;
-
-  // Marge nette (15 pts)
-  let marge_nette_score = 0;
-  if (financialKPIs.marge_nette_pct >= 15) marge_nette_score = 15;
-  else if (financialKPIs.marge_nette_pct >= 10) marge_nette_score = 12;
-  else if (financialKPIs.marge_nette_pct >= 5) marge_nette_score = 9;
-  else if (financialKPIs.marge_nette_pct >= 0) marge_nette_score = 5;
-  else marge_nette_score = 0;
-
+  const marge_ebitda_score = scoreFromMinBrackets(financialKPIs.marge_ebitda_pct, HEALTH_EBITDA_BRACKETS, HEALTH_EBITDA_FALLBACK);
+  const marge_nette_score = scoreFromMinBrackets(financialKPIs.marge_nette_pct, HEALTH_MARGE_NETTE_BRACKETS, HEALTH_MARGE_NETTE_FALLBACK);
   const rentabilite_score = marge_ebitda_score + marge_nette_score;
 
   // === TRÉSORERIE (30 pts) ===
-  // Jours de trésorerie (20 pts)
-  let jours_tresorerie_score = 0;
-  if (financialKPIs.jours_tresorerie >= 90) jours_tresorerie_score = 20;
-  else if (financialKPIs.jours_tresorerie >= 60) jours_tresorerie_score = 16;
-  else if (financialKPIs.jours_tresorerie >= 30) jours_tresorerie_score = 12;
-  else if (financialKPIs.jours_tresorerie >= 15) jours_tresorerie_score = 7;
-  else jours_tresorerie_score = 3;
-
-  // Ratio liquidité (10 pts)
-  let ratio_liquidite_score = 0;
-  if (financialKPIs.ratio_liquidite_generale >= 2) ratio_liquidite_score = 10;
-  else if (financialKPIs.ratio_liquidite_generale >= 1.5) ratio_liquidite_score = 8;
-  else if (financialKPIs.ratio_liquidite_generale >= 1) ratio_liquidite_score = 6;
-  else if (financialKPIs.ratio_liquidite_generale >= 0.5) ratio_liquidite_score = 3;
-  else ratio_liquidite_score = 0;
-
+  const jours_tresorerie_score = scoreFromMinBrackets(financialKPIs.jours_tresorerie, HEALTH_JOURS_TRESORERIE_BRACKETS, HEALTH_JOURS_TRESORERIE_FALLBACK);
+  const ratio_liquidite_score = scoreFromMinBrackets(financialKPIs.ratio_liquidite_generale, HEALTH_LIQUIDITE_BRACKETS, HEALTH_LIQUIDITE_FALLBACK);
   const tresorerie_score = jours_tresorerie_score + ratio_liquidite_score;
 
   // === STRUCTURE (30 pts) ===
-  // Ratio loyer (10 pts)
-  let ratio_loyer_score = 0;
-  if (financialKPIs.ratio_loyer_ca_pct <= 12) ratio_loyer_score = 10;
-  else if (financialKPIs.ratio_loyer_ca_pct <= 15) ratio_loyer_score = 8;
-  else if (financialKPIs.ratio_loyer_ca_pct <= 20) ratio_loyer_score = 6;
-  else if (financialKPIs.ratio_loyer_ca_pct <= 25) ratio_loyer_score = 3;
-  else ratio_loyer_score = 0;
-
-  // Ratio MS (10 pts)
-  let ratio_ms_score = 0;
-  if (financialKPIs.ratio_masse_salariale_ca_pct >= 30 && financialKPIs.ratio_masse_salariale_ca_pct <= 40) ratio_ms_score = 10;
-  else if (financialKPIs.ratio_masse_salariale_ca_pct >= 25 && financialKPIs.ratio_masse_salariale_ca_pct <= 45) ratio_ms_score = 8;
-  else if (financialKPIs.ratio_masse_salariale_ca_pct >= 20 && financialKPIs.ratio_masse_salariale_ca_pct <= 50) ratio_ms_score = 5;
-  else ratio_ms_score = 2;
-
-  // Ratio endettement (10 pts)
-  let ratio_endettement_score = 0;
-  if (financialKPIs.ratio_endettement_pct <= 30) ratio_endettement_score = 10;
-  else if (financialKPIs.ratio_endettement_pct <= 50) ratio_endettement_score = 8;
-  else if (financialKPIs.ratio_endettement_pct <= 80) ratio_endettement_score = 5;
-  else if (financialKPIs.ratio_endettement_pct <= 100) ratio_endettement_score = 3;
-  else ratio_endettement_score = 0;
-
+  const ratio_loyer_score = scoreFromMaxBrackets(financialKPIs.ratio_loyer_ca_pct, HEALTH_LOYER_BRACKETS, HEALTH_LOYER_FALLBACK);
+  const ratio_ms_score = scoreFromRangeBrackets(financialKPIs.ratio_masse_salariale_ca_pct, HEALTH_MS_BRACKETS, HEALTH_MS_FALLBACK);
+  const ratio_endettement_score = scoreFromMaxBrackets(financialKPIs.ratio_endettement_pct, HEALTH_ENDETTEMENT_BRACKETS, HEALTH_ENDETTEMENT_FALLBACK);
   const structure_score = ratio_loyer_score + ratio_ms_score + ratio_endettement_score;
 
   const total = rentabilite_score + tresorerie_score + structure_score;
@@ -1211,8 +1175,8 @@ export function analyzeChurnRisk(answers: Answer[]): {
 
   // Factor 3: Inactivité
   const inactifs = getAnswerValue(answers, 'engagement_satisfaction', 'nb_membres_inactifs_30j', 0);
-  const total = data.membres.nb_membres_actifs_total || 1;
-  const pctInactifs = (inactifs / total) * 100;
+  const total = data.membres.nb_membres_actifs_total;
+  const pctInactifs = total > 0 ? (inactifs / total) * 100 : 0;
   let inactifScore = 0;
   if (pctInactifs > 20) inactifScore = 20;
   else if (pctInactifs > 10) inactifScore = 12;

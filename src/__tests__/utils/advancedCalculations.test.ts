@@ -11,7 +11,7 @@ import {
   analyzeChurnRisk,
   calculatePricingPosition
 } from '../../lib/calculations';
-import type { Answer } from '../../lib/types';
+import type { Answer, AdvancedFinancialKPIs } from '../../lib/types';
 
 // ===========================================================================
 // Helpers — données réalistes simulant la base de données (valeurs string)
@@ -391,6 +391,99 @@ describe('calculateFinancialHealthScore', () => {
     expect(result.score).toBeGreaterThanOrEqual(0);
     expect(result.score).toBeLessThanOrEqual(100);
     expect(Number.isFinite(result.score)).toBe(true);
+  });
+});
+
+// ===========================================================================
+// calculateFinancialHealthScore — edge cases
+// ===========================================================================
+describe('calculateFinancialHealthScore (edge cases)', () => {
+  /** Helper : construit un AdvancedFinancialKPIs avec surcharges ciblées */
+  function makeHealthKPIs(overrides: Partial<AdvancedFinancialKPIs> = {}): AdvancedFinancialKPIs {
+    const base = calculateAdvancedFinancialKPIs(calculateKPIs([]), []);
+    return { ...base, ...overrides };
+  }
+
+  it('all zeros → scores minimum non-négatifs', () => {
+    const kpis = makeHealthKPIs({
+      marge_ebitda_pct: 0,
+      marge_nette_pct: 0,
+      jours_tresorerie: 0,
+      ratio_liquidite_generale: 0,
+      ratio_loyer_ca_pct: 0,
+      ratio_masse_salariale_ca_pct: 0,
+      ratio_endettement_pct: 0,
+    });
+    const result = calculateFinancialHealthScore(kpis);
+
+    expect(result.score).toBeGreaterThanOrEqual(0);
+    expect(result.rentabilite.marge_ebitda_score).toBe(5);
+    expect(result.rentabilite.marge_nette_score).toBe(5);
+    expect(result.tresorerie.jours_tresorerie_score).toBe(3);
+    expect(result.tresorerie.ratio_liquidite_score).toBe(0);
+    expect(result.structure.ratio_loyer_score).toBe(10);
+    expect(result.structure.ratio_ms_score).toBe(2);
+    expect(result.structure.ratio_endettement_score).toBe(10);
+  });
+
+  it('EBITDA et marge négatifs → score rentabilité = 0', () => {
+    const kpis = makeHealthKPIs({
+      marge_ebitda_pct: -10,
+      marge_nette_pct: -5,
+    });
+    const result = calculateFinancialHealthScore(kpis);
+
+    expect(result.rentabilite.marge_ebitda_score).toBe(0);
+    expect(result.rentabilite.marge_nette_score).toBe(0);
+    expect(result.rentabilite.score).toBe(0);
+  });
+
+  it('endettement > 100% → score endettement = 0', () => {
+    const kpis = makeHealthKPIs({
+      ratio_endettement_pct: 150,
+    });
+    const result = calculateFinancialHealthScore(kpis);
+
+    expect(result.structure.ratio_endettement_score).toBe(0);
+  });
+
+  it('loyer > 25% → score loyer = 0', () => {
+    const kpis = makeHealthKPIs({
+      ratio_loyer_ca_pct: 30,
+    });
+    const result = calculateFinancialHealthScore(kpis);
+
+    expect(result.structure.ratio_loyer_score).toBe(0);
+  });
+
+  it('valeurs parfaites → score = 100', () => {
+    const kpis = makeHealthKPIs({
+      marge_ebitda_pct: 30,
+      marge_nette_pct: 20,
+      jours_tresorerie: 120,
+      ratio_liquidite_generale: 3,
+      ratio_loyer_ca_pct: 10,
+      ratio_masse_salariale_ca_pct: 35,
+      ratio_endettement_pct: 20,
+    });
+    const result = calculateFinancialHealthScore(kpis);
+
+    expect(result.score).toBe(100);
+  });
+
+  it('valeurs exactement aux bornes → score = 100', () => {
+    const kpis = makeHealthKPIs({
+      marge_ebitda_pct: 25,
+      marge_nette_pct: 15,
+      jours_tresorerie: 90,
+      ratio_liquidite_generale: 2,
+      ratio_loyer_ca_pct: 12,
+      ratio_masse_salariale_ca_pct: 30,
+      ratio_endettement_pct: 30,
+    });
+    const result = calculateFinancialHealthScore(kpis);
+
+    expect(result.score).toBe(100);
   });
 });
 
