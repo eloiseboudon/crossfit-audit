@@ -109,6 +109,91 @@ describe('Audit Data Models', () => {
       const global = await Score.getGlobalScore(testAudit.id);
       expect(global).toBeNull();
     });
+
+    it('devrait sérialiser details objet en JSON string', async () => {
+      const details = { marge_ebitda: 0.15, loyer_ratio: 0.12 };
+      const created = await Score.upsert({
+        audit_id: testAudit.id,
+        pillar_code: 'finance',
+        pillar_name: 'Finance',
+        score: 75,
+        weight: 0.3,
+        details
+      });
+
+      expect(created).not.toBeNull();
+      expect(created.score).toBe(75);
+      const parsed = JSON.parse(created.details);
+      expect(parsed.marge_ebitda).toBe(0.15);
+      expect(parsed.loyer_ratio).toBe(0.12);
+    });
+
+    it('devrait accepter details null ou undefined', async () => {
+      const withNull = await Score.upsert({
+        audit_id: testAudit.id,
+        pillar_code: 'p1',
+        pillar_name: 'Pillar 1',
+        score: 60,
+        weight: 1,
+        details: null
+      });
+      expect(withNull.details).toBeNull();
+
+      const withUndefined = await Score.upsert({
+        audit_id: testAudit.id,
+        pillar_code: 'p2',
+        pillar_name: 'Pillar 2',
+        score: 70,
+        weight: 1
+      });
+      expect(withUndefined.details).toBeNull();
+    });
+
+    it('devrait accepter details string directement', async () => {
+      const created = await Score.upsert({
+        audit_id: testAudit.id,
+        pillar_code: 'finance',
+        pillar_name: 'Finance',
+        score: 80,
+        weight: 0.3,
+        details: '{"already":"serialized"}'
+      });
+
+      expect(JSON.parse(created.details)).toEqual({ already: 'serialized' });
+    });
+
+    it('devrait bulk upsert avec details objet sans erreur', async () => {
+      const results = await Score.bulkUpsert(testAudit.id, [
+        {
+          pillar_code: 'finance',
+          pillar_name: 'Finance',
+          score: 80,
+          weight: 0.3,
+          details: { marge_ebitda: 0.2, ca_par_m2: 150 }
+        },
+        {
+          pillar_code: 'clientele',
+          pillar_name: 'Commercial & rétention',
+          score: 65,
+          weight: 0.35,
+          details: { churn_mensuel: 0.05, arpm: 55 }
+        },
+        {
+          pillar_code: 'exploitation',
+          pillar_name: 'Organisation & pilotage',
+          score: 70,
+          weight: 0.35,
+          details: { occupation_moyenne: 0.6 }
+        }
+      ]);
+
+      expect(results).toHaveLength(3);
+      results.forEach(r => {
+        expect(r).not.toBeNull();
+        const parsed = JSON.parse(r.details);
+        expect(typeof parsed).toBe('object');
+      });
+    });
   });
 
   describe('Recommendation', () => {

@@ -176,9 +176,10 @@ class Score {
    */
   static upsertSync(scoreData) {
     const { audit_id, pillar_code, pillar_name, score, weight, details } = scoreData;
-    
+
     const now = new Date().toISOString();
     const id = uuidv4();
+    const detailsStr = details != null && typeof details === 'object' ? JSON.stringify(details) : (details ?? null);
     const sql = `
       INSERT INTO scores (id, audit_id, pillar_code, pillar_name, score, weight, computed_at, details)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -189,7 +190,7 @@ class Score {
         computed_at = excluded.computed_at,
         details = excluded.details
     `;
-    dbRun(sql, [id, audit_id, pillar_code, pillar_name, score, weight, now, details]);
+    dbRun(sql, [id, audit_id, pillar_code, pillar_name ?? null, score ?? null, weight ?? null, now, detailsStr]);
     const selectSql = `SELECT * FROM scores WHERE audit_id = ? AND pillar_code = ?`;
     return dbGet(selectSql, [audit_id, pillar_code]);
   }
