@@ -35,6 +35,14 @@ export default defineConfig({
         '*.config.{js,ts}',
       ],
       include: ['src/**/*.{ts,tsx}'],
+      thresholds: {
+        'src/lib/**': {
+          statements: 45,
+          branches: 70,
+          functions: 85,
+          lines: 45,
+        },
+      },
     },
   },
   resolve: {
